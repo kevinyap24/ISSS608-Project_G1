@@ -341,7 +341,7 @@ div.cell-output-display {
 
       <h3>Meeting 2 — Discussion</h3>
       <p><em>Date: 11 March 2026 &nbsp;·&nbsp; Attendees: All group members</em></p>
-      <p>Topic TBD. <a href="minutes/meeting2.pdf" target="_blank">View minutes →</a></p>
+      <p>Topic is about... <a href="minutes/meeting2.pdf" target="_blank">View minutes →</a></p>
 
       <h3>Meeting 3 — Model Selection</h3>
       <p><em>Date: TBD &nbsp;·&nbsp; Attendees: All group members</em></p>
