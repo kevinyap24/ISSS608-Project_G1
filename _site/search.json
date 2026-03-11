@@ -1,0 +1,79 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "ISSS608-Project_G1",
+    "section": "",
+    "text": "This is a Quarto website."
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "Singapore’s Consumer Price Index (CPI) is a critical barometer for policymakers, businesses, and households alike. As a highly open economy with no natural resources, Singapore’s price levels are uniquely sensitive to global commodity cycles, exchange rate movements, domestic wage growth, and housing costs.\nThis project develops and evaluates a suite of time-series and machine-learning forecasting models to anticipate CPI movements across headline, core, and sub-component indices — enabling sharper economic planning and policy analysis.\n\n\n\n\n\n\nNoteData Currency\n\n\n\nAll models are re-estimated quarterly using the latest SingStat CPI release. Forecast vintages are archived to allow retrospective accuracy assessment."
+  },
+  {
+    "objectID": "about.html#project-overview",
+    "href": "about.html#project-overview",
+    "title": "About",
+    "section": "",
+    "text": "Singapore’s Consumer Price Index (CPI) is a critical barometer for policymakers, businesses, and households alike. As a highly open economy with no natural resources, Singapore’s price levels are uniquely sensitive to global commodity cycles, exchange rate movements, domestic wage growth, and housing costs.\nThis project develops and evaluates a suite of time-series and machine-learning forecasting models to anticipate CPI movements across headline, core, and sub-component indices — enabling sharper economic planning and policy analysis.\n\n\n\n\n\n\nNoteData Currency\n\n\n\nAll models are re-estimated quarterly using the latest SingStat CPI release. Forecast vintages are archived to allow retrospective accuracy assessment."
+  },
+  {
+    "objectID": "about.html#objectives",
+    "href": "about.html#objectives",
+    "title": "About",
+    "section": "Objectives",
+    "text": "Objectives\nThe project has three primary objectives:\n\nForecast accuracy — Produce accurate 3–12 month ahead CPI forecasts for Singapore across headline and core measures.\nModel comparison — Rigorously benchmark classical econometric models against modern machine learning approaches.\nTransparency — Provide fully reproducible R code and documentation so researchers can replicate, adapt, and extend the analysis."
+  },
+  {
+    "objectID": "about.html#methodology",
+    "href": "about.html#methodology",
+    "title": "About",
+    "section": "Methodology",
+    "text": "Methodology\n\nData Sources\n\n\n\nSource\nVariables Used\nFrequency\n\n\n\n\nSingStat\nHeadline CPI, Core CPI, sub-indices\nMonthly\n\n\nMAS\nSGD NEER, monetary policy statements\nMonthly\n\n\nWorld Bank\nGlobal commodity price index\nMonthly\n\n\nIEA\nBrent crude oil prices\nMonthly\n\n\nMOM Singapore\nWage indices, employment data\nQuarterly\n\n\n\n\n\nModel Suite\nWe implement and compare six forecasting approaches:\n\n\n\n\n\n\n\n\n\n\n\nModel\nType\nHorizon\nKey Strengths\n\n\n\n\nARIMA\nClassical\n3–12 months\nInterpretable, parsimonious baseline\n\n\nSARIMA\nClassical\n3–12 months\nCaptures seasonal sub-index patterns\n\n\nVAR\nClassical\n3–6 months\nMultivariate macro linkages\n\n\nXGBoost\nMachine Learning\n1–6 months\nHandles non-linearity, best RMSE\n\n\nLSTM\nDeep Learning\n1–3 months\nSequence modelling, long memory\n\n\nEnsemble\nCombined\n3–12 months\nReduces model-specific bias\n\n\n\n\n\n\n\nEvaluation Metrics\nAll models are compared using:\n\nRMSE — Root Mean Squared Error (penalises large errors)\nMAE — Mean Absolute Error (robust to outliers)\nMASE — Mean Absolute Scaled Error (scale-independent)\nDirectional Accuracy — % of months where the sign of change is correctly predicted"
+  },
+  {
+    "objectID": "about.html#tools-stack",
+    "href": "about.html#tools-stack",
+    "title": "About",
+    "section": "Tools & Stack",
+    "text": "Tools & Stack\nThis project is built entirely in R and documented with Quarto.\n# Core packages used\nlibrary(tidyverse)    # Data wrangling\nlibrary(fable)        # Tidy time-series forecasting (ARIMA, ETS, VAR)\nlibrary(forecast)     # Legacy ARIMA/SARIMA tooling\nlibrary(vars)         # Vector Autoregression\nlibrary(tidymodels)   # ML framework\nlibrary(xgboost)      # Gradient boosting\nlibrary(keras)        # LSTM via TensorFlow backend\nlibrary(tsibble)      # Tidy time-series data structures\nlibrary(feasts)       # Feature extraction & visualisation\nlibrary(plotly)       # Interactive charts\n\n\n\n\n\n\nTipReproducibility\n\n\n\nAll analyses use renv for package version locking. Run renv::restore() after cloning the repository to reproduce the exact environment."
+  },
+  {
+    "objectID": "about.html#data-pipeline",
+    "href": "about.html#data-pipeline",
+    "title": "About",
+    "section": "Data Pipeline",
+    "text": "Data Pipeline\n\n\nCode\nflowchart LR\n    A[SingStat API] --&gt; B[Raw CPI Data]\n    C[MAS / World Bank] --&gt; B\n    B --&gt; D[Data Cleaning\\n& Validation]\n    D --&gt; E[Feature Engineering]\n    E --&gt; F1[ARIMA / SARIMA]\n    E --&gt; F2[VAR]\n    E --&gt; F3[XGBoost]\n    E --&gt; F4[LSTM]\n    F1 --&gt; G[Ensemble]\n    F2 --&gt; G\n    F3 --&gt; G\n    F4 --&gt; G\n    G --&gt; H[Evaluation\\n& Reporting]\n\n\n\n\n\nflowchart LR\n    A[SingStat API] --&gt; B[Raw CPI Data]\n    C[MAS / World Bank] --&gt; B\n    B --&gt; D[Data Cleaning\\n& Validation]\n    D --&gt; E[Feature Engineering]\n    E --&gt; F1[ARIMA / SARIMA]\n    E --&gt; F2[VAR]\n    E --&gt; F3[XGBoost]\n    E --&gt; F4[LSTM]\n    F1 --&gt; G[Ensemble]\n    F2 --&gt; G\n    F3 --&gt; G\n    F4 --&gt; G\n    G --&gt; H[Evaluation\\n& Reporting]"
+  },
+  {
+    "objectID": "about.html#about-the-author",
+    "href": "about.html#about-the-author",
+    "title": "About",
+    "section": "About the Author",
+    "text": "About the Author\nThis project was developed as part of economic research into Singapore’s macroeconomic dynamics.\n\n\n\n\n\nResearcher\nSingapore Economic Research\nInterests include applied econometrics, time-series forecasting, and data-driven policy analysis. Proficient in R, Python, and Quarto for reproducible research.\nGitHub · LinkedIn · Email"
+  },
+  {
+    "objectID": "about.html#citation",
+    "href": "about.html#citation",
+    "title": "About",
+    "section": "Citation",
+    "text": "Citation\nIf you use this work, please cite:\n@misc{sgcpiforecast2024,\n  title   = {Singapore CPI Forecasting: A Multi-Model Comparison},\n  author  = {Your Name},\n  year    = {2024},\n  url     = {https://yoursite.github.io/sg-cpi-forecast}\n}"
+  },
+  {
+    "objectID": "about.html#license",
+    "href": "about.html#license",
+    "title": "About",
+    "section": "License",
+    "text": "License\nThis project is released under the MIT License. Data from SingStat is used under their terms of use."
+  },
+  {
+    "objectID": "proposal.html",
+    "href": "proposal.html",
+    "title": "Forecasting Singapore's Consumer Price Index",
+    "section": "",
+    "text": "Forecasting Singapore's Consumer Price Index\n    Kevin A. SUYAPTO, LEE Jangho, PAN Yiqiong\n    ISS608 Project - Group 1\n    \n\n    \n    \n      Overview\n      \n        What is CPI?\n      \n      \n        Why discuss about CPI?\n      \n      \n        What this analysis covers (mention the indexes included).\n      \n      \n        Project Objective: To evaluate and compare ETS, ARIMA, AUTO-ARIMA (XGBOOST), and Prophet time-series model and to deploy the best-performing models for each of the index in an interactive R Shiny application\n      \n    \n\n    \n\n    \n    \n      Minutes of Meeting\n\n      Meeting 1 — Project Kickoff\nDate: 2 March 2026  ·  Attendees: All group members\nThe team aligned on the project scope to forecast Singapore CPI and the level of granularity using CEIC data. Initial task allocation was agreed upon in the call: Exploratory Data Analysis, ACF, and PACF analysis (Yiqiong), Time Series Decomposition (Jangho), Forecasting (Kevin). View minutes →\n\n      Meeting 2 — TBD\n      Date: TBD  ·  Attendees: All group members\n      Topic TBD. View minutes →\n\n      Meeting 3 — Model Selection\n      Date: TBD  ·  Attendees: All group members\n      Topic TBD. View minutes →\n      \n    \n\n    \n\n    \n    \n      Data Preparation and EDA\n\n      Data Sources\n      Data used is from CEIC, containing Headline CPI, Core CPI, and sub-indices spanning from January 19xx to January 2026 (2024 = 100). \n      \n      Import Packages\n\npacman::p_load(readxl, tidyverse, timetk, \n               modeltime, tidymodels, \n               lubridate, anomalize, plotly, shiny)\n\n      Import Data\n\ncpi_data_raw &lt;- read_excel(\"data/SG_CPI_012020_012026_Use.xlsx\")\n\nData Preparation\n      \n      Data Cleaning\n      Missing values were handled via linear interpolation for gaps of one or two months. Quarterly series (wages) were disaggregated to monthly frequency using the Denton method. All series were checked for outliers using IQR-based detection, with the COVID-19 period (2020 Q1–2021 Q2) flagged for special treatment.\n\n      Exploratory Data Analysis\n      EDA focused on understanding the distributional properties, trend structure, and inter-series correlations of the CPI data. Key findings include a strong upward trend in headline CPI post-2021, pronounced seasonality in food & beverages and transport sub-indices, and high correlation (r = 0.78) between global oil prices and the transport CPI component.\n      The interactive EDA module in the R Shiny app allows users to explore these patterns across all CPI sub-indices with customisable date ranges and chart types.\n    \n\n    \n\n    \n    \n      Time Series Decomposition\n      Time series decomposition separates the CPI signal into interpretable components: trend, seasonality, and residual. Understanding these components is essential before applying any forecasting model.\n\n      STL Decomposition\n      We apply Seasonal and Trend decomposition using Loess (STL) to all CPI series. STL is robust to outliers and handles time-varying seasonal patterns — important given the structural breaks introduced by COVID-19 supply disruptions in 2020–2021.\n\n      Classical Additive Decomposition\n      Classical additive decomposition is applied as a baseline comparison. Results show that STL outperforms classical decomposition in capturing the post-pandemic seasonal shift in food prices.\n\n      Key Findings\n      The trend component shows a clear structural break around mid-2021 corresponding to post-pandemic supply chain pressures. Seasonal amplitudes in food & beverages are concentrated around the January–February Lunar New Year period and the June–August school holiday season.\n\n      \n        The interactive Timeline Decomposition module in the R Shiny app lets users select any CPI sub-index, choose decomposition method, and adjust the seasonal window parameter.\n      \n    \n\n    \n\n    \n    \n      Forecasting\n      We implement and benchmark six forecasting approaches, ranging from classical econometric models to deep learning architectures. All models are evaluated on a held-out test set of 12 months using a rolling-origin evaluation scheme.\n\n      Model Suite\n      \n\n\n\nModel\nType\nHorizon\nKey Strength\n\n\n\n\nARIMA\nClassical\n3–12 months\nInterpretable baseline\n\n\nSARIMA\nClassical\n3–12 months\nSeasonal sub-indices\n\n\nVAR\nClassical\n3–6 months\nMacro linkages\n\n\nXGBoost\nMachine Learning\n1–6 months\nNon-linearity, best RMSE\n\n\nLSTM\nDeep Learning\n1–3 months\nLong-range dependencies\n\n\nEnsemble\nCombined\n3–12 months\nReduces model-specific bias\n\n\n\n\n\n      Evaluation\n      Models are compared using RMSE, MAE, MASE, and directional accuracy. Preliminary results indicate the weighted ensemble achieves the highest directional accuracy at 94%, with XGBoost achieving the lowest RMSE among individual models.\n\n      Shiny Forecasting Module\n      The interactive Forecasting module allows users to select a CPI series, choose one or more models, and generate forecasts with adjustable horizons (1–12 months ahead). Confidence intervals and model comparison charts are rendered dynamically."
+  }
+]

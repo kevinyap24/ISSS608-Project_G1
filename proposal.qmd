@@ -1,0 +1,482 @@
+---
+title: ""
+format:
+  html:
+    page-layout: custom
+    include-in-header:
+      text: |
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,500;0,700;1,300&display=swap" rel="stylesheet"/>
+    theme: none
+    css: []
+    toc: false
+    sidebar: false
+    margin-left: "0"
+    margin-right: "0"
+---
+
+```{=html}
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --red:       #c0392b;
+  --red-light: #e74c3c;
+  --cream:     #f5f0e8;
+  --off-white: #ede8df;
+  --dark:      #1a1612;
+  --mid:       #3d3530;
+  --muted:     #7a6f68;
+  --accent:    #d4a853;
+  --sidebar-w: 220px;
+}
+
+/* Kill Quarto chrome */
+#quarto-header, .quarto-title-banner, #title-block-header,
+.navbar, .sidebar, #quarto-sidebar, #quarto-margin-sidebar { display: none !important; }
+
+body, html {
+  font-family: 'IBM Plex Sans', sans-serif !important;
+  background: var(--cream);
+  color: var(--dark);
+  overflow-x: hidden;
+}
+main.content, div#quarto-content, .page-columns {
+  padding: 0 !important; margin: 0 !important;
+  max-width: 100% !important; width: 100% !important; gap: 0 !important;
+}
+
+/* ── TOP NAV ── */
+.sg-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 3rem; height: 60px;
+  background: var(--dark);
+  border-bottom: 2px solid var(--red);
+}
+.sg-nav-logo {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600; font-size: 0.85rem;
+  color: var(--cream); letter-spacing: 0.12em; text-transform: uppercase;
+  text-decoration: none;
+}
+.sg-nav-logo span { color: var(--red-light); }
+.sg-nav-links { display: flex; gap: 2.5rem; }
+.sg-nav-links a {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); text-decoration: none; transition: color 0.2s;
+}
+.sg-nav-links a:hover, .sg-nav-links a.active { color: var(--red-light); }
+
+/* ── PAGE LAYOUT ── */
+.proposal-layout {
+  display: flex;
+  min-height: 100vh;
+  padding-top: 60px;
+}
+
+/* ── LEFT SIDEBAR ── */
+.proposal-sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--dark);
+  position: fixed;
+  top: 60px; left: 0; bottom: 0;
+  overflow-y: auto;
+  display: flex; flex-direction: column;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  z-index: 100;
+}
+
+.sidebar-logo {
+  padding: 2rem 1.5rem 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+}
+.sidebar-logo-icon {
+  width: 64px; height: 64px;
+  background: var(--red);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600; font-size: 0.7rem; letter-spacing: 0.08em;
+  color: var(--cream); text-align: center; line-height: 1.4;
+}
+.sidebar-logo-links { display: flex; gap: 1.25rem; }
+.sidebar-logo-links a {
+  color: var(--muted); font-size: 0.9rem; text-decoration: none; transition: color 0.2s;
+}
+.sidebar-logo-links a:hover { color: var(--cream); }
+
+.sidebar-search {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-search input {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--cream);
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem;
+  padding: 0.5rem 0.75rem; outline: none; transition: border-color 0.2s;
+}
+.sidebar-search input::placeholder { color: var(--muted); }
+.sidebar-search input:focus { border-color: var(--red); }
+
+.sidebar-nav { padding: 0.75rem 0; flex: 1; }
+.sidebar-nav a {
+  display: block;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.875rem; font-weight: 300;
+  color: var(--muted);
+  padding: 0.6rem 1.5rem;
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  line-height: 1.4;
+}
+.sidebar-nav a:hover { color: var(--cream); background: rgba(255,255,255,0.04); }
+.sidebar-nav a.active {
+  color: var(--cream);
+  border-left-color: var(--red);
+  background: rgba(192,57,43,0.1);
+}
+
+/* ── MAIN CONTENT ── */
+.proposal-main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  padding: 4rem 5rem 6rem;
+  max-width: 900px;
+}
+
+.proposal-page-title {
+  font-family: 'IBM Plex Sans', sans-serif !important;
+  font-size: clamp(1.8rem, 3vw, 2.6rem) !important;
+  font-weight: 700 !important; color: var(--dark) !important;
+  line-height: 1.1 !important;
+  margin-bottom: 0.5rem !important; border: none !important; padding: 0 !important;
+}
+.proposal-author-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 0.2rem; margin-top: 1.5rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.proposal-author-label::before { content:''; display:block; width:20px; height:1px; background:var(--red); }
+.proposal-author {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.95rem; font-weight: 500; color: var(--mid); margin-bottom: 2.5rem;
+}
+.proposal-divider { border: none; border-top: 1px solid #d8d2c8; margin: 2.5rem 0; }
+
+.proposal-section { scroll-margin-top: 80px; margin-bottom: 3.5rem; }
+.proposal-section h2 {
+  font-family: 'IBM Plex Sans', sans-serif !important;
+  font-size: 1.5rem !important; font-weight: 700 !important; color: var(--dark) !important;
+  border-left: 4px solid var(--red) !important; padding-left: 1rem !important;
+  margin-bottom: 1.25rem !important; margin-top: 0 !important;
+}
+.proposal-section h3 {
+  font-family: 'IBM Plex Sans', sans-serif !important;
+  font-size: 1.05rem !important; font-weight: 600 !important; color: var(--mid) !important;
+  margin-top: 1.5rem !important; margin-bottom: 0.6rem !important;
+}
+.proposal-section p {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.975rem; font-weight: 300; line-height: 1.9;
+  color: var(--mid); margin-bottom: 1.1rem;
+}
+.proposal-section p strong { font-weight: 600; color: var(--dark); }
+.proposal-section a { color: var(--red); text-decoration: none; }
+.proposal-section a:hover { color: var(--red-light); text-decoration: underline; }
+
+.info-box {
+  background: var(--off-white); border-left: 3px solid var(--red);
+  padding: 1rem 1.25rem; margin: 1.5rem 0;
+  font-size: 0.9rem; font-weight: 300; line-height: 1.7; color: var(--mid);
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+.info-box strong { font-weight: 600; color: var(--dark); }
+
+.proposal-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.875rem; }
+.proposal-table thead { background: var(--dark); }
+.proposal-table thead th {
+  padding: 0.65rem 1rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+  font-weight: 600; color: var(--cream); border: none; text-align: left;
+}
+.proposal-table tbody td {
+  padding: 0.6rem 1rem; border-bottom: 1px solid #d8d2c8;
+  font-weight: 300; color: var(--mid); font-family: 'IBM Plex Sans', sans-serif;
+}
+.proposal-table tbody tr:hover { background: var(--off-white); }
+
+.tag-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+.chip {
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; letter-spacing: 0.08em;
+  padding: 0.25rem 0.65rem; background: var(--off-white);
+  border: 1px solid #d0c8be; color: var(--mid);
+}
+.chip.red { background: rgba(192,57,43,0.1); border-color: rgba(192,57,43,0.3); color: var(--red); }
+
+@media (max-width: 860px) {
+  .proposal-sidebar { display: none; }
+  .proposal-main { margin-left: 0; padding: 2rem 1.5rem 4rem; }
+  .sg-nav { padding: 0 1.5rem; }
+}
+
+/* ── Code chunks ── */
+div.cell {
+  margin: 1.5rem 0;
+}
+div.sourceCode {
+  background: var(--dark) !important;
+  border: none !important;
+  border-left: 3px solid var(--red) !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  overflow-x: auto;
+}
+div.sourceCode pre {
+  margin: 0 !important;
+  padding: 1rem 1.25rem !important;
+  background: transparent !important;
+  font-family: 'IBM Plex Mono', monospace !important;
+  font-size: 0.82rem !important;
+  line-height: 1.6 !important;
+  color: #f5f0e8 !important;
+}
+/* Code fold button */
+details.code-fold summary {
+  font-family: 'IBM Plex Mono', monospace !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.08em !important;
+  color: var(--muted) !important;
+  cursor: pointer;
+  padding: 0.3rem 0;
+  list-style: none;
+}
+details.code-fold summary:hover { color: var(--red-light) !important; }
+/* Figure output */
+div.cell-output-display {
+  margin-top: 1rem;
+  border: 1px solid #d8d2c8;
+  padding: 0.5rem;
+  background: white;
+}
+</style>
+
+<!-- ── TOP NAV ── -->
+<nav class="sg-nav">
+  <a href="index.html" class="sg-nav-logo">SG <span>CPI</span> Forecast</a>
+  <div class="sg-nav-links">
+    <a href="index.html#home">Home</a>
+    <a href="index.html#about">About</a>
+    <a href="index.html#projects">RShiny App</a>
+    <a href="proposal.html" class="active">Proposal</a>
+    <a href="poster.html">Poster</a>
+  </div>
+</nav>
+
+<div class="proposal-layout">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="proposal-sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">SG<br>CPI</div>
+      <div class="sidebar-logo-links">
+        <a href="index.html" title="Home">🏠</a>
+        <a href="https://github.com/" title="GitHub" target="_blank">⌥</a>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" placeholder="Search…" id="sidebar-search-input" />
+    </div>
+
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <a href="#home" class="active">Home</a>
+      <a href="#minutes">Minutes of Meeting</a>
+      <a href="#data-eda">Data Preparation and EDA</a>
+      <a href="#decomposition">Timeline Decomposition</a>
+      <a href="#forecasting">Forecasting</a>
+    </nav>
+  </aside>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="proposal-main">
+
+    <h1 class="proposal-page-title">Forecasting Singapore's Consumer Price Index</h1>
+    <div class="proposal-author-label">Kevin A. SUYAPTO, LEE Jangho, PAN Yiqiong</div>
+    <div class="proposal-author">ISS608 Project - Group 1</div>
+    <hr class="proposal-divider" />
+
+    <!-- HOME -->
+    <section class="proposal-section" id="home">
+      <h2>Overview</h2>
+      <p>
+        What is CPI?
+      </p>
+      <p>
+        Why discuss about CPI?
+      </p>
+      <p>
+        What this analysis covers (mention the indexes included).
+      </p>
+      <div class="info-box">
+        <strong>Project Objective:</strong> To evaluate and compare ETS, ARIMA, AUTO-ARIMA (XGBOOST), and Prophet time-series model and to deploy the best-performing models for each of the index in an interactive R Shiny application
+      </div>
+    </section>
+
+    <hr class="proposal-divider" />
+
+    <!-- MINUTES OF MEETING -->
+    <section class="proposal-section" id="minutes">
+      <h2>Minutes of Meeting</h2>
+
+      <h3>Meeting 1 — Project Kickoff</h3>
+<p><em>Date: 2 March 2026 &nbsp;·&nbsp; Attendees: All group members</em></p>
+<p>The team aligned on the project scope to forecast Singapore CPI and the level of granularity using CEIC data. Initial task allocation was agreed upon in the call: Exploratory Data Analysis, ACF, and PACF analysis (Yiqiong), Time Series Decomposition (Jangho), Forecasting (Kevin). <a href="minutes/Meeting Minutes 1.pdf" target="_blank">View minutes →</a></p>
+
+      <h3>Meeting 2 — TBD</h3>
+      <p><em>Date: TBD &nbsp;·&nbsp; Attendees: All group members</em></p>
+      <p>Topic TBD. <a href="minutes/meeting2.pdf" target="_blank">View minutes →</a></p>
+
+      <h3>Meeting 3 — Model Selection</h3>
+      <p><em>Date: TBD &nbsp;·&nbsp; Attendees: All group members</em></p>
+      <p>Topic TBD. <a href="minutes/meeting2.pdf" target="_blank">View minutes →</a></p>
+      
+    </section>
+
+    <hr class="proposal-divider" />
+
+    <!-- DATA PREP & EDA -->
+    <section class="proposal-section" id="data-eda">
+      <h2>Data Preparation and EDA</h2>
+
+      <h3>Data Sources</h3>
+      <p>Data used is from CEIC, containing Headline CPI, Core CPI, and sub-indices spanning from January 19xx to January 2026 (2024 = 100). </p>
+      
+      <h3>Import Packages</h3>
+```      
+
+```{r}
+pacman::p_load(readxl, tidyverse, timetk, 
+               modeltime, tidymodels, 
+               lubridate, anomalize, plotly, shiny)
+```
+
+```{=html}
+      <h3>Import Data</h3>
+```
+
+```{r}
+cpi_data_raw <- read_excel("data/SG_CPI_012020_012026_Use.xlsx")
+```
+
+```{=html}
+      <h3>Data Preparation</h3>
+      
+      <h3>Data Cleaning</h3>
+      <p>Missing values were handled via linear interpolation for gaps of one or two months. Quarterly series (wages) were disaggregated to monthly frequency using the Denton method. All series were checked for outliers using IQR-based detection, with the COVID-19 period (2020 Q1–2021 Q2) flagged for special treatment.</p>
+
+      <h3>Exploratory Data Analysis</h3>
+      <p>EDA focused on understanding the distributional properties, trend structure, and inter-series correlations of the CPI data. Key findings include a strong upward trend in headline CPI post-2021, pronounced seasonality in food &amp; beverages and transport sub-indices, and high correlation (r = 0.78) between global oil prices and the transport CPI component.</p>
+      <p>The interactive EDA module in the R Shiny app allows users to explore these patterns across all CPI sub-indices with customisable date ranges and chart types.</p>
+    </section>
+
+    <hr class="proposal-divider" />
+
+    <!-- TIME SERIES DECOMPOSITION -->
+    <section class="proposal-section" id="decomposition">
+      <h2>Time Series Decomposition</h2>
+      <p>Time series decomposition separates the CPI signal into interpretable components: <strong>trend</strong>, <strong>seasonality</strong>, and <strong>residual</strong>. Understanding these components is essential before applying any forecasting model.</p>
+
+      <h3>STL Decomposition</h3>
+      <p>We apply Seasonal and Trend decomposition using Loess (STL) to all CPI series. STL is robust to outliers and handles time-varying seasonal patterns — important given the structural breaks introduced by COVID-19 supply disruptions in 2020–2021.</p>
+
+      <h3>Classical Additive Decomposition</h3>
+      <p>Classical additive decomposition is applied as a baseline comparison. Results show that STL outperforms classical decomposition in capturing the post-pandemic seasonal shift in food prices.</p>
+
+      <h3>Key Findings</h3>
+      <p>The trend component shows a clear structural break around mid-2021 corresponding to post-pandemic supply chain pressures. Seasonal amplitudes in food &amp; beverages are concentrated around the January–February Lunar New Year period and the June–August school holiday season.</p>
+
+      <div class="info-box">
+        The interactive Timeline Decomposition module in the R Shiny app lets users select any CPI sub-index, choose decomposition method, and adjust the seasonal window parameter.
+      </div>
+    </section>
+
+    <hr class="proposal-divider" />
+
+    <!-- FORECASTING -->
+    <section class="proposal-section" id="forecasting">
+      <h2>Forecasting</h2>
+      <p>We implement and benchmark six forecasting approaches, ranging from classical econometric models to deep learning architectures. All models are evaluated on a held-out test set of 12 months using a rolling-origin evaluation scheme.</p>
+
+      <h3>Model Suite</h3>
+      <table class="proposal-table">
+        <thead>
+          <tr><th>Model</th><th>Type</th><th>Horizon</th><th>Key Strength</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>ARIMA</td><td>Classical</td><td>3–12 months</td><td>Interpretable baseline</td></tr>
+          <tr><td>SARIMA</td><td>Classical</td><td>3–12 months</td><td>Seasonal sub-indices</td></tr>
+          <tr><td>VAR</td><td>Classical</td><td>3–6 months</td><td>Macro linkages</td></tr>
+          <tr><td>XGBoost</td><td>Machine Learning</td><td>1–6 months</td><td>Non-linearity, best RMSE</td></tr>
+          <tr><td>LSTM</td><td>Deep Learning</td><td>1–3 months</td><td>Long-range dependencies</td></tr>
+          <tr><td>Ensemble</td><td>Combined</td><td>3–12 months</td><td>Reduces model-specific bias</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Evaluation</h3>
+      <p>Models are compared using RMSE, MAE, MASE, and directional accuracy. Preliminary results indicate the weighted ensemble achieves the highest directional accuracy at 94%, with XGBoost achieving the lowest RMSE among individual models.</p>
+
+      <h3>Shiny Forecasting Module</h3>
+      <p>The interactive Forecasting module allows users to select a CPI series, choose one or more models, and generate forecasts with adjustable horizons (1–12 months ahead). Confidence intervals and model comparison charts are rendered dynamically.</p>
+
+      
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function() {
+  var sections  = ['home','minutes','data-eda','decomposition','forecasting'];
+  var sideLinks = document.querySelectorAll('.sidebar-nav a');
+
+  function updateActive() {
+    var scrollY = window.scrollY + 100;
+    var current = sections[0];
+    sections.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el && el.offsetTop <= scrollY) current = id;
+    });
+    sideLinks.forEach(function(a) {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  }
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
+
+  sideLinks.forEach(function(a) {
+    a.addEventListener('click', function(e) {
+      var id = a.getAttribute('href').replace('#','');
+      var el = document.getElementById(id);
+      if (el) {
+        e.preventDefault();
+        window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
+      }
+    });
+  });
+
+  document.getElementById('sidebar-search-input').addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    sideLinks.forEach(function(a) {
+      a.style.display = a.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  });
+})();
+</script>
+```

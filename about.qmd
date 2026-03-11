@@ -1,0 +1,162 @@
+---
+title: "About"
+subtitle: "Understanding the project, methodology, and team behind SG CPI Forecast"
+toc: true
+toc-depth: 3
+---
+
+## Project Overview
+
+Singapore's Consumer Price Index (CPI) is a critical barometer for policymakers, businesses, and households alike. As a highly open economy with no natural resources, Singapore's price levels are uniquely sensitive to global commodity cycles, exchange rate movements, domestic wage growth, and housing costs.
+
+This project develops and evaluates a **suite of time-series and machine-learning forecasting models** to anticipate CPI movements across headline, core, and sub-component indices — enabling sharper economic planning and policy analysis.
+
+::: {.callout-note}
+## Data Currency
+All models are re-estimated quarterly using the latest SingStat CPI release. Forecast vintages are archived to allow retrospective accuracy assessment.
+:::
+
+---
+
+## Objectives
+
+The project has three primary objectives:
+
+1. **Forecast accuracy** — Produce accurate 3–12 month ahead CPI forecasts for Singapore across headline and core measures.
+2. **Model comparison** — Rigorously benchmark classical econometric models against modern machine learning approaches.
+3. **Transparency** — Provide fully reproducible R code and documentation so researchers can replicate, adapt, and extend the analysis.
+
+---
+
+## Methodology
+
+### Data Sources
+
+| Source | Variables Used | Frequency |
+|---|---|---|
+| [SingStat](https://www.singstat.gov.sg/) | Headline CPI, Core CPI, sub-indices | Monthly |
+| [MAS](https://www.mas.gov.sg/) | SGD NEER, monetary policy statements | Monthly |
+| [World Bank](https://www.worldbank.org/) | Global commodity price index | Monthly |
+| [IEA](https://www.iea.org/) | Brent crude oil prices | Monthly |
+| [MOM Singapore](https://www.mom.gov.sg/) | Wage indices, employment data | Quarterly |
+
+### Model Suite
+
+We implement and compare six forecasting approaches:
+
+```{r}
+#| label: model-summary-table
+#| echo: false
+
+library(tibble)
+library(knitr)
+
+models <- tribble(
+  ~Model,        ~Type,            ~Horizon,     ~Key_Strengths,
+  "ARIMA",       "Classical",      "3–12 months","Interpretable, parsimonious baseline",
+  "SARIMA",      "Classical",      "3–12 months","Captures seasonal sub-index patterns",
+  "VAR",         "Classical",      "3–6 months", "Multivariate macro linkages",
+  "XGBoost",     "Machine Learning","1–6 months","Handles non-linearity, best RMSE",
+  "LSTM",        "Deep Learning",  "1–3 months", "Sequence modelling, long memory",
+  "Ensemble",    "Combined",       "3–12 months","Reduces model-specific bias"
+)
+
+kable(models, col.names = c("Model", "Type", "Horizon", "Key Strengths"),
+      align = "llll")
+```
+
+### Evaluation Metrics
+
+All models are compared using:
+
+- **RMSE** — Root Mean Squared Error (penalises large errors)
+- **MAE** — Mean Absolute Error (robust to outliers)
+- **MASE** — Mean Absolute Scaled Error (scale-independent)
+- **Directional Accuracy** — % of months where the sign of change is correctly predicted
+
+---
+
+## Tools & Stack
+
+This project is built entirely in **R** and documented with **Quarto**.
+
+```r
+# Core packages used
+library(tidyverse)    # Data wrangling
+library(fable)        # Tidy time-series forecasting (ARIMA, ETS, VAR)
+library(forecast)     # Legacy ARIMA/SARIMA tooling
+library(vars)         # Vector Autoregression
+library(tidymodels)   # ML framework
+library(xgboost)      # Gradient boosting
+library(keras)        # LSTM via TensorFlow backend
+library(tsibble)      # Tidy time-series data structures
+library(feasts)       # Feature extraction & visualisation
+library(plotly)       # Interactive charts
+```
+
+::: {.callout-tip}
+## Reproducibility
+All analyses use `renv` for package version locking. Run `renv::restore()` after cloning the repository to reproduce the exact environment.
+:::
+
+---
+
+## Data Pipeline
+
+```{mermaid}
+flowchart LR
+    A[SingStat API] --> B[Raw CPI Data]
+    C[MAS / World Bank] --> B
+    B --> D[Data Cleaning\n& Validation]
+    D --> E[Feature Engineering]
+    E --> F1[ARIMA / SARIMA]
+    E --> F2[VAR]
+    E --> F3[XGBoost]
+    E --> F4[LSTM]
+    F1 --> G[Ensemble]
+    F2 --> G
+    F3 --> G
+    F4 --> G
+    G --> H[Evaluation\n& Reporting]
+```
+
+---
+
+## About the Author
+
+This project was developed as part of economic research into Singapore's macroeconomic dynamics.
+
+::: {.grid}
+::: {.g-col-4}
+![](images/profile.png){.rounded-circle width=140}
+:::
+::: {.g-col-8}
+**Researcher**  
+*Singapore Economic Research*
+
+Interests include applied econometrics, time-series forecasting, and data-driven policy analysis. Proficient in R, Python, and Quarto for reproducible research.
+
+[GitHub](https://github.com/) · [LinkedIn](https://linkedin.com/) · [Email](mailto:researcher@example.com)
+:::
+:::
+
+---
+
+## Citation
+
+If you use this work, please cite:
+
+```bibtex
+@misc{sgcpiforecast2024,
+  title   = {Singapore CPI Forecasting: A Multi-Model Comparison},
+  author  = {Your Name},
+  year    = {2024},
+  url     = {https://yoursite.github.io/sg-cpi-forecast}
+}
+```
+
+---
+
+## License
+
+This project is released under the [MIT License](https://opensource.org/licenses/MIT). Data from SingStat is used under their [terms of use](https://www.singstat.gov.sg/terms-of-use).

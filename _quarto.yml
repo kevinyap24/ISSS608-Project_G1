@@ -1,0 +1,61 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "SG CPI Forecast"
+  description: "Forecasting Singapore's Consumer Price Index with statistical and machine learning models."
+
+  navbar:
+    background: "#1a1612"
+    foreground: "#f5f0e8"
+    pinned: true
+    left:
+      - text: "SG **CPI** Forecast"
+        href: index.qmd
+    right:
+      - text: "About"
+        href: about.qmd
+      - text: "Projects"
+        href: projects.qmd
+      - text: "Proposal"
+        href: proposal.qmd
+      - text: "Poster"
+        href: poster.qmd
+
+  page-footer:
+    background: "#1a1612"
+    border: true
+    left: "Built with R Quarto | CEIC Data"
+    right:
+      - icon: github
+        href: https://github.com/
+
+  open-graph:
+    title: "SG CPI Forecast"
+    description: "Forecasting Singapore's CPI with statistical and ML models."
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    include-in-header:
+      text: |
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,500;0,700;1,300&display=swap" rel="stylesheet"/>
+    code-fold: false
+    code-tools: false
+    code-copy: true
+    highlight-style: github-dark
+    df-print: paged
+    fig-align: center
+    fig-width: 9
+    fig-height: 5
+    smooth-scroll: true
+    link-external-newwindow: true
+
+execute:
+  echo: true
+  warning: false
+  message: false
+  cache: true
+  freeze: auto
