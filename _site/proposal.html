@@ -21,41 +21,6 @@ ul.task-list li input[type="checkbox"] {
   vertical-align: middle;
 }
 .display.math{display: block; text-align: center; margin: 0.5rem auto;}
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -69,10 +34,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="site_libs/quarto-html/quarto-html-eb71d4f0124c4d5ff63526840ab633f6.min.css" rel="stylesheet" append-hash="true" data-mode="light">
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-7ac2f9da8c2617a4fdd15004b4601015.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <style>html{ scroll-behavior: smooth; }</style>
-<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet">
-
-<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
-
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&amp;family=IBM+Plex+Sans:ital,wght@0,300;0,500;0,700;1,300&amp;display=swap" rel="stylesheet">
 
 
@@ -213,6 +174,18 @@ main.content, div#quarto-content, .page-columns {
   border-left-color: var(--red);
   background: rgba(192,57,43,0.1);
 }
+/* Subsection indentation in sidebar */
+.sidebar-nav a.sub {
+  padding-left: 2.5rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.sidebar-nav a.sub:hover { color: var(--cream); }
+.sidebar-nav a.sub.active {
+  color: var(--cream);
+  border-left-color: var(--red);
+  background: rgba(192,57,43,0.08);
+}
 
 /* ── MAIN CONTENT ── */
 .proposal-main {
@@ -300,9 +273,7 @@ main.content, div#quarto-content, .page-columns {
 }
 
 /* ── Code chunks ── */
-div.cell {
-  margin: 1.5rem 0;
-}
+div.cell { margin: 1.5rem 0; }
 div.sourceCode {
   background: var(--dark) !important;
   border: none !important;
@@ -320,23 +291,17 @@ div.sourceCode pre {
   line-height: 1.6 !important;
   color: #f5f0e8 !important;
 }
-/* Code fold button */
 details.code-fold summary {
   font-family: 'IBM Plex Mono', monospace !important;
   font-size: 0.72rem !important;
   letter-spacing: 0.08em !important;
   color: var(--muted) !important;
-  cursor: pointer;
-  padding: 0.3rem 0;
-  list-style: none;
+  cursor: pointer; padding: 0.3rem 0; list-style: none;
 }
 details.code-fold summary:hover { color: var(--red-light) !important; }
-/* Figure output */
 div.cell-output-display {
-  margin-top: 1rem;
-  border: 1px solid #d8d2c8;
-  padding: 0.5rem;
-  background: white;
+  margin-top: 1rem; border: 1px solid #d8d2c8;
+  padding: 0.5rem; background: white;
 }
 </style>
 
@@ -369,12 +334,14 @@ div.cell-output-display {
     </div>
 
     <nav class="sidebar-nav" id="sidebar-nav">
-      <a href="#home" class="active">Home</a>
-      <a href="#minutes">Minutes of Meeting</a>
-      <a href="#data-eda">Data Preparation and EDA</a>
-      <a href="#decomposition">Time Series Decomposition</a>
-      <a href="#forecasting">Forecasting</a>
-      <a href="#prototype">Prototype</a>
+      <a href="#overview" class="active">1 · Overview &amp; Objectives</a>
+      <a href="#data">2 · Data</a>
+      <a href="#methodology">3 · Methodology</a>
+      <a href="#methodology-eda" class="sub">3.1 · Data Preparation &amp; EDA</a>
+      <a href="#methodology-decomposition" class="sub">3.2 · Decomposition</a>
+      <a href="#methodology-forecasting" class="sub">3.3 · Forecasting</a>
+      <a href="#prototype">4 · Prototype</a>
+      <a href="#minutes">5 · Minutes of Meeting</a>
     </nav>
   </aside>
 
@@ -383,126 +350,264 @@ div.cell-output-display {
 
     <h1 class="proposal-page-title">Forecasting Singapore's Consumer Price Index</h1>
     <div class="proposal-author-label">Kevin A. SUYAPTO, LEE Jangho, PAN Yiqiong</div>
-    <div class="proposal-author">ISS608 Project - Group 1</div>
+    <div class="proposal-author">ISS608 Project — Group 1</div>
     <hr class="proposal-divider">
 
-    <!-- HOME -->
-    <section class="proposal-section" id="home">
-      <h2 class="anchored">Overview</h2>
-      
+    <!-- ══════════════════════════════════════════
+         1. OVERVIEW AND OBJECTIVES
+    ══════════════════════════════════════════ -->
+    <section class="proposal-section" id="overview">
+      <h2 class="anchored">1 · Overview and Objectives</h2>
+
       <h3 class="anchored">What is CPI?</h3>
       <p>
-        <strong>Consumer Price Index (CPI)</strong> is a measure of the average change over time in the price paid by households for a fixed basket of goods and services, representing typical consumption patterns in a specific country. Singapore CPI is compiled on a monthly basis and the categories covered are  <strong>Food, Clothing and Footwear, Housing &amp; Utilities, Household Durables &amp; Services, Health, Transport, Information &amp; Communication, Recreation, Sport &amp; Culture, Education, Miscellaneous Goods &amp; Services</strong>.
+        <strong>Consumer Price Index (CPI)</strong> is a measure of the average change over time in
+        the price paid by households for a fixed basket of goods and services, representing typical
+        consumption patterns in a specific country. Singapore CPI is compiled on a monthly basis and
+        the categories covered are <strong>Food, Clothing and Footwear, Housing &amp; Utilities,
+        Household Durables &amp; Services, Health, Transport, Information &amp; Communication,
+        Recreation, Sport &amp; Culture, Education, Miscellaneous Goods &amp; Services</strong>.
       </p>
-      
+
       <h3 class="anchored">Why CPI?</h3>
       <p>
-        Inflation directly affects the purchasing power of households, cost of doing business, and calibration of monetary policies. For an economy like Singapore, where natural resources are a scarcity, price levels are sensitive to global commodities cycle, exchange rates, and disruptions in supply chain activities.
-        <br><br>
-        For <strong>households</strong>: The rise in inflation erodes purchasing power of households, making the price of everyday essentials such as food, transport, and utilities more expensive. CPI forecasts helps households to plan ahead, such as adjusting monthly budget, timing of big-ticket purchases, and planning savings and investments.
-        <br><br>
-        For <strong>businesses</strong>: Pricing strategies and cost planning are typically tightly related to expected inflation of direct materials consumed by businesses to operate. Access to reliable CPI forecasts allows businesses to make a more sound decision to anticipate pressures in cost of doing business tied to inflation.
-        <br><br>
-        For <strong>policy makers</strong>: Unlike central banks in most countries, in Singapore, monetary policies managed by Monetary Authority of Singapore (MAS) is centered on managing Singapore Dollar against trade-weighted basket of currencies, also known as Singapore Dollar Nominal Effective Exchange Rate (S$NEER).  A stronger S$NEER makes imports cheaper, hence directly dampening customer prices. Since price stability is the overarching objective of MAS' echange rate policy, CPI forecasts can act as a complement in policy making to monitor inflation trends, helping to assess whether the pressures are temporary or structural, and identify which segments are experiencing the most pressure from price increase.
+        Inflation directly affects the purchasing power of households, cost of doing business, and
+        calibration of monetary policies. For an economy like Singapore, where natural resources are
+        a scarcity, price levels are sensitive to the global commodities cycle, exchange rates, and
+        disruptions in supply chain activities.
+      </p>
+      <p>
+        For <strong>households</strong>: The rise in inflation erodes purchasing power, making the
+        price of everyday essentials such as food, transport, and utilities more expensive. CPI
+        forecasts help households plan ahead — adjusting monthly budgets, timing big-ticket
+        purchases, and planning savings and investments.
+      </p>
+      <p>
+        For <strong>businesses</strong>: Pricing strategies and cost planning are tightly related to
+        expected inflation of direct materials. Access to reliable CPI forecasts allows businesses to
+        anticipate pressures in the cost of doing business tied to inflation.
+      </p>
+      <p>
+        For <strong>policy makers</strong>: Unlike central banks in most countries, monetary policy
+        managed by the Monetary Authority of Singapore (MAS) is centered on managing the Singapore
+        Dollar against a trade-weighted basket of currencies (S$NEER). A stronger S$NEER makes
+        imports cheaper, directly dampening consumer prices. CPI forecasts therefore complement
+        policy-making by helping assess whether inflationary pressures are temporary or structural.
+      </p>
+
+      <h3 class="anchored">Project Objective</h3>
+      <div class="info-box">
+        <strong>Objective:</strong> To evaluate and compare ETS, ARIMA, Auto-ARIMA + XGBoost, and
+        Prophet time-series models and to deploy the best-performing model for each CPI index in an
+        interactive R Shiny application.
+      </div>
+
+      <h3 class="anchored">Scope of Analysis</h3>
+      <p>
+        This project applies a suite of time-series forecasting models to Singapore CPI data sourced
+        from <strong>CEIC</strong>, spanning January 2020 to January 2026 (Base Year: 2024 = 100).
+        The analysis covers the following indices:
+      </p>
+      <div class="tag-row">
+        <span class="chip red">Headline CPI</span>
+        <span class="chip">Core CPI</span>
+        <span class="chip">Food &amp; Beverages</span>
+        <span class="chip">Housing &amp; Utilities</span>
+        <span class="chip">Transport</span>
+        <span class="chip">Healthcare</span>
+        <span class="chip">Education</span>
+        <span class="chip">Clothing &amp; Footwear</span>
+      </div>
+    </section>
+
+    <hr class="proposal-divider">
+
+    <!-- ══════════════════════════════════════════
+         2. DATA
+    ══════════════════════════════════════════ -->
+    <section class="proposal-section" id="data">
+      <h2 class="anchored">2 · Data</h2>
+
+      <h3 class="anchored">Data Source</h3>
+      <p>
+        The dataset is obtained from the <strong>CEIC Database</strong>, accessible via the SMU
+        Library. It contains monthly Singapore CPI data with base year 2024, spanning from January
+        1961 to January 2026, last updated on 23 February 2026. For this project, the analysis
+        period is restricted to <strong>January 2020 – January 2026</strong> to focus on the
+        post-pandemic inflation dynamics.
+      </p>
+
+      <h3 class="anchored">CPI Hierarchy</h3>
+      <p>
+        The dataset preserves the full hierarchical structure of the official Singapore CPI
+        classification published by the <strong>Department of Statistics (DOS)</strong>. The
+        hierarchy spans four levels:
       </p>
       
-      <h3 class="anchored">What This Analysis Covers</h3>
+<table class="proposal-table caption-top">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Level</th>
+<th data-quarto-table-cell-role="th">Description</th>
+<th data-quarto-table-cell-role="th">Example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>Top Level (Overall Index)</td>
+<td>Consumer Price Index (CPI)</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>Major Group</td>
+<td>Food, Transport, Health</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>Sub-Category</td>
+<td>Food Excl FBSS, Accommodation</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>Detailed Class (Leaf Node)</td>
+<td>Rice &amp; Cereals, Fast Food</td>
+</tr>
+</tbody>
+</table>
+
+
+      <h3 class="anchored">CPI Basket Weights</h3>
       <p>
-        This project develops and evaluates a suite of time-series forecasting models applied to Singapore CPI data sourced from <strong>CEIC</strong>, spanning from January 2020 to January 2026 (Base Year: 2024 = 100). The analysis covers the following indices:
-        </p><div class="tag-row">
-          <span class="chip red">Headline CPI</span>
-          <span class="chip">Core CPI</span>
-          <span class="chip">Food &amp; Beverages</span>
-          <span class="chip">Housing &amp; Utilities</span>
-          <span class="chip">Transport</span>
-          <span class="chip">Healthcare</span>
-          <span class="chip">Education</span>
-          <span class="chip">Clothing &amp; Footwear</span>
-        </div>
-  <p></p>
-      <p></p>
-      <div class="info-box">
-        <strong>Project Objective:</strong> To evaluate and compare ETS, ARIMA, AUTO-ARIMA (XGBOOST), and Prophet time-series model and to deploy the best-performing models for each of the index in an interactive R Shiny application
-      </div>
-    </section>
-
-    <hr class="proposal-divider">
-
-    <!-- MINUTES OF MEETING -->
-    <section class="proposal-section" id="minutes">
-      <h2 class="anchored">Minutes of Meeting</h2>
-
-      <h3 class="anchored">Meeting 1 — Project Kickoff</h3>
-<p><em>Date: 2 March 2026 &nbsp;·&nbsp; Attendees: All group members</em></p>
-<p>The team aligned on the project scope to forecast Singapore CPI and the level of granularity using CEIC data. Initial task allocation was agreed upon in the call: Exploratory Data Analysis, ACF, and PACF analysis (Yiqiong), Time Series Decomposition (Jangho), Forecasting (Kevin). <a href="minutes/Meeting Minutes 1.pdf" target="_blank">View minutes →</a></p>
-
-      <h3 class="anchored">Meeting 2 — Progress Discussion</h3>
-      <p><em>Date: 11 March 2026 &nbsp;·&nbsp; Attendees: All group members</em></p>
-      <p>Each of the team members presented updates on what they have done so far based on the task assigned in the previous meeting. <a href="minutes/Meeting Minutes 2.pdf" target="_blank">View minutes →</a></p>
-
-      <h3 class="anchored">Meeting 3 — TBD</h3>
-      <p><em>Date: TBD &nbsp;·&nbsp; Attendees: All group members</em></p>
-      <p>Topic TBD. <a href="minutes/meeting2.pdf" target="_blank">View minutes →</a></p>
+        Forecasts are reconciled using official expenditure weights from the
+        <a href="resources/cpijan26.pdf" target="_blank">Singapore Consumer Price Index, Jan 2026</a>.
+        The ten major groups and their weights (out of 10,000) are:
+      </p>
       
+<table class="proposal-table caption-top">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">Major Group</th>
+<th data-quarto-table-cell-role="th">Weight</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Food</td>
+<td>2,042</td>
+</tr>
+<tr class="even">
+<td>Housing &amp; Utilities</td>
+<td>2,938</td>
+</tr>
+<tr class="odd">
+<td>Transport</td>
+<td>1,307</td>
+</tr>
+<tr class="even">
+<td>Health</td>
+<td>1,008</td>
+</tr>
+<tr class="odd">
+<td>Education</td>
+<td>579</td>
+</tr>
+<tr class="even">
+<td>Recreation, Sport &amp; Culture</td>
+<td>595</td>
+</tr>
+<tr class="odd">
+<td>Household Durables &amp; Services</td>
+<td>547</td>
+</tr>
+<tr class="even">
+<td>Miscellaneous Goods &amp; Services</td>
+<td>438</td>
+</tr>
+<tr class="odd">
+<td>Information &amp; Communication</td>
+<td>381</td>
+</tr>
+<tr class="even">
+<td>Clothing &amp; Footwear</td>
+<td>165</td>
+</tr>
+</tbody>
+</table>
+
     </section>
 
     <hr class="proposal-divider">
 
-    <!-- DATA PREP & EDA -->
-    <section class="proposal-section" id="data-eda">
-      <h2 class="anchored">Data Preparation and EDA</h2>
+    <!-- ══════════════════════════════════════════
+         3. METHODOLOGY
+    ══════════════════════════════════════════ -->
+    <section class="proposal-section" id="methodology">
+      <h2 class="anchored">3 · Methodology</h2>
+      <p>
+        The analytical workflow consists of three stages executed in sequence: Data Preparation
+        and EDA, Time Series Decomposition, and Time Series Forecasting. Each stage is described
+        in its own subsection below.
+      </p>
+    </section>
 
-      <h3 class="anchored">Data Sources</h3>
-      <p>Data used is from CEIC, containing Headline CPI, Core CPI, and sub-indices spanning from January 19xx to January 2026 (2024 = 100). </p>
-      
-      <h3 class="anchored">Import Packages</h3>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(readxl, tidyverse, timetk, </span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>               modeltime, tidymodels, </span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>               lubridate, anomalize, plotly, shiny)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-      <h3 class="anchored">Import Data</h3>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>cpi_data_raw <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"data/SG_CPI_012020_012026_Use.xlsx"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<h3 class="anchored">Data Preparation</h3>
-      
-      <h3 class="anchored">Data Cleaning</h3>
-      <p>Missing values were handled via linear interpolation for gaps of one or two months. Quarterly series (wages) were disaggregated to monthly frequency using the Denton method. All series were checked for outliers using IQR-based detection, with the COVID-19 period (2020 Q1–2021 Q2) flagged for special treatment.</p>
+    <!-- 3.1 DATA PREPARATION AND EDA -->
+    <section class="proposal-section" id="methodology-eda">
+      <h2 class="anchored">3.1 · Data Preparation and EDA</h2>
 
-      <h3 class="anchored">Exploratory Data Analysis</h3>
-      <p>EDA focused on understanding the distributional properties, trend structure, and inter-series correlations of the CPI data. Key findings include a strong upward trend in headline CPI post-2021, pronounced seasonality in food &amp; beverages and transport sub-indices, and high correlation (r = 0.78) between global oil prices and the transport CPI component.</p>
-      <p>The interactive EDA module in the R Shiny app allows users to explore these patterns across all CPI sub-indices with customisable date ranges and chart types.</p>
+      <h3 class="anchored">Subtitle 1</h3>
+      <p>
+      ...
+      </p>
+      <h3 class="anchored">Subtitle 2</h3>
+      <p>
+        ...
+      </p>
+
+      <h3 class="anchored">Subtitle 3</h3>
+      <p>
+        ...
+      </p>
     </section>
 
     <hr class="proposal-divider">
 
-    <!-- TIME SERIES DECOMPOSITION -->
-    <section class="proposal-section" id="decomposition">
-      <h2 class="anchored">Time Series Decomposition</h2>
-      <p>Time series decomposition separates the CPI signal into interpretable components: <strong>trend</strong>, <strong>seasonality</strong>, and <strong>residual</strong>. Understanding these components is essential before applying any forecasting model.</p>
+    <!-- 3.2 TIME SERIES DECOMPOSITION -->
+    <section class="proposal-section" id="methodology-decomposition">
+      <h2 class="anchored">3.2 · Time Series Decomposition</h2>
+      <p>
+        ...
+      </p>
 
-      <h3 class="anchored">STL Decomposition</h3>
-      <p>We apply Seasonal and Trend decomposition using Loess (STL) to all CPI series. STL is robust to outliers and handles time-varying seasonal patterns — important given the structural breaks introduced by COVID-19 supply disruptions in 2020–2021.</p>
+      <h3 class="anchored">Subtitle 1</h3>
+      <p>
+        ...
+      </p>
 
-      <h3 class="anchored">Classical Additive Decomposition</h3>
-      <p>Classical additive decomposition is applied as a baseline comparison. Results show that STL outperforms classical decomposition in capturing the post-pandemic seasonal shift in food prices.</p>
+      <h3 class="anchored">Subtitle 2</h3>
+      <p>
+        ...
+      </p>
 
-      <h3 class="anchored">Key Findings</h3>
-      <p>The trend component shows a clear structural break around mid-2021 corresponding to post-pandemic supply chain pressures. Seasonal amplitudes in food &amp; beverages are concentrated around the January–February Lunar New Year period and the June–August school holiday season.</p>
-
-      <div class="info-box">
-        The interactive Timeline Decomposition module in the R Shiny app lets users select any CPI sub-index, choose decomposition method, and adjust the seasonal window parameter.
-      </div>
+      <h3 class="anchored">Subtitle 3</h3>
+      <p>
+        ...
+      </p>
     </section>
 
     <hr class="proposal-divider">
 
-    <!-- FORECASTING -->
-    <section class="proposal-section" id="forecasting">
-      <h2 class="anchored">Forecasting</h2>
-      <p>We implement and benchmark four forecasting approaches using the <strong>modeltime</strong> framework in R. All models are trained on data prior to February 2025 and evaluated on a held-out test set of 12 months using a nested forecasting scheme. The best-performing model for each CPI series is selected based on the lowest RMSE and refitted on the full dataset before generating future forecasts.</p>
-    
+    <!-- 3.3 TIME SERIES FORECASTING -->
+    <section class="proposal-section" id="methodology-forecasting">
+      <h2 class="anchored">3.3 · Time Series Forecasting</h2>
+      <p>
+        Four forecasting approaches are implemented and benchmarked using the
+        <strong>modeltime</strong> framework in R. All models are trained on data prior to
+        February 2025 and evaluated on a held-out test set of 12 months using a nested forecasting
+        scheme. The best-performing model for each CPI series is selected based on the lowest RMSE
+        and refitted on the full dataset before generating future forecasts.
+      </p>
+
       <h3 class="anchored">Model Suite</h3>
       
 <table class="proposal-table caption-top">
@@ -537,169 +642,82 @@ div.cell-output-display {
 </tbody>
 </table>
 
-    
-      <h3 class="anchored">Hierarchical Forecasting</h3>
-      <p>Forecasts are generated at the most granular level (the leaf nodes of the CPI hierarchy) and subsequently aggregated upward using a <strong>bottom-up reconciliation</strong> approach. Each leaf node forecast is weighted according to its official CPI basket weight (<a href="resources/cpijan26.pdf" target="_blank">Source: Singapore Consumer Price Index, Jan 2026</a>), and parent-level indices are derived as weighted averages of their child components. This ensures that all aggregated forecasts are consistent with the official weighting structure of the Singapore CPI basket.</p>
-  <h3 class="anchored">Data Preparation</h3>
-  <p>The raw CPI data is reshaped into long format, padded to ensure a complete monthly time series, and imputed where values are missing. Only leaf node categories are retained for modelling.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>cpi_data_long <span class="ot">&lt;-</span> cpi_data_raw <span class="sc">%&gt;%</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="sc">-</span>Date,</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">"Category"</span>,</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">"CPI_Value"</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Date =</span> <span class="fu">floor_date</span>(<span class="fu">as.Date</span>(Date), <span class="st">"month"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Category) <span class="sc">%&gt;%</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(Date) <span class="sc">%&gt;%</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pad_by_time</span>(<span class="at">.date_var =</span> Date, <span class="at">.by =</span> <span class="st">"month"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">CPI_Value =</span> <span class="fu">ts_impute_vec</span>(CPI_Value, <span class="at">period =</span> <span class="dv">1</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fill</span>(CPI_Value, <span class="at">.direction =</span> <span class="st">"downup"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-  <h3 class="anchored">Nested Forecasting Setup</h3>
-  <p>The data is structured into a nested tibble where each row corresponds to a leaf node CPI series. The time series is extended by 12 months to accommodate the forecast horizon, and split into training and test sets with the last 12 months reserved as the hold-out period.</p>
 
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>leaf_categories <span class="ot">&lt;-</span> hier_map <span class="sc">%&gt;%</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>Category <span class="sc">%in%</span> <span class="fu">na.omit</span>(hier_map<span class="sc">$</span>Parent)) <span class="sc">%&gt;%</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(Category)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>nested_data_tbl <span class="ot">&lt;-</span> cpi_data_long <span class="sc">%&gt;%</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(hier_map, <span class="at">by =</span> <span class="st">"Category"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Category <span class="sc">%in%</span> leaf_categories) <span class="sc">%&gt;%</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extend_timeseries</span>(</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">.id_var        =</span> Category,</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">.date_var      =</span> Date,</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">.length_future =</span> <span class="dv">12</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest_timeseries</span>(</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">.id_var        =</span> Category,</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">.length_future =</span> <span class="dv">12</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">split_nested_timeseries</span>(</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">.length_test =</span> <span class="dv">12</span></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-  <h3 class="anchored">Model Definition &amp; Workflows</h3>
-  <p>Four models are defined and wrapped in <strong>tidymodels</strong> workflows. The Auto-ARIMA + XGBoost model uses additional time series signature features extracted from the date variable to enable the XGBoost component to learn non-linear residual patterns.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>model_ets     <span class="ot">&lt;-</span> <span class="fu">exp_smoothing</span>() <span class="sc">%&gt;%</span> <span class="fu">set_engine</span>(<span class="st">"ets"</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>model_arima   <span class="ot">&lt;-</span> <span class="fu">arima_reg</span>()     <span class="sc">%&gt;%</span> <span class="fu">set_engine</span>(<span class="st">"auto_arima"</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>model_boost   <span class="ot">&lt;-</span> <span class="fu">arima_boost</span>()   <span class="sc">%&gt;%</span> <span class="fu">set_engine</span>(<span class="st">"auto_arima_xgboost"</span>)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>model_prophet <span class="ot">&lt;-</span> <span class="fu">prophet_reg</span>()   <span class="sc">%&gt;%</span> <span class="fu">set_engine</span>(<span class="st">"prophet"</span>)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>wf_ets <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(model_ets) <span class="sc">%&gt;%</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(<span class="fu">recipe</span>(CPI_Value <span class="sc">~</span> Date, <span class="at">data =</span> <span class="fu">extract_nested_train_split</span>(nested_data_tbl)))</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>wf_arima <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(model_arima) <span class="sc">%&gt;%</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(<span class="fu">recipe</span>(CPI_Value <span class="sc">~</span> Date, <span class="at">data =</span> <span class="fu">extract_nested_train_split</span>(nested_data_tbl)))</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>wf_prophet <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(model_prophet) <span class="sc">%&gt;%</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(<span class="fu">recipe</span>(CPI_Value <span class="sc">~</span> Date, <span class="at">data =</span> <span class="fu">extract_nested_train_split</span>(nested_data_tbl)))</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>wf_boost <span class="ot">&lt;-</span> <span class="fu">workflow</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_model</span>(model_boost) <span class="sc">%&gt;%</span></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_recipe</span>(</span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">recipe</span>(CPI_Value <span class="sc">~</span> Date, <span class="at">data =</span> <span class="fu">extract_nested_train_split</span>(nested_data_tbl)) <span class="sc">%&gt;%</span></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">step_timeseries_signature</span>(Date) <span class="sc">%&gt;%</span></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>      <span class="fu">step_rm</span>(<span class="fu">matches</span>(<span class="st">"(xts$)|(iso$)|(hour)|(minute)|(second)|(am.pm)"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>      <span class="fu">step_dummy</span>(<span class="fu">all_nominal_predictors</span>(), <span class="at">one_hot =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-  <h3 class="anchored">Model Fitting &amp; Selection</h3>
-  <p>All four models are fitted across every leaf node series simultaneously using <strong>modeltime_nested_fit()</strong>. The best-performing model per series is then selected based on the lowest RMSE on the hold-out test set.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>nested_modeltime_tbl <span class="ot">&lt;-</span> <span class="fu">modeltime_nested_fit</span>(</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">nested_data =</span> nested_data_tbl,</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  wf_ets,</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  wf_arima,</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  wf_boost,</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  wf_prophet,</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">control =</span> <span class="fu">control_nested_fit</span>(<span class="at">allow_par =</span> <span class="cn">FALSE</span>, <span class="at">verbose =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>best_nested_models <span class="ot">&lt;-</span> nested_modeltime_tbl <span class="sc">%&gt;%</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modeltime_nested_select_best</span>(</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">metric           =</span> <span class="st">"rmse"</span>,</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">minimize         =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">filter_test_forecasts =</span> <span class="cn">TRUE</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-  <h3 class="anchored">Refit &amp; Forecast Generation</h3>
-  <p>The best model for each series is refitted on the full dataset before generating a 12-month forward forecast with 95% confidence intervals.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>refitted_nested_models <span class="ot">&lt;-</span> best_nested_models <span class="sc">%&gt;%</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modeltime_nested_refit</span>(</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">control =</span> <span class="fu">control_nested_refit</span>(<span class="at">verbose =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>leaf_fc <span class="ot">&lt;-</span> refitted_nested_models <span class="sc">%&gt;%</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">modeltime_nested_forecast</span>(</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">h             =</span> <span class="dv">12</span>,</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">conf_interval =</span> <span class="fl">0.95</span>,</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">control       =</span> <span class="fu">control_nested_forecast</span>(<span class="at">verbose =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(.key <span class="sc">==</span> <span class="st">"prediction"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">Date =</span> .index, Category, .value)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-  <h3 class="anchored">Bottom-Up Reconciliation</h3>
-  <p>Leaf node forecasts are aggregated upward through the CPI hierarchy using a bottom-up reconciliation function. Each child forecast is weighted by its official CPI basket weight, and parent indices are computed as weighted averages of their children. This process repeats level by level until the Headline CPI is reconstructed.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>aggregate_bottom_up <span class="ot">&lt;-</span> <span class="cf">function</span>(forecasts, hier_map, weights_tbl) {</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  all_levels <span class="ot">&lt;-</span> forecasts <span class="sc">%&gt;%</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(weights_tbl, <span class="at">by =</span> <span class="st">"Category"</span>)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  levels_to_agg <span class="ot">&lt;-</span> hier_map <span class="sc">%&gt;%</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Parent)) <span class="sc">%&gt;%</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">desc</span>(Level)) <span class="sc">%&gt;%</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pull</span>(Level) <span class="sc">%&gt;%</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">unique</span>()</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (lvl <span class="cf">in</span> levels_to_agg) {</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    child_nodes <span class="ot">&lt;-</span> hier_map <span class="sc">%&gt;%</span></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>      <span class="fu">filter</span>(Level <span class="sc">==</span> lvl) <span class="sc">%&gt;%</span></span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>      <span class="fu">select</span>(Category, Parent)</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    parent_fc <span class="ot">&lt;-</span> all_levels <span class="sc">%&gt;%</span></span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>      <span class="fu">inner_join</span>(child_nodes, <span class="at">by =</span> <span class="st">"Category"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>      <span class="fu">group_by</span>(Date, <span class="at">Category =</span> Parent) <span class="sc">%&gt;%</span></span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>      <span class="fu">summarise</span>(</span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>        <span class="at">.value =</span> <span class="fu">sum</span>(.value <span class="sc">*</span> Weight) <span class="sc">/</span> <span class="fu">sum</span>(Weight),</span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>        <span class="at">Weight =</span> <span class="fu">sum</span>(Weight),</span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>        <span class="at">.groups =</span> <span class="st">"drop"</span></span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>      )</span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>    all_levels <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(all_levels, parent_fc) <span class="sc">%&gt;%</span></span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>      <span class="fu">distinct</span>(Date, Category, <span class="at">.keep_all =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(all_levels)</span>
-<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>reconciled_forecasts <span class="ot">&lt;-</span> <span class="fu">aggregate_bottom_up</span>(leaf_fc, hier_map, weights_tbl)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
+      <h3 class="anchored">Hierarchical Forecasting</h3>
+      <p>
+        Forecasts are generated at the most granular level (leaf nodes) and aggregated upward using
+        a <strong>bottom-up reconciliation</strong> approach. Each leaf node forecast is weighted
+        according to its official CPI basket weight, and parent-level indices are derived as
+        weighted averages of their child components.
+      </p>
+
       <h3 class="anchored">Evaluation</h3>
-      <p>Models are compared using RMSE, MAE, and MASE to assess forecast accuracy. The best-performing model for each CPI series is identified by the lowest RMSE on the 12-month hold-out test set, and is subsequently refitted on the full available data before generating forward-looking forecasts.</p>
-    
-      <h3 class="anchored">Shiny Forecasting Module</h3>
-      <p>The interactive Forecasting module allows users to select a CPI series, choose one or more models, and generate forecasts with adjustable horizons (1–12 months ahead). Confidence intervals and model comparison charts are rendered dynamically.</p>
+      <p>
+        Models are compared using RMSE, MAE, and MASE. The best-performing model per series is
+        identified by the lowest RMSE on the 12-month hold-out test set, refitted on the full
+        dataset, and used to generate forward-looking forecasts.
+      </p>
     </section>
-    
+
     <hr class="proposal-divider">
-    
-    <!-- PROTOTYPE -->
+
+    <!-- ══════════════════════════════════════════
+         4. PROTOTYPE
+    ══════════════════════════════════════════ -->
     <section class="proposal-section" id="prototype">
-      <h2 class="anchored">Prototype</h2>
-      <p>The following would be the prototype to our RShiny Application that we are going to develop.</p>
+      <h2 class="anchored">4 · Prototype</h2>
+      <p>The following wireframes illustrate the planned layout of the R Shiny application.</p>
+      
+      <h3 class="anchored">Landing Page</h3>
       <img src="images/Landing_page.jpg" alt="RShiny App Landing Page Prototype" style="width:100%; border: 1px solid #d8d2c8; margin-top: 1rem;">
-     
-     <img src="images/EDA.jpg" alt="RShiny App EDA Page Prototype" style="width:100%; border: 1px solid #d8d2c8; margin-top: 1rem;">
-     
-     <img src="images/datatable.jpg" alt="RShiny App EDA Page Prototype" style="width:100%; border: 1px solid #d8d2c8; margin-top: 1rem;">
-     
+      <p> 
+        DESCRIPTION FOR LANDING PAGE HERE
+      </p>
+      
+      <h3 class="anchored">EDA Page</h3>
+      <img src="images/EDA.jpg" alt="RShiny App EDA Page Prototype" style="width:100%; border: 1px solid #d8d2c8; margin-top: 1rem;">
+      <p> 
+        DESCRIPTION FOR EDA PAGE HERE
+      </p>
+      
+      <h3 class="anchored">Data Table</h3>
+      <img src="images/datatable.jpg" alt="RShiny App Data Table Prototype" style="width:100%; border: 1px solid #d8d2c8; margin-top: 1rem;">
+    </section>
+      <p> 
+        DESCRIPTION FOR DATA TABLE PAGE HERE
+      </p>
+    
+    <h3 class="anchored">Forecasting Page</h3>
+    <img src="images/ForecastSketch.png" alt="RShiny App Data Table Prototype" style="width:100%; border: 1px solid #d8d2c8; margin-top: 1rem;">
+    
+      <p> 
+        DESCRIPTION FOR FORECAST HERE
+      </p>
+    
+
+    <hr class="proposal-divider">
+
+    <!-- ══════════════════════════════════════════
+         5. MINUTES OF MEETING
+    ══════════════════════════════════════════ -->
+    <section class="proposal-section" id="minutes">
+      <h2 class="anchored">5 · Minutes of Meeting</h2>
+
+      <h3 class="anchored">Meeting 1 — Project Kickoff</h3>
+      <p><em>Date: 2 March 2026 &nbsp;·&nbsp; Attendees: All group members</em></p>
+      <p>The team aligned on the project scope to forecast Singapore CPI and the level of
+      granularity using CEIC data. Initial task allocation was agreed upon: Exploratory Data
+      Analysis, ACF, and PACF analysis (Yiqiong), Time Series Decomposition (Jangho), Forecasting
+      (Kevin). <a href="minutes/Meeting Minutes 1.pdf" target="_blank">View minutes →</a></p>
+
+      <h3 class="anchored">Meeting 2 — Progress Discussion</h3>
+      <p><em>Date: 11 March 2026 &nbsp;·&nbsp; Attendees: All group members</em></p>
+      <p>Each team member presented updates based on the tasks assigned in the previous meeting.
+      <a href="minutes/Meeting Minutes 2.pdf" target="_blank">View minutes →</a></p>
+
+      <h3 class="anchored">Meeting 3 — TBD</h3>
+      <p><em>Date: TBD &nbsp;·&nbsp; Attendees: All group members</em></p>
+      <p>Topic TBD. <a href="minutes/meeting3.pdf" target="_blank">View minutes →</a></p>
     </section>
 
   </main>
@@ -707,7 +725,9 @@ div.cell-output-display {
 
 <script>
 (function() {
-  var sections  = ['home','minutes','data-eda','decomposition','forecasting', 'prototype'];
+  var sections  = ['overview','data','methodology','methodology-eda',
+                   'methodology-decomposition','methodology-forecasting',
+                   'prototype','minutes'];
   var sideLinks = document.querySelectorAll('.sidebar-nav a');
 
   function updateActive() {

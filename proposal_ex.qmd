@@ -1,0 +1,698 @@
+---
+title: ""
+format:
+  html:
+    page-layout: custom
+    include-in-header:
+      text: |
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,500;0,700;1,300&display=swap" rel="stylesheet"/>
+    theme: none
+    css: []
+    toc: false
+    sidebar: false
+    margin-left: "0"
+    margin-right: "0"
+---
+
+```{=html}
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --red:       #c0392b;
+  --red-light: #e74c3c;
+  --cream:     #f5f0e8;
+  --off-white: #ede8df;
+  --dark:      #1a1612;
+  --mid:       #3d3530;
+  --muted:     #7a6f68;
+  --accent:    #d4a853;
+  --sidebar-w: 220px;
+}
+
+/* Kill Quarto chrome */
+#quarto-header, .quarto-title-banner, #title-block-header,
+.navbar, .sidebar, #quarto-sidebar, #quarto-margin-sidebar { display: none !important; }
+
+body, html {
+  font-family: 'IBM Plex Sans', sans-serif !important;
+  background: var(--cream);
+  color: var(--dark);
+  overflow-x: hidden;
+}
+main.content, div#quarto-content, .page-columns {
+  padding: 0 !important; margin: 0 !important;
+  max-width: 100% !important; width: 100% !important; gap: 0 !important;
+}
+
+/* ── TOP NAV ── */
+.sg-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 3rem; height: 60px;
+  background: var(--dark);
+  border-bottom: 2px solid var(--red);
+}
+.sg-nav-logo {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600; font-size: 0.85rem;
+  color: var(--cream); letter-spacing: 0.12em; text-transform: uppercase;
+  text-decoration: none;
+}
+.sg-nav-logo span { color: var(--red-light); }
+.sg-nav-links { display: flex; gap: 2.5rem; }
+.sg-nav-links a {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); text-decoration: none; transition: color 0.2s;
+}
+.sg-nav-links a:hover, .sg-nav-links a.active { color: var(--red-light); }
+
+/* ── PAGE LAYOUT ── */
+.proposal-layout {
+  display: flex;
+  min-height: 100vh;
+  padding-top: 60px;
+}
+
+/* ── LEFT SIDEBAR ── */
+.proposal-sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--dark);
+  position: fixed;
+  top: 60px; left: 0; bottom: 0;
+  overflow-y: auto;
+  display: flex; flex-direction: column;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  z-index: 100;
+}
+
+.sidebar-logo {
+  padding: 2rem 1.5rem 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+}
+.sidebar-logo-icon {
+  width: 64px; height: 64px;
+  background: var(--red);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600; font-size: 0.7rem; letter-spacing: 0.08em;
+  color: var(--cream); text-align: center; line-height: 1.4;
+}
+.sidebar-logo-links { display: flex; gap: 1.25rem; }
+.sidebar-logo-links a {
+  color: var(--muted); font-size: 0.9rem; text-decoration: none; transition: color 0.2s;
+}
+.sidebar-logo-links a:hover { color: var(--cream); }
+
+.sidebar-search {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-search input {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--cream);
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem;
+  padding: 0.5rem 0.75rem; outline: none; transition: border-color 0.2s;
+}
+.sidebar-search input::placeholder { color: var(--muted); }
+.sidebar-search input:focus { border-color: var(--red); }
+
+.sidebar-nav { padding: 0.75rem 0; flex: 1; }
+.sidebar-nav a {
+  display: block;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.875rem; font-weight: 300;
+  color: var(--muted);
+  padding: 0.6rem 1.5rem;
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  line-height: 1.4;
+}
+.sidebar-nav a:hover { color: var(--cream); background: rgba(255,255,255,0.04); }
+.sidebar-nav a.active {
+  color: var(--cream);
+  border-left-color: var(--red);
+  background: rgba(192,57,43,0.1);
+}
+
+/* ── MAIN CONTENT ── */
+.proposal-main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  padding: 4rem 5rem 6rem;
+  max-width: 900px;
+}
+
+.proposal-page-title {
+  font-family: 'IBM Plex Sans', sans-serif !important;
+  font-size: clamp(1.8rem, 3vw, 2.6rem) !important;
+  font-weight: 700 !important; color: var(--dark) !important;
+  line-height: 1.1 !important;
+  margin-bottom: 0.5rem !important; border: none !important; padding: 0 !important;
+}
+.proposal-author-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 0.2rem; margin-top: 1.5rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.proposal-author-label::before { content:''; display:block; width:20px; height:1px; background:var(--red); }
+.proposal-author {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.95rem; font-weight: 500; color: var(--mid); margin-bottom: 2.5rem;
+}
+.proposal-divider { border: none; border-top: 1px solid #d8d2c8; margin: 2.5rem 0; }
+
+.proposal-section { scroll-margin-top: 70px; margin-bottom: 3.5rem; }
+.proposal-section h2 {
+  font-family: 'IBM Plex Sans', sans-serif !important;
+  font-size: 1.5rem !important; font-weight: 700 !important; color: var(--dark) !important;
+  border-left: 4px solid var(--red) !important; padding-left: 1rem !important;
+  margin-bottom: 1.25rem !important; margin-top: 0 !important;
+}
+.proposal-section h3 {
+  font-family: 'IBM Plex Sans', sans-serif !important;
+  font-size: 1.05rem !important; font-weight: 600 !important; color: var(--mid) !important;
+  margin-top: 1.5rem !important; margin-bottom: 0.6rem !important;
+}
+.proposal-section p {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.975rem; font-weight: 300; line-height: 1.9;
+  color: var(--mid); margin-bottom: 1.1rem;
+}
+.proposal-section p strong { font-weight: 600; color: var(--dark); }
+.proposal-section a { color: var(--red); text-decoration: none; }
+.proposal-section a:hover { color: var(--red-light); text-decoration: underline; }
+
+.info-box {
+  background: var(--off-white); border-left: 3px solid var(--red);
+  padding: 1rem 1.25rem; margin: 1.5rem 0;
+  font-size: 0.9rem; font-weight: 300; line-height: 1.7; color: var(--mid);
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+.info-box strong { font-weight: 600; color: var(--dark); }
+
+.proposal-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.875rem; }
+.proposal-table thead { background: var(--dark); }
+.proposal-table thead th {
+  padding: 0.65rem 1rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+  font-weight: 600; color: var(--cream); border: none; text-align: left;
+}
+.proposal-table tbody td {
+  padding: 0.6rem 1rem; border-bottom: 1px solid #d8d2c8;
+  font-weight: 300; color: var(--mid); font-family: 'IBM Plex Sans', sans-serif;
+}
+.proposal-table tbody tr:hover { background: var(--off-white); }
+
+.tag-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+.chip {
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; letter-spacing: 0.08em;
+  padding: 0.25rem 0.65rem; background: var(--off-white);
+  border: 1px solid #d0c8be; color: var(--mid);
+}
+.chip.red { background: rgba(192,57,43,0.1); border-color: rgba(192,57,43,0.3); color: var(--red); }
+
+@media (max-width: 860px) {
+  .proposal-sidebar { display: none; }
+  .proposal-main { margin-left: 0; padding: 2rem 1.5rem 4rem; }
+  .sg-nav { padding: 0 1.5rem; }
+}
+
+/* ── Code chunks ── */
+div.cell {
+  margin: 1.5rem 0;
+}
+div.sourceCode {
+  background: var(--dark) !important;
+  border: none !important;
+  border-left: 3px solid var(--red) !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  overflow-x: auto;
+}
+div.sourceCode pre {
+  margin: 0 !important;
+  padding: 1rem 1.25rem !important;
+  background: transparent !important;
+  font-family: 'IBM Plex Mono', monospace !important;
+  font-size: 0.82rem !important;
+  line-height: 1.6 !important;
+  color: #f5f0e8 !important;
+}
+/* Code fold button */
+details.code-fold summary {
+  font-family: 'IBM Plex Mono', monospace !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.08em !important;
+  color: var(--muted) !important;
+  cursor: pointer;
+  padding: 0.3rem 0;
+  list-style: none;
+}
+details.code-fold summary:hover { color: var(--red-light) !important; }
+/* Figure output */
+div.cell-output-display {
+  margin-top: 1rem;
+  border: 1px solid #d8d2c8;
+  padding: 0.5rem;
+  background: white;
+}
+</style>
+
+<!-- ── TOP NAV ── -->
+<nav class="sg-nav">
+  <a href="index.html" class="sg-nav-logo">SG <span>CPI</span> Forecast</a>
+  <div class="sg-nav-links">
+    <a href="index.html#home">Home</a>
+    <a href="index.html#about">About</a>
+    <a href="index.html#projects">RShiny App</a>
+    <a href="proposal.html" class="active">Proposal</a>
+    <a href="poster.html">Poster</a>
+  </div>
+</nav>
+
+<div class="proposal-layout">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="proposal-sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">SG<br>CPI</div>
+      <div class="sidebar-logo-links">
+        <a href="index.html" title="Home">🏠</a>
+        <a href="https://github.com/" title="GitHub" target="_blank">⌥</a>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" placeholder="Search…" id="sidebar-search-input" />
+    </div>
+
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <a href="#home" class="active">Home</a>
+      <a href="#minutes">Minutes of Meeting</a>
+      <a href="#data-eda">Data Preparation and EDA</a>
+      <a href="#decomposition">Time Series Decomposition</a>
+      <a href="#forecasting">Forecasting</a>
+      <a href="#prototype">Prototype</a>
+    </nav>
+  </aside>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="proposal-main">
+
+    <h1 class="proposal-page-title">Forecasting Singapore's Consumer Price Index</h1>
+    <div class="proposal-author-label">Kevin A. SUYAPTO, LEE Jangho, PAN Yiqiong</div>
+    <div class="proposal-author">ISS608 Project - Group 1</div>
+    <hr class="proposal-divider" />
+
+    <!-- HOME -->
+    <section class="proposal-section" id="home">
+      <h2>Overview</h2>
+      
+      <h3>What is CPI?</h3>
+      <p>
+        <strong>Consumer Price Index (CPI)</strong> is a measure of the average change over time in the price paid by households for a fixed basket of goods and services, representing typical consumption patterns in a specific country. Singapore CPI is compiled on a monthly basis and the categories covered are  <strong>Food, Clothing and Footwear, Housing & Utilities, Household Durables & Services, Health, Transport, Information & Communication, Recreation, Sport & Culture, Education, Miscellaneous Goods & Services</strong>.
+      </p>
+      
+      <h3>Why CPI?</h3>
+      <p>
+        Inflation directly affects the purchasing power of households, cost of doing business, and calibration of monetary policies. For an economy like Singapore, where natural resources are a scarcity, price levels are sensitive to global commodities cycle, exchange rates, and disruptions in supply chain activities.
+        <br></br>
+        For <strong>households</strong>: The rise in inflation erodes purchasing power of households, making the price of everyday essentials such as food, transport, and utilities more expensive. CPI forecasts helps households to plan ahead, such as adjusting monthly budget, timing of big-ticket purchases, and planning savings and investments.
+        <br></br>
+        For <strong>businesses</strong>: Pricing strategies and cost planning are typically tightly related to expected inflation of direct materials consumed by businesses to operate. Access to reliable CPI forecasts allows businesses to make a more sound decision to anticipate pressures in cost of doing business tied to inflation.
+        <br></br>
+        For <strong>policy makers</strong>: Unlike central banks in most countries, in Singapore, monetary policies managed by Monetary Authority of Singapore (MAS) is centered on managing Singapore Dollar against trade-weighted basket of currencies, also known as Singapore Dollar Nominal Effective Exchange Rate (S$NEER).  A stronger S$NEER makes imports cheaper, hence directly dampening customer prices. Since price stability is the overarching objective of MAS' echange rate policy, CPI forecasts can act as a complement in policy making to monitor inflation trends, helping to assess whether the pressures are temporary or structural, and identify which segments are experiencing the most pressure from price increase.
+      </p>
+      
+      <h3>What This Analysis Covers</h3>
+      <p>
+        This project develops and evaluates a suite of time-series forecasting models applied to Singapore CPI data sourced from <strong>CEIC</strong>, spanning from January 2020 to January 2026 (Base Year: 2024 = 100). The analysis covers the following indices:
+        <div class="tag-row">
+          <span class="chip red">Headline CPI</span>
+          <span class="chip">Core CPI</span>
+          <span class="chip">Food & Beverages</span>
+          <span class="chip">Housing & Utilities</span>
+          <span class="chip">Transport</span>
+          <span class="chip">Healthcare</span>
+          <span class="chip">Education</span>
+          <span class="chip">Clothing & Footwear</span>
+        </div>
+  </p>
+      </p>
+      <div class="info-box">
+        <strong>Project Objective:</strong> To evaluate and compare ETS, ARIMA, AUTO-ARIMA (XGBOOST), and Prophet time-series model and to deploy the best-performing models for each of the index in an interactive R Shiny application
+      </div>
+    </section>
+
+    <hr class="proposal-divider" />
+
+    <!-- MINUTES OF MEETING -->
+    <section class="proposal-section" id="minutes">
+      <h2>Minutes of Meeting</h2>
+
+      <h3>Meeting 1 — Project Kickoff</h3>
+<p><em>Date: 2 March 2026 &nbsp;·&nbsp; Attendees: All group members</em></p>
+<p>The team aligned on the project scope to forecast Singapore CPI and the level of granularity using CEIC data. Initial task allocation was agreed upon in the call: Exploratory Data Analysis, ACF, and PACF analysis (Yiqiong), Time Series Decomposition (Jangho), Forecasting (Kevin). <a href="minutes/Meeting Minutes 1.pdf" target="_blank">View minutes →</a></p>
+
+      <h3>Meeting 2 — Progress Discussion</h3>
+      <p><em>Date: 11 March 2026 &nbsp;·&nbsp; Attendees: All group members</em></p>
+      <p>Each of the team members presented updates on what they have done so far based on the task assigned in the previous meeting. <a href="minutes/Meeting Minutes 2.pdf" target="_blank">View minutes →</a></p>
+
+      <h3>Meeting 3 — TBD</h3>
+      <p><em>Date: TBD &nbsp;·&nbsp; Attendees: All group members</em></p>
+      <p>Topic TBD. <a href="minutes/meeting2.pdf" target="_blank">View minutes →</a></p>
+      
+    </section>
+
+    <hr class="proposal-divider" />
+
+    <!-- DATA PREP & EDA -->
+    <section class="proposal-section" id="data-eda">
+      <h2>Data Preparation and EDA</h2>
+
+      <h3>Data Sources</h3>
+      <p>Data used is from CEIC, containing Headline CPI, Core CPI, and sub-indices spanning from January 19xx to January 2026 (2024 = 100). </p>
+      
+      <h3>Import Packages</h3>
+```      
+
+```{r}
+pacman::p_load(readxl, tidyverse, timetk, 
+               modeltime, tidymodels, 
+               lubridate, anomalize, plotly, shiny)
+```
+
+```{=html}
+      <h3>Import Data</h3>
+```
+
+```{r}
+cpi_data_raw <- read_excel("data/SG_CPI_012020_012026_Use.xlsx")
+```
+
+```{=html}
+      <h3>Data Preparation</h3>
+      
+      <h3>Data Cleaning</h3>
+      <p>Missing values were handled via linear interpolation for gaps of one or two months. Quarterly series (wages) were disaggregated to monthly frequency using the Denton method. All series were checked for outliers using IQR-based detection, with the COVID-19 period (2020 Q1–2021 Q2) flagged for special treatment.</p>
+
+      <h3>Exploratory Data Analysis</h3>
+      <p>EDA focused on understanding the distributional properties, trend structure, and inter-series correlations of the CPI data. Key findings include a strong upward trend in headline CPI post-2021, pronounced seasonality in food &amp; beverages and transport sub-indices, and high correlation (r = 0.78) between global oil prices and the transport CPI component.</p>
+      <p>The interactive EDA module in the R Shiny app allows users to explore these patterns across all CPI sub-indices with customisable date ranges and chart types.</p>
+    </section>
+
+    <hr class="proposal-divider" />
+
+    <!-- TIME SERIES DECOMPOSITION -->
+    <section class="proposal-section" id="decomposition">
+      <h2>Time Series Decomposition</h2>
+      <p>Time series decomposition separates the CPI signal into interpretable components: <strong>trend</strong>, <strong>seasonality</strong>, and <strong>residual</strong>. Understanding these components is essential before applying any forecasting model.</p>
+
+      <h3>STL Decomposition</h3>
+      <p>We apply Seasonal and Trend decomposition using Loess (STL) to all CPI series. STL is robust to outliers and handles time-varying seasonal patterns — important given the structural breaks introduced by COVID-19 supply disruptions in 2020–2021.</p>
+
+      <h3>Classical Additive Decomposition</h3>
+      <p>Classical additive decomposition is applied as a baseline comparison. Results show that STL outperforms classical decomposition in capturing the post-pandemic seasonal shift in food prices.</p>
+
+      <h3>Key Findings</h3>
+      <p>The trend component shows a clear structural break around mid-2021 corresponding to post-pandemic supply chain pressures. Seasonal amplitudes in food &amp; beverages are concentrated around the January–February Lunar New Year period and the June–August school holiday season.</p>
+
+      <div class="info-box">
+        The interactive Timeline Decomposition module in the R Shiny app lets users select any CPI sub-index, choose decomposition method, and adjust the seasonal window parameter.
+      </div>
+    </section>
+
+    <hr class="proposal-divider" />
+
+    <!-- FORECASTING -->
+    <section class="proposal-section" id="forecasting">
+      <h2>Forecasting</h2>
+      <p>We implement and benchmark four forecasting approaches using the <strong>modeltime</strong> framework in R. All models are trained on data prior to February 2025 and evaluated on a held-out test set of 12 months using a nested forecasting scheme. The best-performing model for each CPI series is selected based on the lowest RMSE and refitted on the full dataset before generating future forecasts.</p>
+    
+      <h3>Model Suite</h3>
+      <table class="proposal-table">
+        <thead>
+          <tr><th>Model</th><th>Type</th><th>Key Strength</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>ETS</td><td>Classical</td><td>Captures trend and seasonality via exponential smoothing</td></tr>
+          <tr><td>Auto-ARIMA</td><td>Classical</td><td>Automated order selection for optimal fit on stationary series</td></tr>
+          <tr><td>Auto-ARIMA + XGBoost</td><td>Hybrid</td><td>Combines Auto-ARIMA with XGBoost to capture non-linear residual patterns</td></tr>
+          <tr><td>Prophet</td><td>Additive Regression</td><td>Robust to missing data and handles seasonal shifts flexibly</td></tr>
+        </tbody>
+      </table>
+    
+      <h3>Hierarchical Forecasting</h3>
+      <p>Forecasts are generated at the most granular level (the leaf nodes of the CPI hierarchy) and subsequently aggregated upward using a <strong>bottom-up reconciliation</strong> approach. Each leaf node forecast is weighted according to its official CPI basket weight (<a href="resources/cpijan26.pdf" target="_blank">Source: Singapore Consumer Price Index, Jan 2026</a>), and parent-level indices are derived as weighted averages of their child components. This ensures that all aggregated forecasts are consistent with the official weighting structure of the Singapore CPI basket.</p>
+```
+
+```{=html}
+  <h3>Data Preparation</h3>
+  <p>The raw CPI data is reshaped into long format, padded to ensure a complete monthly time series, and imputed where values are missing. Only leaf node categories are retained for modelling.</p>
+```
+
+```{r}
+#| eval: false
+cpi_data_long <- cpi_data_raw %>%
+  pivot_longer(
+    cols = -Date,
+    names_to = "Category",
+    values_to = "CPI_Value"
+  ) %>%
+  mutate(Date = floor_date(as.Date(Date), "month")) %>%
+  group_by(Category) %>%
+  arrange(Date) %>%
+  pad_by_time(.date_var = Date, .by = "month") %>%
+  mutate(CPI_Value = ts_impute_vec(CPI_Value, period = 1)) %>%
+  fill(CPI_Value, .direction = "downup") %>%
+  ungroup()
+```
+
+```{=html}
+  <h3>Nested Forecasting Setup</h3>
+  <p>The data is structured into a nested tibble where each row corresponds to a leaf node CPI series. The time series is extended by 12 months to accommodate the forecast horizon, and split into training and test sets with the last 12 months reserved as the hold-out period.</p>
+
+```
+
+```{r}
+#| eval: false
+leaf_categories <- hier_map %>%
+  filter(!Category %in% na.omit(hier_map$Parent)) %>%
+  pull(Category)
+
+nested_data_tbl <- cpi_data_long %>%
+  left_join(hier_map, by = "Category") %>%
+  filter(Category %in% leaf_categories) %>%
+  extend_timeseries(
+    .id_var        = Category,
+    .date_var      = Date,
+    .length_future = 12
+  ) %>%
+  nest_timeseries(
+    .id_var        = Category,
+    .length_future = 12
+  ) %>%
+  split_nested_timeseries(
+    .length_test = 12
+  )
+```
+
+```{=html}
+  <h3>Model Definition & Workflows</h3>
+  <p>Four models are defined and wrapped in <strong>tidymodels</strong> workflows. The Auto-ARIMA + XGBoost model uses additional time series signature features extracted from the date variable to enable the XGBoost component to learn non-linear residual patterns.</p>
+```
+
+```{r}
+#| eval: false
+model_ets     <- exp_smoothing() %>% set_engine("ets")
+model_arima   <- arima_reg()     %>% set_engine("auto_arima")
+model_boost   <- arima_boost()   %>% set_engine("auto_arima_xgboost")
+model_prophet <- prophet_reg()   %>% set_engine("prophet")
+
+wf_ets <- workflow() %>%
+  add_model(model_ets) %>%
+  add_recipe(recipe(CPI_Value ~ Date, data = extract_nested_train_split(nested_data_tbl)))
+
+wf_arima <- workflow() %>%
+  add_model(model_arima) %>%
+  add_recipe(recipe(CPI_Value ~ Date, data = extract_nested_train_split(nested_data_tbl)))
+
+wf_prophet <- workflow() %>%
+  add_model(model_prophet) %>%
+  add_recipe(recipe(CPI_Value ~ Date, data = extract_nested_train_split(nested_data_tbl)))
+
+wf_boost <- workflow() %>%
+  add_model(model_boost) %>%
+  add_recipe(
+    recipe(CPI_Value ~ Date, data = extract_nested_train_split(nested_data_tbl)) %>%
+      step_timeseries_signature(Date) %>%
+      step_rm(matches("(xts$)|(iso$)|(hour)|(minute)|(second)|(am.pm)")) %>%
+      step_dummy(all_nominal_predictors(), one_hot = TRUE)
+  )
+```
+
+```{=html}
+  <h3>Model Fitting & Selection</h3>
+  <p>All four models are fitted across every leaf node series simultaneously using <strong>modeltime_nested_fit()</strong>. The best-performing model per series is then selected based on the lowest RMSE on the hold-out test set.</p>
+```
+
+```{r}
+#| eval: false
+nested_modeltime_tbl <- modeltime_nested_fit(
+  nested_data = nested_data_tbl,
+  wf_ets,
+  wf_arima,
+  wf_boost,
+  wf_prophet,
+  control = control_nested_fit(allow_par = FALSE, verbose = TRUE)
+)
+
+best_nested_models <- nested_modeltime_tbl %>%
+  modeltime_nested_select_best(
+    metric           = "rmse",
+    minimize         = TRUE,
+    filter_test_forecasts = TRUE
+  )
+```
+
+```{=html}
+  <h3>Refit & Forecast Generation</h3>
+  <p>The best model for each series is refitted on the full dataset before generating a 12-month forward forecast with 95% confidence intervals.</p>
+```
+
+```{r}
+#| eval: false
+refitted_nested_models <- best_nested_models %>%
+  modeltime_nested_refit(
+    control = control_nested_refit(verbose = TRUE)
+  )
+
+leaf_fc <- refitted_nested_models %>%
+  modeltime_nested_forecast(
+    h             = 12,
+    conf_interval = 0.95,
+    control       = control_nested_forecast(verbose = TRUE)
+  ) %>%
+  filter(.key == "prediction") %>%
+  select(Date = .index, Category, .value)
+```
+
+```{=html}
+  <h3>Bottom-Up Reconciliation</h3>
+  <p>Leaf node forecasts are aggregated upward through the CPI hierarchy using a bottom-up reconciliation function. Each child forecast is weighted by its official CPI basket weight, and parent indices are computed as weighted averages of their children. This process repeats level by level until the Headline CPI is reconstructed.</p>
+```
+
+```{r}
+#| eval: false
+aggregate_bottom_up <- function(forecasts, hier_map, weights_tbl) {
+  all_levels <- forecasts %>%
+    left_join(weights_tbl, by = "Category")
+
+  levels_to_agg <- hier_map %>%
+    filter(!is.na(Parent)) %>%
+    arrange(desc(Level)) %>%
+    pull(Level) %>%
+    unique()
+
+  for (lvl in levels_to_agg) {
+    child_nodes <- hier_map %>%
+      filter(Level == lvl) %>%
+      select(Category, Parent)
+
+    parent_fc <- all_levels %>%
+      inner_join(child_nodes, by = "Category") %>%
+      group_by(Date, Category = Parent) %>%
+      summarise(
+        .value = sum(.value * Weight) / sum(Weight),
+        Weight = sum(Weight),
+        .groups = "drop"
+      )
+
+    all_levels <- bind_rows(all_levels, parent_fc) %>%
+      distinct(Date, Category, .keep_all = TRUE)
+  }
+  return(all_levels)
+}
+
+reconciled_forecasts <- aggregate_bottom_up(leaf_fc, hier_map, weights_tbl)
+```
+
+```{=html}    
+      <h3>Evaluation</h3>
+      <p>Models are compared using RMSE, MAE, and MASE to assess forecast accuracy. The best-performing model for each CPI series is identified by the lowest RMSE on the 12-month hold-out test set, and is subsequently refitted on the full available data before generating forward-looking forecasts.</p>
+    
+      <h3>Shiny Forecasting Module</h3>
+      <p>The interactive Forecasting module allows users to select a CPI series, choose one or more models, and generate forecasts with adjustable horizons (1–12 months ahead). Confidence intervals and model comparison charts are rendered dynamically.</p>
+    </section>
+    
+    <hr class="proposal-divider" />
+    
+    <!-- PROTOTYPE -->
+    <section class="proposal-section" id="prototype">
+      <h2>Prototype</h2>
+      <p>The following would be the prototype to our RShiny Application that we are going to develop.</p>
+      <img src="images/Landing_page.jpg" 
+     alt="RShiny App Landing Page Prototype"
+     style="width:100%; border: 1px solid #d8d2c8; margin-top: 1rem;" />
+     
+     <img src="images/EDA.jpg" 
+     alt="RShiny App EDA Page Prototype"
+     style="width:100%; border: 1px solid #d8d2c8; margin-top: 1rem;" />
+     
+     <img src="images/datatable.jpg" 
+     alt="RShiny App EDA Page Prototype"
+     style="width:100%; border: 1px solid #d8d2c8; margin-top: 1rem;" />
+     
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function() {
+  var sections  = ['home','minutes','data-eda','decomposition','forecasting', 'prototype'];
+  var sideLinks = document.querySelectorAll('.sidebar-nav a');
+
+  function updateActive() {
+    var scrollY = window.scrollY + 100;
+    var current = sections[0];
+    sections.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el && el.offsetTop <= scrollY) current = id;
+    });
+    sideLinks.forEach(function(a) {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  }
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
+
+  sideLinks.forEach(function(a) {
+    a.addEventListener('click', function(e) {
+      var id = a.getAttribute('href').replace('#','');
+      var el = document.getElementById(id);
+      if (el) {
+        e.preventDefault();
+        window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' });
+      }
+    });
+  });
+
+  document.getElementById('sidebar-search-input').addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    sideLinks.forEach(function(a) {
+      a.style.display = a.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  });
+})();
+</script>
+```
