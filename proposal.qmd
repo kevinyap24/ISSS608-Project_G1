@@ -114,19 +114,19 @@ To support **Shiny dashboard development**, reusable wrapper functions were crea
 
 ### Time Series Decomposition {#methodology-decomposition}
 
-...
+#### STL Decomposition
 
-#### Subtitle 1
+Seasonal and Trend decomposition using Loess (**STL**) is applied to each CPI series. STL is widely used for economic time series because it is robust to outliers and flexible enough to handle changing seasonal patterns. This is particularly relevant for Singapore CPI data, which experienced structural disruptions during the COVID-19 pandemic and the subsequent inflation cycle.
 
-...
+Each CPI variable is converted into a monthly time series beginning in **January 2020**, with a frequency of **12 observations per year**. The STL algorithm then decomposes the series into **trend**, **seasonal**, and **remainder** components using locally weighted regression (Loess). This approach allows the seasonal component to evolve gradually over time rather than assuming a fixed seasonal structure.
 
-#### Subtitle 2
+#### Observed Series Summary
 
-...
+To provide an overview of the observed CPI series, summary statistics are computed for each CPI category. These include the **starting value in January 2020**, the **ending value in December 2025**, the **absolute increase**, and the **percentage change** over the study period. These summary measures provide a quick comparison of inflation dynamics across different CPI components.
 
-#### Subtitle 3
+#### Decomposition Interpretation
 
-...
+The magnitude of each component (trend, seasonal, and remainder) is quantified and normalised by the mean of the corresponding CPI series. This normalisation allows the relative importance of each component to be compared across different CPI categories. Series with a dominant trend component indicate persistent inflation movements, while stronger seasonal components suggest regular cyclical price behaviour. Larger remainder components may indicate irregular shocks or volatility not explained by structural patterns.
 
 ---
 
@@ -193,4 +193,30 @@ Each team member presented updates based on the tasks assigned in the previous m
 
 *Date: TBD · Attendees: All group members*
 
-Topic TBD. [View minutes →](minutes/meeting3.pdf)
+Topic TBD. [View minutes →]()
+
+
+## Project Timeline and Work Allocation {#timeline}
+
+The project is divided into several stages covering data preparation, exploratory analysis, time series modelling, and application development. Tasks are distributed among team members according to their assigned analytical modules.
+
+### Work Allocation
+
+| Task | Team Member |
+|---|---|
+Data Preparation & Exploratory Data Analysis | Pan Yiqiong |
+Time Series Decomposition | Lee Jangho |
+Time Series Forecasting | Kevin A. Suyapto |
+Shiny Application Development | All Members |
+Final Report & Presentation | All Members |
+
+### Project Timeline
+
+| Task | Week 1 | Week 2 | Week 3 | Week 4 |
+|---|---|---|---|---|
+Project Setup & Data Collection | █ | | | |
+Exploratory Data Analysis | █ | █ | | |
+Time Series Decomposition | | █ | | |
+Forecasting Model Development | | | █ | |
+Shiny App Development | | | █ | █ |
+Final Report & Presentation | | | | █ |

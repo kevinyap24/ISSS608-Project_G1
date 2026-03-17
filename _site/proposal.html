@@ -9,7 +9,7 @@
 <meta name="author" content="Kevin A. Suyapto">
 <meta name="author" content="Lee Jangho">
 <meta name="author" content="Pan Yiqiong">
-<meta name="dcterms.date" content="2026-03-16">
+<meta name="dcterms.date" content="2026-03-17">
 
 <title>Forecasting Singapore’s Consumer Price Index – SG CPI Forecast</title>
 <style>
@@ -129,8 +129,10 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#methodology" id="toc-methodology" class="nav-link" data-scroll-target="#methodology"><span class="header-section-number">3</span> Methodology</a>
   <ul class="collapse">
   <li><a href="#methodology-eda" id="toc-methodology-eda" class="nav-link" data-scroll-target="#methodology-eda"><span class="header-section-number">3.1</span> Data Preparation and EDA</a></li>
-  <li><a href="#methodology-decomposition" id="toc-methodology-decomposition" class="nav-link" data-scroll-target="#methodology-decomposition"><span class="header-section-number">3.2</span> Time Series Decomposition</a></li>
-  <li><a href="#methodology-forecasting" id="toc-methodology-forecasting" class="nav-link" data-scroll-target="#methodology-forecasting"><span class="header-section-number">3.3</span> Time Series Forecasting</a></li>
+  <li><a href="#data-wrangling" id="toc-data-wrangling" class="nav-link" data-scroll-target="#data-wrangling"><span class="header-section-number">3.2</span> Data Wrangling</a></li>
+  <li><a href="#exploratory-data-analysis" id="toc-exploratory-data-analysis" class="nav-link" data-scroll-target="#exploratory-data-analysis"><span class="header-section-number">3.3</span> Exploratory Data Analysis</a></li>
+  <li><a href="#methodology-decomposition" id="toc-methodology-decomposition" class="nav-link" data-scroll-target="#methodology-decomposition"><span class="header-section-number">3.4</span> Time Series Decomposition</a></li>
+  <li><a href="#methodology-forecasting" id="toc-methodology-forecasting" class="nav-link" data-scroll-target="#methodology-forecasting"><span class="header-section-number">3.5</span> Time Series Forecasting</a></li>
   </ul></li>
   <li><a href="#prototype" id="toc-prototype" class="nav-link" data-scroll-target="#prototype"><span class="header-section-number">4</span> Prototype</a>
   <ul class="collapse">
@@ -144,6 +146,11 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#meeting-1-project-kickoff" id="toc-meeting-1-project-kickoff" class="nav-link" data-scroll-target="#meeting-1-project-kickoff"><span class="header-section-number">5.1</span> Meeting 1 — Project Kickoff</a></li>
   <li><a href="#meeting-2-progress-discussion" id="toc-meeting-2-progress-discussion" class="nav-link" data-scroll-target="#meeting-2-progress-discussion"><span class="header-section-number">5.2</span> Meeting 2 — Progress Discussion</a></li>
   <li><a href="#meeting-3-tbd" id="toc-meeting-3-tbd" class="nav-link" data-scroll-target="#meeting-3-tbd"><span class="header-section-number">5.3</span> Meeting 3 — TBD</a></li>
+  </ul></li>
+  <li><a href="#timeline" id="toc-timeline" class="nav-link" data-scroll-target="#timeline"><span class="header-section-number">6</span> Project Timeline and Work Allocation</a>
+  <ul class="collapse">
+  <li><a href="#work-allocation" id="toc-work-allocation" class="nav-link" data-scroll-target="#work-allocation"><span class="header-section-number">6.1</span> Work Allocation</a></li>
+  <li><a href="#project-timeline" id="toc-project-timeline" class="nav-link" data-scroll-target="#project-timeline"><span class="header-section-number">6.2</span> Project Timeline</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -177,7 +184,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 16, 2026</p>
+      <p class="date">March 17, 2026</p>
     </div>
   </div>
   
@@ -335,42 +342,42 @@ Note
 <p>The analytical workflow consists of three stages executed in sequence: Data Preparation and EDA, Time Series Decomposition, and Time Series Forecasting. Each stage is described in its own subsection below.</p>
 <section id="methodology-eda" class="level3" data-number="3.1">
 <h3 data-number="3.1" class="anchored" data-anchor-id="methodology-eda"><span class="header-section-number">3.1</span> Data Preparation and EDA</h3>
-<section id="subtitle-1" class="level4" data-number="3.1.1">
-<h4 data-number="3.1.1" class="anchored" data-anchor-id="subtitle-1"><span class="header-section-number">3.1.1</span> Subtitle 1</h4>
-<p>…</p>
+<p>Here is a <strong>concise 200–250 word methodology version</strong> suitable for an <strong>ISSS608 report</strong> while still mentioning the <strong>key functions and packages</strong>.</p>
 </section>
-<section id="subtitle-2" class="level4" data-number="3.1.2">
-<h4 data-number="3.1.2" class="anchored" data-anchor-id="subtitle-2"><span class="header-section-number">3.1.2</span> Subtitle 2</h4>
-<p>…</p>
+<section id="data-wrangling" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="data-wrangling"><span class="header-section-number">3.2</span> Data Wrangling</h3>
+<p>The dataset was obtained from the <strong>CEIC database via the SMU Library</strong> and contains monthly Consumer Price Index (CPI) data from January 1961 to January 2026, with 2024 = 100 as the base year. The data was imported into R using <code>read_excel()</code> from the <strong>readxl</strong> package. The dataset was initially structured in a <strong>wide format</strong>, where rows represent dates and columns represent CPI categories and subcategories.</p>
+<p>To focus on recent inflation dynamics, the dataset was filtered to include the period <strong>January 2020 to December 2025</strong> using <code>mutate()</code>, <code>as_date()</code>, and <code>filter()</code> from the <strong>dplyr</strong> and <strong>lubridate</strong> packages. The dataset was then reshaped into a <strong>tidy long format</strong> using <code>pivot_longer()</code> from <strong>tidyr</strong>, allowing each CPI category to be treated as an individual time series.</p>
+<p>Given the hierarchical structure of CPI categories, labels were generated using <code>mutate()</code> and <code>str_detect()</code> from the <strong>stringr</strong> package to distinguish between different levels of CPI aggregation. Column names containing long hierarchical strings were also standardised using functions from <strong>stringr</strong> and <strong>dplyr</strong> to improve readability. Data integrity checks were performed using <code>sum(is.na())</code> to ensure that no missing values or misaligned entries were present. The cleaned dataset was then saved using <code>write_rds()</code> for reproducibility. An interactive data table was also created using the <strong>DT</strong> package to enable sorting, filtering, pagination, and export options.</p>
 </section>
-<section id="subtitle-3" class="level4" data-number="3.1.3">
-<h4 data-number="3.1.3" class="anchored" data-anchor-id="subtitle-3"><span class="header-section-number">3.1.3</span> Subtitle 3</h4>
-<p>…</p>
+<section id="exploratory-data-analysis" class="level3" data-number="3.3">
+<h3 data-number="3.3" class="anchored" data-anchor-id="exploratory-data-analysis"><span class="header-section-number">3.3</span> Exploratory Data Analysis</h3>
+<p>Exploratory data analysis was conducted to understand the <strong>trend, seasonality, and temporal dependence</strong> of CPI series. Trend patterns are visualised using <code>plot_time_series()</code> from the <strong>timetk</strong> package and <strong>ggplot2</strong> for customised plotting. Seasonal behaviour was examined using <code>plot_seasonal_diagnostics()</code> from <strong>timetk</strong> to detect monthly/quarterly/ yearly patterns. Temporal dependence was further analysed using <code>plot_acf_diagnostics()</code> to generate <strong>ACF, PACF, and CCF plots</strong>, which help assess lag relationships and inform time series modelling.</p>
+<p>To support <strong>Shiny dashboard development</strong>, reusable wrapper functions were created for each EDA component. These functions expose key parameters, allowing flexible selection of CPI series, hierarchical levels, and visualisation options. This design improves interactivity, reproducibility, and scalability when exploring CPI dynamics across categories.</p>
+<hr>
+</section>
+<section id="methodology-decomposition" class="level3" data-number="3.4">
+<h3 data-number="3.4" class="anchored" data-anchor-id="methodology-decomposition"><span class="header-section-number">3.4</span> Time Series Decomposition</h3>
+<section id="stl-decomposition" class="level4" data-number="3.4.1">
+<h4 data-number="3.4.1" class="anchored" data-anchor-id="stl-decomposition"><span class="header-section-number">3.4.1</span> STL Decomposition</h4>
+<p>Seasonal and Trend decomposition using Loess (<strong>STL</strong>) is applied to each CPI series. STL is widely used for economic time series because it is robust to outliers and flexible enough to handle changing seasonal patterns. This is particularly relevant for Singapore CPI data, which experienced structural disruptions during the COVID-19 pandemic and the subsequent inflation cycle.</p>
+<p>Each CPI variable is converted into a monthly time series beginning in <strong>January 2020</strong>, with a frequency of <strong>12 observations per year</strong>. The STL algorithm then decomposes the series into <strong>trend</strong>, <strong>seasonal</strong>, and <strong>remainder</strong> components using locally weighted regression (Loess). This approach allows the seasonal component to evolve gradually over time rather than assuming a fixed seasonal structure.</p>
+</section>
+<section id="observed-series-summary" class="level4" data-number="3.4.2">
+<h4 data-number="3.4.2" class="anchored" data-anchor-id="observed-series-summary"><span class="header-section-number">3.4.2</span> Observed Series Summary</h4>
+<p>To provide an overview of the observed CPI series, summary statistics are computed for each CPI category. These include the <strong>starting value in January 2020</strong>, the <strong>ending value in December 2025</strong>, the <strong>absolute increase</strong>, and the <strong>percentage change</strong> over the study period. These summary measures provide a quick comparison of inflation dynamics across different CPI components.</p>
+</section>
+<section id="decomposition-interpretation" class="level4" data-number="3.4.3">
+<h4 data-number="3.4.3" class="anchored" data-anchor-id="decomposition-interpretation"><span class="header-section-number">3.4.3</span> Decomposition Interpretation</h4>
+<p>The magnitude of each component (trend, seasonal, and remainder) is quantified and normalised by the mean of the corresponding CPI series. This normalisation allows the relative importance of each component to be compared across different CPI categories. Series with a dominant trend component indicate persistent inflation movements, while stronger seasonal components suggest regular cyclical price behaviour. Larger remainder components may indicate irregular shocks or volatility not explained by structural patterns.</p>
 <hr>
 </section>
 </section>
-<section id="methodology-decomposition" class="level3" data-number="3.2">
-<h3 data-number="3.2" class="anchored" data-anchor-id="methodology-decomposition"><span class="header-section-number">3.2</span> Time Series Decomposition</h3>
-<p>…</p>
-<section id="subtitle-1-1" class="level4" data-number="3.2.1">
-<h4 data-number="3.2.1" class="anchored" data-anchor-id="subtitle-1-1"><span class="header-section-number">3.2.1</span> Subtitle 1</h4>
-<p>…</p>
-</section>
-<section id="subtitle-2-1" class="level4" data-number="3.2.2">
-<h4 data-number="3.2.2" class="anchored" data-anchor-id="subtitle-2-1"><span class="header-section-number">3.2.2</span> Subtitle 2</h4>
-<p>…</p>
-</section>
-<section id="subtitle-3-1" class="level4" data-number="3.2.3">
-<h4 data-number="3.2.3" class="anchored" data-anchor-id="subtitle-3-1"><span class="header-section-number">3.2.3</span> Subtitle 3</h4>
-<p>…</p>
-<hr>
-</section>
-</section>
-<section id="methodology-forecasting" class="level3" data-number="3.3">
-<h3 data-number="3.3" class="anchored" data-anchor-id="methodology-forecasting"><span class="header-section-number">3.3</span> Time Series Forecasting</h3>
+<section id="methodology-forecasting" class="level3" data-number="3.5">
+<h3 data-number="3.5" class="anchored" data-anchor-id="methodology-forecasting"><span class="header-section-number">3.5</span> Time Series Forecasting</h3>
 <p>Four forecasting approaches are implemented and benchmarked using the <strong>modeltime</strong> framework in R. All models are trained on data prior to February 2025 and evaluated on a held-out test set of 12 months using a nested forecasting scheme. The best-performing model for each CPI series is selected based on the lowest RMSE and refitted on the full dataset before generating future forecasts.</p>
-<section id="model-suite" class="level4" data-number="3.3.1">
-<h4 data-number="3.3.1" class="anchored" data-anchor-id="model-suite"><span class="header-section-number">3.3.1</span> Model Suite</h4>
+<section id="model-suite" class="level4" data-number="3.5.1">
+<h4 data-number="3.5.1" class="anchored" data-anchor-id="model-suite"><span class="header-section-number">3.5.1</span> Model Suite</h4>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 21%">
@@ -408,12 +415,12 @@ Note
 </tbody>
 </table>
 </section>
-<section id="hierarchical-forecasting" class="level4" data-number="3.3.2">
-<h4 data-number="3.3.2" class="anchored" data-anchor-id="hierarchical-forecasting"><span class="header-section-number">3.3.2</span> Hierarchical Forecasting</h4>
+<section id="hierarchical-forecasting" class="level4" data-number="3.5.2">
+<h4 data-number="3.5.2" class="anchored" data-anchor-id="hierarchical-forecasting"><span class="header-section-number">3.5.2</span> Hierarchical Forecasting</h4>
 <p>Forecasts are generated at the most granular level (leaf nodes) and aggregated upward using a <strong>bottom-up reconciliation</strong> approach. Each leaf node forecast is weighted according to its official CPI basket weight, and parent-level indices are derived as weighted averages of their child components.</p>
 </section>
-<section id="evaluation" class="level4" data-number="3.3.3">
-<h4 data-number="3.3.3" class="anchored" data-anchor-id="evaluation"><span class="header-section-number">3.3.3</span> Evaluation</h4>
+<section id="evaluation" class="level4" data-number="3.5.3">
+<h4 data-number="3.5.3" class="anchored" data-anchor-id="evaluation"><span class="header-section-number">3.5.3</span> Evaluation</h4>
 <p>Models are compared using RMSE, MAE, and MASE. The best-performing model per series is identified by the lowest RMSE on the 12-month hold-out test set, refitted on the full dataset, and used to generate forward-looking forecasts.</p>
 <hr>
 </section>
@@ -430,7 +437,6 @@ Note
 <figcaption>RShiny App Landing Page Prototype</figcaption>
 </figure>
 </div>
-<p>DESCRIPTION FOR LANDING PAGE HERE</p>
 </section>
 <section id="eda-page" class="level3" data-number="4.2">
 <h3 data-number="4.2" class="anchored" data-anchor-id="eda-page"><span class="header-section-number">4.2</span> EDA Page</h3>
@@ -440,7 +446,6 @@ Note
 <figcaption>RShiny App EDA Page Prototype</figcaption>
 </figure>
 </div>
-<p>DESCRIPTION FOR EDA PAGE HERE</p>
 </section>
 <section id="data-table" class="level3" data-number="4.3">
 <h3 data-number="4.3" class="anchored" data-anchor-id="data-table"><span class="header-section-number">4.3</span> Data Table</h3>
@@ -450,7 +455,6 @@ Note
 <figcaption>RShiny App Data Table Prototype</figcaption>
 </figure>
 </div>
-<p>DESCRIPTION FOR DATA TABLE PAGE HERE</p>
 </section>
 <section id="forecasting-page" class="level3" data-number="4.4">
 <h3 data-number="4.4" class="anchored" data-anchor-id="forecasting-page"><span class="header-section-number">4.4</span> Forecasting Page</h3>
@@ -460,7 +464,6 @@ Note
 <figcaption>RShiny App Forecasting Page Prototype</figcaption>
 </figure>
 </div>
-<p>DESCRIPTION FOR FORECAST HERE</p>
 <hr>
 </section>
 </section>
@@ -479,7 +482,102 @@ Note
 <section id="meeting-3-tbd" class="level3" data-number="5.3">
 <h3 data-number="5.3" class="anchored" data-anchor-id="meeting-3-tbd"><span class="header-section-number">5.3</span> Meeting 3 — TBD</h3>
 <p><em>Date: TBD · Attendees: All group members</em></p>
-<p>Topic TBD. <a href="minutes/meeting3.pdf">View minutes →</a></p>
+<p>Topic TBD. <a href="">View minutes →</a></p>
+</section>
+</section>
+<section id="timeline" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="timeline"><span class="header-section-number">6</span> Project Timeline and Work Allocation</h2>
+<p>The project is divided into several stages covering data preparation, exploratory analysis, time series modelling, and application development. Tasks are distributed among team members according to their assigned analytical modules.</p>
+<section id="work-allocation" class="level3" data-number="6.1">
+<h3 data-number="6.1" class="anchored" data-anchor-id="work-allocation"><span class="header-section-number">6.1</span> Work Allocation</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Team Member</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Data Preparation &amp; Exploratory Data Analysis</td>
+<td>Pan Yiqiong</td>
+</tr>
+<tr class="even">
+<td>Time Series Decomposition</td>
+<td>Lee Jangho</td>
+</tr>
+<tr class="odd">
+<td>Time Series Forecasting</td>
+<td>Kevin A. Suyapto</td>
+</tr>
+<tr class="even">
+<td>Shiny Application Development</td>
+<td>All Members</td>
+</tr>
+<tr class="odd">
+<td>Final Report &amp; Presentation</td>
+<td>All Members</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="project-timeline" class="level3" data-number="6.2">
+<h3 data-number="6.2" class="anchored" data-anchor-id="project-timeline"><span class="header-section-number">6.2</span> Project Timeline</h3>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Week 1</th>
+<th>Week 2</th>
+<th>Week 3</th>
+<th>Week 4</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Project Setup &amp; Data Collection</td>
+<td>█</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Exploratory Data Analysis</td>
+<td>█</td>
+<td>█</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Time Series Decomposition</td>
+<td></td>
+<td>█</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Forecasting Model Development</td>
+<td></td>
+<td></td>
+<td>█</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Shiny App Development</td>
+<td></td>
+<td></td>
+<td>█</td>
+<td>█</td>
+</tr>
+<tr class="even">
+<td>Final Report &amp; Presentation</td>
+<td></td>
+<td></td>
+<td></td>
+<td>█</td>
+</tr>
+</tbody>
+</table>
 
 
 </section>
