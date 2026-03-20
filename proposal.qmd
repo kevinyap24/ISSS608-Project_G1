@@ -5,7 +5,7 @@ author:
   - name: Kevin A. Suyapto
   - name: Lee Jangho
   - name: Pan Yiqiong
-date: 15 Mar, 2026
+date: "15 Mar, 2026"
 last-modified: last-modified
 format:
   html:
