@@ -2,11 +2,13 @@
 title: "Forecasting Singapore's Consumer Price Index"
 subtitle: "ISS608 Project — Group 1"
 author:
-  - name: Kevin A. Suyapto
-  - name: Lee Jangho
-  - name: Pan Yiqiong
+  - name: "Kevin A. Suyapto"
+  - name: "Lee Jangho"
+  - name: "Pan Yiqiong"
 date: "15 Mar, 2026"
-last-modified: last-modified
+date-modified: last-modified
+date-format: "DD MMM, YYYY"
+
 format:
   html:
     toc: true
