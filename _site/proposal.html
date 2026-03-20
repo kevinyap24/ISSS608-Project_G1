@@ -2,14 +2,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.26">
+<meta name="generator" content="quarto-1.8.23">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Kevin A. Suyapto">
 <meta name="author" content="Lee Jangho">
 <meta name="author" content="Pan Yiqiong">
-<meta name="dcterms.date" content="2026-03-17">
+<meta name="dcterms.date" content="2026-03-15">
 
 <title>Forecasting Singapore’s Consumer Price Index – SG CPI Forecast</title>
 <style>
@@ -41,7 +41,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-1fe81d0376b2c50856e68e651e390326.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="site_libs/bootstrap/bootstrap-1d4f84655f446305ac42a8f1abcf7405.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
@@ -84,6 +84,8 @@ ul.task-list li input[type="checkbox"] {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
+    <a href="./index.html" class="navbar-brand navbar-brand-logo">
+    </a>
     <a class="navbar-brand" href="./index.html">
     <span class="navbar-title">SG CPI Forecast</span>
     </a>
@@ -184,7 +186,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 17, 2026</p>
+      <p class="date">March 15, 2026</p>
     </div>
   </div>
   
@@ -342,11 +344,10 @@ Note
 <p>The analytical workflow consists of three stages executed in sequence: Data Preparation and EDA, Time Series Decomposition, and Time Series Forecasting. Each stage is described in its own subsection below.</p>
 <section id="methodology-eda" class="level3" data-number="3.1">
 <h3 data-number="3.1" class="anchored" data-anchor-id="methodology-eda"><span class="header-section-number">3.1</span> Data Preparation and EDA</h3>
-<p>Here is a <strong>concise 200–250 word methodology version</strong> suitable for an <strong>ISSS608 report</strong> while still mentioning the <strong>key functions and packages</strong>.</p>
 </section>
 <section id="data-wrangling" class="level3" data-number="3.2">
 <h3 data-number="3.2" class="anchored" data-anchor-id="data-wrangling"><span class="header-section-number">3.2</span> Data Wrangling</h3>
-<p>The dataset was obtained from the <strong>CEIC database via the SMU Library</strong> and contains monthly Consumer Price Index (CPI) data from January 1961 to January 2026, with 2024 = 100 as the base year. The data was imported into R using <code>read_excel()</code> from the <strong>readxl</strong> package. The dataset was initially structured in a <strong>wide format</strong>, where rows represent dates and columns represent CPI categories and subcategories.</p>
+<p>The data set was obtained from the <strong>CEIC database via the SMU Library</strong> and contains monthly Consumer Price Index (CPI) data from January 1961 to January 2026, with 2024 = 100 as the base year. The data was imported into R using <code>read_excel()</code> from the <strong>readxl</strong> package. The dataset was initially structured in a <strong>wide format</strong>, where rows represent dates and columns represent CPI categories and subcategories.</p>
 <p>To focus on recent inflation dynamics, the dataset was filtered to include the period <strong>January 2020 to December 2025</strong> using <code>mutate()</code>, <code>as_date()</code>, and <code>filter()</code> from the <strong>dplyr</strong> and <strong>lubridate</strong> packages. The dataset was then reshaped into a <strong>tidy long format</strong> using <code>pivot_longer()</code> from <strong>tidyr</strong>, allowing each CPI category to be treated as an individual time series.</p>
 <p>Given the hierarchical structure of CPI categories, labels were generated using <code>mutate()</code> and <code>str_detect()</code> from the <strong>stringr</strong> package to distinguish between different levels of CPI aggregation. Column names containing long hierarchical strings were also standardised using functions from <strong>stringr</strong> and <strong>dplyr</strong> to improve readability. Data integrity checks were performed using <code>sum(is.na())</code> to ensure that no missing values or misaligned entries were present. The cleaned dataset was then saved using <code>write_rds()</code> for reproducibility. An interactive data table was also created using the <strong>DT</strong> package to enable sorting, filtering, pagination, and export options.</p>
 </section>
