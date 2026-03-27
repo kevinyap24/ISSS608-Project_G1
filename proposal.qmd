@@ -2,10 +2,13 @@
 title: "Forecasting Singapore's Consumer Price Index"
 subtitle: "ISS608 Project — Group 1"
 author:
-  - name: Kevin A. Suyapto
-  - name: Lee Jangho
-  - name: Pan Yiqiong
-date: today
+  - name: "Kevin A. Suyapto"
+  - name: "Lee Jangho"
+  - name: "Pan Yiqiong"
+date: "15 Mar, 2026"
+date-modified: last-modified
+date-format: "DD MMM, YYYY"
+
 format:
   html:
     toc: true
@@ -93,18 +96,17 @@ Forecasts are reconciled using official expenditure weights from the [Singapore 
 The analytical workflow consists of three stages executed in sequence: Data Preparation and EDA, Time Series Decomposition, and Time Series Forecasting. Each stage is described in its own subsection below.
 
 ### Data Preparation and EDA {#methodology-eda}
-Here is a **concise 200–250 word methodology version** suitable for an **ISSS608 report** while still mentioning the **key functions and packages**.
 
-### Data Wrangling
+#### Data Wrangling
 
-The dataset was obtained from the **CEIC database via the SMU Library** and contains monthly Consumer Price Index (CPI) data from January 1961 to January 2026, with 2024 = 100 as the base year. The data was imported into R using `read_excel()` from the **readxl** package. The dataset was initially structured in a **wide format**, where rows represent dates and columns represent CPI categories and subcategories.
+The data set was obtained from the **CEIC database via the SMU Library** and contains monthly Consumer Price Index (CPI) data from January 1961 to January 2026, with 2024 = 100 as the base year. The data was imported into R using `read_excel()` from the **readxl** package. The dataset was initially structured in a **wide format**, where rows represent dates and columns represent CPI categories and subcategories.
 
 To focus on recent inflation dynamics, the dataset was filtered to include the period **January 2020 to December 2025** using `mutate()`, `as_date()`, and `filter()` from the **dplyr** and **lubridate** packages. The dataset was then reshaped into a **tidy long format** using `pivot_longer()` from **tidyr**, allowing each CPI category to be treated as an individual time series.
 
 Given the hierarchical structure of CPI categories, labels were generated using `mutate()` and `str_detect()` from the **stringr** package to distinguish between different levels of CPI aggregation. Column names containing long hierarchical strings were also standardised using functions from **stringr** and **dplyr** to improve readability. Data integrity checks were performed using `sum(is.na())` to ensure that no missing values or misaligned entries were present. The cleaned dataset was then saved using `write_rds()` for reproducibility. An interactive data table was also created using the **DT** package to enable sorting, filtering, pagination, and export options.
 
 
-### Exploratory Data Analysis
+#### Exploratory Data Analysis
 
 Exploratory data analysis was conducted to understand the **trend, seasonality, and temporal dependence** of CPI series. Trend patterns are visualised using `plot_time_series()` from the **timetk** package and **ggplot2** for customised plotting. Seasonal behaviour was examined using `plot_seasonal_diagnostics()` from **timetk** to detect monthly/quarterly/ yearly patterns. Temporal dependence was further analysed using `plot_acf_diagnostics()` to generate **ACF, PACF, and CCF plots**, which help assess lag relationships and inform time series modelling.
 
