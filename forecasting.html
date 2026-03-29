@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="author" content="Kevin">
+<meta name="dcterms.date" content="2026-03-27">
+<title>TS FC</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+<script src="forecasting_files/libs/clipboard/clipboard.min.js"></script>
+<script src="forecasting_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="forecasting_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="forecasting_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="forecasting_files/libs/quarto-html/popper.min.js"></script>
+<script src="forecasting_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="forecasting_files/libs/quarto-html/anchor.min.js"></script>
+<link href="forecasting_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="forecasting_files/libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="forecasting_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="forecasting_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="forecasting_files/libs/bootstrap/bootstrap-9e3ffae467580fdb927a41352e75a2e0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+</head>
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active"><h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+<li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">1</span> Introduction</a></li>
+  <li><a href="#methodology" id="toc-methodology" class="nav-link" data-scroll-target="#methodology"><span class="header-section-number">2</span> Methodology</a></li>
+  <li><a href="#time-series-forecasting-workflow" id="toc-time-series-forecasting-workflow" class="nav-link" data-scroll-target="#time-series-forecasting-workflow"><span class="header-section-number">3</span> Time Series Forecasting Workflow</a></li>
+  <li>
+<a href="#getting-started" id="toc-getting-started" class="nav-link" data-scroll-target="#getting-started"><span class="header-section-number">4</span> Getting Started</a>
+  <ul class="collapse">
+<li><a href="#installing-and-loading-the-required-libraries" id="toc-installing-and-loading-the-required-libraries" class="nav-link" data-scroll-target="#installing-and-loading-the-required-libraries"><span class="header-section-number">4.1</span> Installing and Loading the Required Libraries</a></li>
+  <li><a href="#loading-the-dataset" id="toc-loading-the-dataset" class="nav-link" data-scroll-target="#loading-the-dataset"><span class="header-section-number">4.2</span> Loading the Dataset</a></li>
+  </ul>
+</li>
+  <li>
+<a href="#data-preparation" id="toc-data-preparation" class="nav-link" data-scroll-target="#data-preparation"><span class="header-section-number">5</span> Data Preparation</a>
+  <ul class="collapse">
+<li><a href="#padding-and-imputing-missing-values" id="toc-padding-and-imputing-missing-values" class="nav-link" data-scroll-target="#padding-and-imputing-missing-values"><span class="header-section-number">5.1</span> Padding and Imputing Missing Values</a></li>
+  <li><a href="#deriving-parent-lookup-table" id="toc-deriving-parent-lookup-table" class="nav-link" data-scroll-target="#deriving-parent-lookup-table"><span class="header-section-number">5.2</span> Deriving Parent Lookup Table</a></li>
+  <li><a href="#identifying-leaf-nodes-series-with-no-children" id="toc-identifying-leaf-nodes-series-with-no-children" class="nav-link" data-scroll-target="#identifying-leaf-nodes-series-with-no-children"><span class="header-section-number">5.3</span> Identifying Leaf Nodes (Series with No children)</a></li>
+  </ul>
+</li>
+  <li>
+<a href="#nested-forecasting" id="toc-nested-forecasting" class="nav-link" data-scroll-target="#nested-forecasting"><span class="header-section-number">6</span> Nested Forecasting</a>
+  <ul class="collapse">
+<li><a href="#preparing-nested-forecasting-data" id="toc-preparing-nested-forecasting-data" class="nav-link" data-scroll-target="#preparing-nested-forecasting-data"><span class="header-section-number">6.1</span> Preparing Nested Forecasting Data</a></li>
+  <li><a href="#defining-models" id="toc-defining-models" class="nav-link" data-scroll-target="#defining-models"><span class="header-section-number">6.2</span> Defining Models</a></li>
+  <li><a href="#building-model-workflows" id="toc-building-model-workflows" class="nav-link" data-scroll-target="#building-model-workflows"><span class="header-section-number">6.3</span> Building Model Workflows</a></li>
+  <li><a href="#fitting-models" id="toc-fitting-models" class="nav-link" data-scroll-target="#fitting-models"><span class="header-section-number">6.4</span> Fitting Models</a></li>
+  <li><a href="#selecting-the-best-model" id="toc-selecting-the-best-model" class="nav-link" data-scroll-target="#selecting-the-best-model"><span class="header-section-number">6.5</span> Selecting the Best Model</a></li>
+  <li><a href="#refitting-and-forecasting-leaf-nodes" id="toc-refitting-and-forecasting-leaf-nodes" class="nav-link" data-scroll-target="#refitting-and-forecasting-leaf-nodes"><span class="header-section-number">6.6</span> Refitting and Forecasting Leaf Nodes</a></li>
+  <li><a href="#defining-weights" id="toc-defining-weights" class="nav-link" data-scroll-target="#defining-weights"><span class="header-section-number">6.7</span> Defining Weights</a></li>
+  <li><a href="#bottom-up-aggregation" id="toc-bottom-up-aggregation" class="nav-link" data-scroll-target="#bottom-up-aggregation"><span class="header-section-number">6.8</span> Bottom-up Aggregation</a></li>
+  </ul>
+</li>
+  </ul></nav>
+</div>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block default"><div class="quarto-title">
+<h1 class="title">TS FC</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Kevin </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 27, 2026</p>
+    </div>
+  </div>
+  
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">March 29, 2026</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+
+</header><section id="introduction" class="level2" data-number="1"><h2 data-number="1" class="anchored" data-anchor-id="introduction">
+<span class="header-section-number">1</span> Introduction</h2>
+<p>Building on from the EDA section, this part proceeds to implement a <strong>time series forecasting</strong> workflow for Singapore Consumer Price Index (CPI).</p>
+<p>CPI dataset used in this study covers <strong>monthly data from January 2020 to December 2025</strong>, structured across hierarchical classification of expenditures ranging from overall CPI down to detailed items. This hierarchical structure mandates forecast to be generated at the most granular level and when aggregated up it must remain consistent.</p>
+</section><section id="methodology" class="level2" data-number="2"><h2 data-number="2" class="anchored" data-anchor-id="methodology">
+<span class="header-section-number">2</span> Methodology</h2>
+<p>The forecasting workflow uses <strong>modeltime</strong> and *tidymodels** frameworks. These framework provides a unified interface for training, evaluating, and refitting time series models. These frameworks also support both classical statistical models and modern machine learning approaches.</p>
+<p>Each of the CPI series are evaluated using the following forecasting models:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 21%">
+<col style="width: 18%">
+<col style="width: 60%">
+</colgroup>
+<thead><tr class="header">
+<th>Model</th>
+<th>Type</th>
+<th>Key Strength</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>ETS</td>
+<td>Classical</td>
+<td>Captures trend and seasonality via exponential smoothing</td>
+</tr>
+<tr class="even">
+<td>Auto-ARIMA</td>
+<td>Classical</td>
+<td>Automated order selection for optimal fit on stationary series</td>
+</tr>
+<tr class="odd">
+<td>Auto-ARIMA + XGBoost</td>
+<td>Hybrid</td>
+<td>Combines Auto-ARIMA with XGBoost to capture non-linear residuals</td>
+</tr>
+<tr class="even">
+<td>Prophet</td>
+<td>Additive Regression</td>
+<td>Robust to missing data and handles seasonal shifts flexibly</td>
+</tr>
+</tbody>
+</table>
+<p>Models are trained and evaluated using <strong>nested forecasting</strong> workflow and through <code>modeltime_nested_fit()</code> function. Each CPI leaf nodes are treated as independent nested dataset, with the last 12 months held out as a test set. The model with the <strong>lowest RMSE</strong> on the test set is selected as the best model for the particular serie. All selected models are then refitted on the full data before generating the 12-month forecast.</p>
+<p>After generating leaf-level forecasts, <strong>weighted bottom-up aggregation</strong> is applied. Parent-level forecasts are computed as the weighted average of their children forecasts, using the official DOS CPI basket weights. This process is repeated from the most granular level up to the overall CPI. Same aggregation is applied to the <strong>90%</strong>, <strong>95%</strong>, and <strong>99%</strong> Confidence Interval.</p>
+</section><section id="time-series-forecasting-workflow" class="level2" data-number="3"><h2 data-number="3" class="anchored" data-anchor-id="time-series-forecasting-workflow">
+<span class="header-section-number">3</span> Time Series Forecasting Workflow</h2>
+<p>The forecasting workflow is structured into the following stages:</p>
+<ol type="1">
+<li><p><strong>Data Preparation</strong> begins by loading the clean dataset produced from the EDA part. The data is padded to ensure complete monthly time series for every series, and missing values (if any) are imputed using linear interpolation using <code>ts_impute_vec()</code>.</p></li>
+<li><p><strong>Hierarchy Derivation</strong> extracts the parent-child relationships. Leaf nodes are identified as series that never appear as a parent of any other series in the dataset.</p></li>
+<li><p><strong>Nested model Training</strong> filters the data to leaf nodes and trains the four models on the leaf nodes only across all CPI using <code>modeltime_nested_fit()</code>. The best model is selected based on the minimal RMSE on the 12-month holdout test set.</p></li>
+<li><p><strong>Refitting and Forecasting</strong> refits each selected model on the full dataset and generates 12 month foreacast at three different Confidence Intervals: 90%, 95%, 99%.</p></li>
+<li><p><strong>Bottom-up Aggregation</strong> combines leaf-level forecasts into parent-level forecasts using official expenditure weights defined by DOS.</p></li>
+</ol></section><section id="getting-started" class="level2" data-number="4"><h2 data-number="4" class="anchored" data-anchor-id="getting-started">
+<span class="header-section-number">4</span> Getting Started</h2>
+<section id="installing-and-loading-the-required-libraries" class="level3" data-number="4.1"><h3 data-number="4.1" class="anchored" data-anchor-id="installing-and-loading-the-required-libraries">
+<span class="header-section-number">4.1</span> Installing and Loading the Required Libraries</h3>
+<p>Load Packages</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="fu">pacman</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/pacman/man/p_load.html">p_load</a></span><span class="op">(</span><span class="va">readxl</span>, <span class="va">tidyverse</span>, <span class="va">timetk</span>, <span class="va">modeltime</span>, <span class="va">tidymodels</span>, <span class="va">lubridate</span>, <span class="va">plotly</span>, <span class="va">shiny</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section><section id="loading-the-dataset" class="level3" data-number="4.2"><h3 data-number="4.2" class="anchored" data-anchor-id="loading-the-dataset">
+<span class="header-section-number">4.2</span> Loading the Dataset</h3>
+<p>The CPI dataset is loaded from the cleaned RDS file produced from EDA. The file contains monthly CPI data in long format with hierarchy columns, covering January 2020 to December 2025.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cpi_data_long</span> <span class="op">&lt;-</span> <span class="fu">read_rds</span><span class="op">(</span><span class="st">"data/cpi_h.rds"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section></section><section id="data-preparation" class="level2" data-number="5"><h2 data-number="5" class="anchored" data-anchor-id="data-preparation">
+<span class="header-section-number">5</span> Data Preparation</h2>
+<section id="padding-and-imputing-missing-values" class="level3" data-number="5.1"><h3 data-number="5.1" class="anchored" data-anchor-id="padding-and-imputing-missing-values">
+<span class="header-section-number">5.1</span> Padding and Imputing Missing Values</h3>
+<p>The data is grouped by series and padded to ensure complete monthly sequence for every CPI category. Even though this dataset has been vetted for nulls, for reusability, any gaps introduced during padding, if the dataset contains nulls or inconsistencies, are filled using linear interpolation via <code>ts_impute_vec()</code> with a period of 1, followed by a forward and backward fill as a safety net for any remaining edge cases.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cpi_data_long</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">cpi</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 0 × 7
+# ℹ 7 variables: date &lt;date&gt;, series &lt;chr&gt;, cpi &lt;dbl&gt;, level &lt;dbl&gt;,
+#   division &lt;chr&gt;, group &lt;chr&gt;, class &lt;chr&gt;</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cpi_data_long</span> <span class="op">&lt;-</span> <span class="va">cpi_data_long</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">group_by</span><span class="op">(</span><span class="va">series</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">arrange</span><span class="op">(</span><span class="va">date</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">pad_by_time</span><span class="op">(</span>.date_var <span class="op">=</span> <span class="va">date</span>, .by <span class="op">=</span> <span class="st">"month"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>cpi <span class="op">=</span> <span class="fu">ts_impute_vec</span><span class="op">(</span><span class="va">cpi</span>, period <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">fill</span><span class="op">(</span><span class="va">cpi</span>, .direction <span class="op">=</span> <span class="st">"downup"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>A sanity check confirms no missing values remain after imputation.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">cpi_data_long</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">cpi</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 0 × 7
+# ℹ 7 variables: date &lt;date&gt;, series &lt;chr&gt;, cpi &lt;dbl&gt;, level &lt;dbl&gt;,
+#   division &lt;chr&gt;, group &lt;chr&gt;, class &lt;chr&gt;</code></pre>
+</div>
+</div>
+</section><section id="deriving-parent-lookup-table" class="level3" data-number="5.2"><h3 data-number="5.2" class="anchored" data-anchor-id="deriving-parent-lookup-table">
+<span class="header-section-number">5.2</span> Deriving Parent Lookup Table</h3>
+<p>Rather than defining the parent-child relationships manually, the relationships are to be defined directly from the dataset’s existing hierarchy columns. Each series is assigned a parent based on its level</p>
+<p><strong>Level 1</strong> series consolidate to the overall CPI. <strong>Level 2</strong> series report to their <code>division</code>. <strong>Level 3</strong> report to their <code>group</code>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">parent_lookup</span> <span class="op">&lt;-</span> <span class="va">cpi_data_long</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">distinct</span><span class="op">(</span><span class="va">series</span>, <span class="va">level</span>, <span class="va">division</span>, <span class="va">group</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>Parent <span class="op">=</span> <span class="fu">case_when</span><span class="op">(</span></span>
+<span>    <span class="va">level</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">~</span> <span class="st">"Consumer Price Index (CPI)"</span>,</span>
+<span>    <span class="va">level</span> <span class="op">==</span> <span class="fl">2</span> <span class="op">~</span> <span class="va">division</span>,</span>
+<span>    <span class="va">level</span> <span class="op">==</span> <span class="fl">3</span> <span class="op">~</span> <span class="va">group</span>,</span>
+<span>    <span class="cn">TRUE</span> <span class="op">~</span> <span class="cn">NA_character_</span></span>
+<span>  <span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="va">series</span>, Level <span class="op">=</span> <span class="va">level</span>, <span class="va">Parent</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section><section id="identifying-leaf-nodes-series-with-no-children" class="level3" data-number="5.3"><h3 data-number="5.3" class="anchored" data-anchor-id="identifying-leaf-nodes-series-with-no-children">
+<span class="header-section-number">5.3</span> Identifying Leaf Nodes (Series with No children)</h3>
+<p>Leaf nodes are series that never appear as a parent of any other series. This approach handles mixed-depth of the CPI hierarchy, where Food series extend to level 3 while other branches are at level 2.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">all_parents</span> <span class="op">&lt;-</span> <span class="va">parent_lookup</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">Parent</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">pull</span><span class="op">(</span><span class="va">Parent</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">leaf_categories</span> <span class="op">&lt;-</span> <span class="va">cpi_data_long</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">level</span> <span class="op">&gt;</span> <span class="fl">0</span>,</span>
+<span>         <span class="op">!</span><span class="va">series</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="va">all_parents</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">distinct</span><span class="op">(</span><span class="va">series</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">pull</span><span class="op">(</span><span class="va">series</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section></section><section id="nested-forecasting" class="level2" data-number="6"><h2 data-number="6" class="anchored" data-anchor-id="nested-forecasting">
+<span class="header-section-number">6</span> Nested Forecasting</h2>
+<section id="preparing-nested-forecasting-data" class="level3" data-number="6.1"><h3 data-number="6.1" class="anchored" data-anchor-id="preparing-nested-forecasting-data">
+<span class="header-section-number">6.1</span> Preparing Nested Forecasting Data</h3>
+<p>The data is filtered to leaf nodes only and structured into a nested time series format using <code>nest_timeseries()</code>. Each series is extended by 12 months to create placeholders for forecasting data. The last 12 months of observation data is reserved as hold-out period data (test set) using <code>split_nested_timeseries()</code>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">nested_data_tbl</span> <span class="op">&lt;-</span> <span class="va">cpi_data_long</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">series</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="va">leaf_categories</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">extend_timeseries</span><span class="op">(</span></span>
+<span>    .id_var <span class="op">=</span> <span class="va">series</span>,</span>
+<span>    .date_var <span class="op">=</span> <span class="va">date</span>,</span>
+<span>    .length_future <span class="op">=</span> <span class="fl">12</span></span>
+<span>  <span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">nest_timeseries</span><span class="op">(</span></span>
+<span>    .id_var <span class="op">=</span> <span class="va">series</span>,</span>
+<span>    .length_future <span class="op">=</span> <span class="fl">12</span></span>
+<span>  <span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">split_nested_timeseries</span><span class="op">(</span>.length_test <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section><section id="defining-models" class="level3" data-number="6.2"><h3 data-number="6.2" class="anchored" data-anchor-id="defining-models">
+<span class="header-section-number">6.2</span> Defining Models</h3>
+<p>Four models are specified as candidates fore each CPI series.</p>
+<p><strong>ETS and ARIMA</strong> are classical statistical models that are suited for short monthly time series with clear trend and seasonal patterns. <strong>ARIMA boost</strong> is an enhanced version of ARIMA by adding gradient-boosted tree features using machine learning, allowing it to capture non-linear patterns. <strong>Prophet</strong> decomposes series into trends, seasonality, and holiday effects.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">model_ets</span>     <span class="op">&lt;-</span> <span class="fu">exp_smoothing</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu">set_engine</span><span class="op">(</span><span class="st">"ets"</span><span class="op">)</span></span>
+<span><span class="va">model_arima</span>   <span class="op">&lt;-</span> <span class="fu">arima_reg</span><span class="op">(</span><span class="op">)</span>     <span class="op">%&gt;%</span> <span class="fu">set_engine</span><span class="op">(</span><span class="st">"auto_arima"</span><span class="op">)</span></span>
+<span><span class="va">model_boost</span>   <span class="op">&lt;-</span> <span class="fu">arima_boost</span><span class="op">(</span><span class="op">)</span>   <span class="op">%&gt;%</span> <span class="fu">set_engine</span><span class="op">(</span><span class="st">"auto_arima_xgboost"</span><span class="op">)</span></span>
+<span><span class="va">model_prophet</span> <span class="op">&lt;-</span> <span class="fu">prophet_reg</span><span class="op">(</span><span class="op">)</span>   <span class="op">%&gt;%</span> <span class="fu">set_engine</span><span class="op">(</span><span class="st">"prophet"</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section><section id="building-model-workflows" class="level3" data-number="6.3"><h3 data-number="6.3" class="anchored" data-anchor-id="building-model-workflows">
+<span class="header-section-number">6.3</span> Building Model Workflows</h3>
+<p>Each model is wrapped in a <code>workflow()</code> paired with a recipe. The ARIMA-Boost workflow includes additional preprocessing steps to extract time series features such as month, quarter, and year indicators, which serve as predictors for the XGBoost component.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">wf_ets</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">add_model</span><span class="op">(</span><span class="va">model_ets</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">add_recipe</span><span class="op">(</span><span class="fu">recipe</span><span class="op">(</span><span class="va">cpi</span> <span class="op">~</span> <span class="va">date</span>, data <span class="op">=</span> <span class="fu">extract_nested_train_split</span><span class="op">(</span><span class="va">nested_data_tbl</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">wf_arima</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">add_model</span><span class="op">(</span><span class="va">model_arima</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">add_recipe</span><span class="op">(</span><span class="fu">recipe</span><span class="op">(</span><span class="va">cpi</span> <span class="op">~</span> <span class="va">date</span>, data <span class="op">=</span> <span class="fu">extract_nested_train_split</span><span class="op">(</span><span class="va">nested_data_tbl</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">wf_prophet</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">add_model</span><span class="op">(</span><span class="va">model_prophet</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">add_recipe</span><span class="op">(</span><span class="fu">recipe</span><span class="op">(</span><span class="va">cpi</span> <span class="op">~</span> <span class="va">date</span>, data <span class="op">=</span> <span class="fu">extract_nested_train_split</span><span class="op">(</span><span class="va">nested_data_tbl</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">wf_boost</span> <span class="op">&lt;-</span> <span class="fu">workflow</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">add_model</span><span class="op">(</span><span class="va">model_boost</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">add_recipe</span><span class="op">(</span></span>
+<span>    <span class="fu">recipe</span><span class="op">(</span><span class="va">cpi</span> <span class="op">~</span> <span class="va">date</span>, data <span class="op">=</span> <span class="fu">extract_nested_train_split</span><span class="op">(</span><span class="va">nested_data_tbl</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>      <span class="fu">step_timeseries_signature</span><span class="op">(</span><span class="va">date</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>      <span class="fu">step_rm</span><span class="op">(</span><span class="fu">matches</span><span class="op">(</span><span class="st">"(xts$)|(iso$)|(hour)|(minute)|(second)|(am.pm)"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>      <span class="fu">step_dummy</span><span class="op">(</span><span class="fu">all_nominal_predictors</span><span class="op">(</span><span class="op">)</span>, one_hot <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section><section id="fitting-models" class="level3" data-number="6.4"><h3 data-number="6.4" class="anchored" data-anchor-id="fitting-models">
+<span class="header-section-number">6.4</span> Fitting Models</h3>
+<p>All four models above are fitted simultaneously across all leaf-nodes using <code>model_nested_fit()</code>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">nested_modeltime_tbl</span> <span class="op">&lt;-</span> <span class="fu">modeltime_nested_fit</span><span class="op">(</span></span>
+<span>  nested_data <span class="op">=</span> <span class="va">nested_data_tbl</span>,</span>
+<span>  <span class="va">wf_ets</span>, <span class="va">wf_arima</span>, <span class="va">wf_boost</span>, <span class="va">wf_prophet</span>,</span>
+<span>  control <span class="op">=</span> <span class="fu">control_nested_fit</span><span class="op">(</span>allow_par <span class="op">=</span> <span class="cn">FALSE</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section><section id="selecting-the-best-model" class="level3" data-number="6.5"><h3 data-number="6.5" class="anchored" data-anchor-id="selecting-the-best-model">
+<span class="header-section-number">6.5</span> Selecting the Best Model</h3>
+<p>The best performing model for each series is selected based on the lowest Root Mean Squared Error (RMSE) on the test data. This ensures that the model used to generate forecast data has demonstrated accuracy to unseen data.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">best_nested_models</span> <span class="op">&lt;-</span> <span class="va">nested_modeltime_tbl</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">modeltime_nested_select_best</span><span class="op">(</span></span>
+<span>    metric                <span class="op">=</span> <span class="st">"rmse"</span>,</span>
+<span>    minimize              <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    filter_test_forecasts <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  <span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section><section id="refitting-and-forecasting-leaf-nodes" class="level3" data-number="6.6"><h3 data-number="6.6" class="anchored" data-anchor-id="refitting-and-forecasting-leaf-nodes">
+<span class="header-section-number">6.6</span> Refitting and Forecasting Leaf Nodes</h3>
+<p>Models selected as the best models are refitted to the full dataset, including the hold-out period data, before generating the 12-month forecast data. Forecasts are generated at three Confidence Interval levels of 90%, 95%, and 99% by running <code>refitted_nested_models()</code> three times for each of the Confidence Intervals and joining the resulting CI into a single table.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">refitted_nested_models</span> <span class="op">&lt;-</span> <span class="va">best_nested_models</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">modeltime_nested_refit</span><span class="op">(</span>control <span class="op">=</span> <span class="fu">control_nested_refit</span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">leaf_fc_90</span> <span class="op">&lt;-</span> <span class="va">refitted_nested_models</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">modeltime_nested_forecast</span><span class="op">(</span></span>
+<span>    h <span class="op">=</span> <span class="fl">12</span>,</span>
+<span>    conf_interval <span class="op">=</span> <span class="fl">0.90</span>,</span>
+<span>    control <span class="op">=</span> <span class="fu">control_nested_forecast</span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">.key</span> <span class="op">==</span> <span class="st">"prediction"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span>date <span class="op">=</span> <span class="va">.index</span>, <span class="va">series</span>, <span class="va">.value</span>,</span>
+<span>         lo90 <span class="op">=</span> <span class="va">.conf_lo</span>, hi90 <span class="op">=</span> <span class="va">.conf_hi</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">leaf_fc_95</span> <span class="op">&lt;-</span> <span class="va">refitted_nested_models</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">modeltime_nested_forecast</span><span class="op">(</span></span>
+<span>    h <span class="op">=</span> <span class="fl">12</span>,</span>
+<span>    conf_interval <span class="op">=</span> <span class="fl">0.95</span>,</span>
+<span>    control <span class="op">=</span> <span class="fu">control_nested_forecast</span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">.key</span> <span class="op">==</span> <span class="st">"prediction"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span>date <span class="op">=</span> <span class="va">.index</span>, <span class="va">series</span>, lo95 <span class="op">=</span> <span class="va">.conf_lo</span>, hi95 <span class="op">=</span> <span class="va">.conf_hi</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">leaf_fc_99</span> <span class="op">&lt;-</span> <span class="va">refitted_nested_models</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">modeltime_nested_forecast</span><span class="op">(</span></span>
+<span>    h <span class="op">=</span> <span class="fl">12</span>,</span>
+<span>    conf_interval <span class="op">=</span> <span class="fl">0.99</span>,</span>
+<span>    control <span class="op">=</span> <span class="fu">control_nested_forecast</span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">.key</span> <span class="op">==</span> <span class="st">"prediction"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span>date <span class="op">=</span> <span class="va">.index</span>, <span class="va">series</span>, lo99 <span class="op">=</span> <span class="va">.conf_lo</span>, hi99 <span class="op">=</span> <span class="va">.conf_hi</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">leaf_fc</span> <span class="op">&lt;-</span> <span class="va">leaf_fc_90</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">left_join</span><span class="op">(</span><span class="va">leaf_fc_95</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"date"</span>, <span class="st">"series"</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">left_join</span><span class="op">(</span><span class="va">leaf_fc_99</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"date"</span>, <span class="st">"series"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section><section id="defining-weights" class="level3" data-number="6.7"><h3 data-number="6.7" class="anchored" data-anchor-id="defining-weights">
+<span class="header-section-number">6.7</span> Defining Weights</h3>
+<p>The official DOS CPI expenditure weights are defined for each leaf node. These weights reflect the relative importance of each consumption category within the total CPI basket of 10,000 units. They are used to compute weighted average forecasts for all parent categories during aggregation.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">weights_tbl</span> <span class="op">&lt;-</span> <span class="fu">tribble</span><span class="op">(</span></span>
+<span>  <span class="op">~</span><span class="va">series</span>,                                                                       <span class="op">~</span><span class="va">Weight</span>,</span>
+<span>  <span class="st">"FFBSS: Rice &amp; Cereals"</span>,                                                        <span class="fl">122</span>,</span>
+<span>  <span class="st">"FFBSS: Meat"</span>,                                                                  <span class="fl">101</span>,</span>
+<span>  <span class="st">"FFBSS: Fish &amp; Seafood"</span>,                                                         <span class="fl">79</span>,</span>
+<span>  <span class="st">"FFBSS: Milk, Other Dairy &amp; Eggs"</span>,                                               <span class="fl">64</span>,</span>
+<span>  <span class="st">"FFBSS: Oils &amp; Fats"</span>,                                                            <span class="fl">12</span>,</span>
+<span>  <span class="st">"FFBSS: Fruits &amp; Nuts (FN)"</span>,                                                     <span class="fl">79</span>,</span>
+<span>  <span class="st">"FFBSS: Vegetables"</span>,                                                             <span class="fl">82</span>,</span>
+<span>  <span class="st">"FFBSS: Sugar, Confectionery &amp; Desserts (SCD)"</span>,                                  <span class="fl">27</span>,</span>
+<span>  <span class="st">"FFBSS: Ready-Made &amp; Oth. Food Nec"</span>,                                             <span class="fl">44</span>,</span>
+<span>  <span class="st">"FFBSS: Non-Alcoholic Beverages"</span>,                                                <span class="fl">41</span>,</span>
+<span>  <span class="st">"FBSS: Restaurants, Cafes &amp; Pubs"</span>,                                              <span class="fl">585</span>,</span>
+<span>  <span class="st">"FBSS: Fast Food"</span>,                                                               <span class="fl">85</span>,</span>
+<span>  <span class="st">"FBSS: Hawker Food Incl. Food Courts (HF&amp;FC)"</span>,                                  <span class="fl">707</span>,</span>
+<span>  <span class="st">"FBSS: Oth Catering Services, Incl Vending Machines"</span>,                            <span class="fl">14</span>,</span>
+<span>  <span class="st">"C&amp;F: Clothing"</span>,                                                                <span class="fl">129</span>,</span>
+<span>  <span class="st">"C&amp;F: Footwear"</span>,                                                                 <span class="fl">36</span>,</span>
+<span>  <span class="st">"Housing &amp; Utilities: Accommodation"</span>,                                          <span class="fl">2656</span>,</span>
+<span>  <span class="st">"Housing &amp; Utilities: Utilities &amp; Other Fuels"</span>,                                 <span class="fl">282</span>,</span>
+<span>  <span class="st">"HDS: Furniture &amp; Furnishings"</span>,                                                 <span class="fl">128</span>,</span>
+<span>  <span class="st">"HDS: Household Textiles"</span>,                                                       <span class="fl">17</span>,</span>
+<span>  <span class="st">"HDS: Household Appliances"</span>,                                                    <span class="fl">101</span>,</span>
+<span>  <span class="st">"HDS: Glassware, Tableware &amp; Household Utensils"</span>,                                <span class="fl">17</span>,</span>
+<span>  <span class="st">"HDS: Tools &amp; Equipment For House &amp; Garden"</span>,                                      <span class="fl">5</span>,</span>
+<span>  <span class="st">"HDS: Household Services &amp; Supplies (HSS)"</span>,                                     <span class="fl">279</span>,</span>
+<span>  <span class="st">"Health: Medicines &amp; Health Products"</span>,                                           <span class="fl">94</span>,</span>
+<span>  <span class="st">"Health: Outpatient Services"</span>,                                                  <span class="fl">428</span>,</span>
+<span>  <span class="st">"Health: Inpatient Services"</span>,                                                   <span class="fl">238</span>,</span>
+<span>  <span class="st">"Health: Other Health Services (OHS)"</span>,                                           <span class="fl">23</span>,</span>
+<span>  <span class="st">"Health: Health Insurance"</span>,                                                     <span class="fl">225</span>,</span>
+<span>  <span class="st">"Transport: Private Transport"</span>,                                                 <span class="fl">906</span>,</span>
+<span>  <span class="st">"Transport: Land Transport Services"</span>,                                           <span class="fl">262</span>,</span>
+<span>  <span class="st">"Transport: Other Transport Services"</span>,                                          <span class="fl">131</span>,</span>
+<span>  <span class="st">"Transport: Transport Services Of Goods"</span>,                                         <span class="fl">8</span>,</span>
+<span>  <span class="st">"InfoComm: Information &amp; Communication Equipment"</span>,                               <span class="fl">91</span>,</span>
+<span>  <span class="st">"InfoComm: Software Excl Games"</span>,                                                  <span class="fl">3</span>,</span>
+<span>  <span class="st">"InfoComm: InfoComm Services"</span>,                                                  <span class="fl">287</span>,</span>
+<span>  <span class="st">"RSC: Recreational &amp; Cultural Goods"</span>,                                             <span class="fl">9</span>,</span>
+<span>  <span class="st">"RSC: Other Recreational Goods (ORG)"</span>,                                           <span class="fl">33</span>,</span>
+<span>  <span class="st">"RSC: Garden Products &amp; Pets"</span>,                                                   <span class="fl">27</span>,</span>
+<span>  <span class="st">"RSC: Recreational Services"</span>,                                                   <span class="fl">144</span>,</span>
+<span>  <span class="st">"RSC: Cultural Services"</span>,                                                        <span class="fl">52</span>,</span>
+<span>  <span class="st">"RSC: Newspapers, Books &amp; Stationery (NBS)"</span>,                                     <span class="fl">20</span>,</span>
+<span>  <span class="st">"RSC: Holiday Expenses"</span>,                                                        <span class="fl">310</span>,</span>
+<span>  <span class="st">"Education: General, Vocational &amp; Higher Education (GVH Edu)"</span>,                 <span class="fl">391</span>,</span>
+<span>  <span class="st">"Education: Private Tuition &amp; Other Educational Courses"</span>,                      <span class="fl">184</span>,</span>
+<span>  <span class="st">"Education: School Textbooks &amp; Study Guides"</span>,                                    <span class="fl">4</span>,</span>
+<span>  <span class="st">"MG&amp;S: Personal Care"</span>,                                                          <span class="fl">211</span>,</span>
+<span>  <span class="st">"MG&amp;S: Alcoholic Drinks &amp; Tobacco"</span>,                                              <span class="fl">58</span>,</span>
+<span>  <span class="st">"MG&amp;S: Personal Effects"</span>,                                                        <span class="fl">62</span>,</span>
+<span>  <span class="st">"MG&amp;S: Social Services"</span>,                                                         <span class="fl">32</span>,</span>
+<span>  <span class="st">"MG&amp;S: Other Miscellaneous Services"</span>,                                            <span class="fl">75</span></span>
+<span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section><section id="bottom-up-aggregation" class="level3" data-number="6.8"><h3 data-number="6.8" class="anchored" data-anchor-id="bottom-up-aggregation">
+<span class="header-section-number">6.8</span> Bottom-up Aggregation</h3>
+<p>The <code>aggregate_bottom_up()</code> function iterates through the hierarchy from the deepest level upward. At each level, child forecasts are joined to their respective parent using the <code>parent_lookup</code> table, and the parent’s forecast is computed as the expenditure-weighted average of its children’s forecasts. Both the point forecast and all confidence interval bounds are aggregated using the same weights.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">aggregate_bottom_up</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">forecasts</span>, <span class="va">parent_lookup</span>, <span class="va">weights_tbl</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">all_levels</span> <span class="op">&lt;-</span> <span class="va">forecasts</span> <span class="op">%&gt;%</span></span>
+<span>    <span class="fu">left_join</span><span class="op">(</span><span class="va">weights_tbl</span>, by <span class="op">=</span> <span class="st">"series"</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">levels_to_agg</span> <span class="op">&lt;-</span> <span class="va">parent_lookup</span> <span class="op">%&gt;%</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html">is.na</a></span><span class="op">(</span><span class="va">Parent</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>    <span class="fu">arrange</span><span class="op">(</span><span class="fu">desc</span><span class="op">(</span><span class="va">Level</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>    <span class="fu">pull</span><span class="op">(</span><span class="va">Level</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="kw">for</span> <span class="op">(</span><span class="va">lvl</span> <span class="kw">in</span> <span class="va">levels_to_agg</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">child_nodes</span> <span class="op">&lt;-</span> <span class="va">parent_lookup</span> <span class="op">%&gt;%</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">Level</span> <span class="op">==</span> <span class="va">lvl</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>      <span class="fu">select</span><span class="op">(</span><span class="va">series</span>, <span class="va">Parent</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="va">parent_fc</span> <span class="op">&lt;-</span> <span class="va">all_levels</span> <span class="op">%&gt;%</span></span>
+<span>      <span class="fu">inner_join</span><span class="op">(</span><span class="va">child_nodes</span>, by <span class="op">=</span> <span class="st">"series"</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>      <span class="fu">group_by</span><span class="op">(</span><span class="va">date</span>, series <span class="op">=</span> <span class="va">Parent</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>      <span class="fu">summarise</span><span class="op">(</span></span>
+<span>        .value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">.value</span> <span class="op">*</span> <span class="va">Weight</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">Weight</span><span class="op">)</span>,</span>
+<span>        lo90   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">lo90</span>   <span class="op">*</span> <span class="va">Weight</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">Weight</span><span class="op">)</span>,  </span>
+<span>        hi90   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">hi90</span>   <span class="op">*</span> <span class="va">Weight</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">Weight</span><span class="op">)</span>,  </span>
+<span>        lo95   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">lo95</span>   <span class="op">*</span> <span class="va">Weight</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">Weight</span><span class="op">)</span>,  </span>
+<span>        hi95   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">hi95</span>   <span class="op">*</span> <span class="va">Weight</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">Weight</span><span class="op">)</span>,  </span>
+<span>        lo99   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">lo99</span>   <span class="op">*</span> <span class="va">Weight</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">Weight</span><span class="op">)</span>,  </span>
+<span>        hi99   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">hi99</span>   <span class="op">*</span> <span class="va">Weight</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">Weight</span><span class="op">)</span>,  </span>
+<span>        Weight <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">Weight</span><span class="op">)</span>,</span>
+<span>        .groups <span class="op">=</span> <span class="st">"drop"</span></span>
+<span>      <span class="op">)</span></span>
+<span></span>
+<span>    <span class="va">all_levels</span> <span class="op">&lt;-</span> <span class="fu">bind_rows</span><span class="op">(</span><span class="va">all_levels</span>, <span class="va">parent_fc</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>      <span class="fu">distinct</span><span class="op">(</span><span class="va">date</span>, <span class="va">series</span>, .keep_all <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span><span class="op">(</span><span class="va">all_levels</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">reconciled_forecasts</span> <span class="op">&lt;-</span> <span class="fu">aggregate_bottom_up</span><span class="op">(</span><span class="va">leaf_fc</span>, <span class="va">parent_lookup</span>, <span class="va">weights_tbl</span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="downlit sourceCode r code-with-copy"><code class="sourceCode R"><span><span class="va">build_cpi_shiny</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">parent_lookup</span>, <span class="va">actuals_data</span>, <span class="va">forecast_data</span><span class="op">)</span> <span class="op">{</span></span>
+<span></span>
+<span>  <span class="va">all_series</span> <span class="op">&lt;-</span> <span class="va">parent_lookup</span> <span class="op">%&gt;%</span> <span class="fu">pull</span><span class="op">(</span><span class="va">series</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">actuals_all</span> <span class="op">&lt;-</span> <span class="va">actuals_data</span> <span class="op">%&gt;%</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">series</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="va">all_series</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>    <span class="fu">select</span><span class="op">(</span><span class="va">series</span>, <span class="va">date</span>, <span class="va">cpi</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>    <span class="fu">mutate</span><span class="op">(</span>.key <span class="op">=</span> <span class="st">"actual"</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">forecast_all</span> <span class="op">&lt;-</span> <span class="va">forecast_data</span> <span class="op">%&gt;%</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">series</span> <span class="op"><a href="https://rdrr.io/r/base/match.html">%in%</a></span> <span class="va">all_series</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>    <span class="fu">select</span><span class="op">(</span><span class="va">series</span>, <span class="va">date</span>, cpi <span class="op">=</span> <span class="va">.value</span>,</span>
+<span>           <span class="va">lo90</span>, <span class="va">hi90</span>, <span class="va">lo95</span>, <span class="va">hi95</span>, <span class="va">lo99</span>, <span class="va">hi99</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>    <span class="fu">mutate</span><span class="op">(</span>.key <span class="op">=</span> <span class="st">"prediction"</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">plot_data</span>  <span class="op">&lt;-</span> <span class="fu">bind_rows</span><span class="op">(</span><span class="va">actuals_all</span>, <span class="va">forecast_all</span><span class="op">)</span></span>
+<span>  <span class="va">all_levels</span> <span class="op">&lt;-</span> <span class="va">parent_lookup</span> <span class="op">%&gt;%</span> <span class="fu">pull</span><span class="op">(</span><span class="va">Level</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">ui</span> <span class="op">&lt;-</span> <span class="fu">fluidPage</span><span class="op">(</span></span>
+<span>    <span class="va">tags</span><span class="op">$</span><span class="fu">head</span><span class="op">(</span><span class="va">tags</span><span class="op">$</span><span class="fu">style</span><span class="op">(</span><span class="fu">HTML</span><span class="op">(</span><span class="st">"</span></span>
+<span><span class="st">      @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&amp;family=DM+Mono:wght@400;500&amp;display=swap');</span></span>
+<span><span class="st">      * { box-sizing: border-box; }</span></span>
+<span><span class="st">      body { font-family: 'DM Sans', sans-serif; background: #f8fafc; color: #1e293b; margin: 0; padding: 0; }</span></span>
+<span><span class="st">      .dashboard-wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }</span></span>
+<span><span class="st">      .dashboard-header { margin-bottom: 24px; }</span></span>
+<span><span class="st">      .dashboard-header h1 { font-size: 22px; font-weight: 600; color: #0f172a; margin: 0 0 4px 0; letter-spacing: -0.3px; }</span></span>
+<span><span class="st">      .dashboard-header p { font-size: 13px; color: #94a3b8; margin: 0; }</span></span>
+<span><span class="st">      .controls-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }</span></span>
+<span><span class="st">      .control-group { display: flex; flex-direction: column; gap: 4px; }</span></span>
+<span><span class="st">      .control-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.6px; color: #94a3b8; }</span></span>
+<span><span class="st">      .control-group select { font-family: 'DM Sans', sans-serif; font-size: 13px; color: #1e293b; background: #ffffff;</span></span>
+<span><span class="st">        border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 32px 8px 12px; appearance: none; -webkit-appearance: none;</span></span>
+<span><span class="st">        background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\");</span></span>
+<span><span class="st">        background-repeat: no-repeat; background-position: right 10px center; cursor: pointer; min-width: 160px;</span></span>
+<span><span class="st">        box-shadow: 0 1px 3px rgba(0,0,0,0.04); transition: border-color 0.15s, box-shadow 0.15s; }</span></span>
+<span><span class="st">      .control-group select:focus { outline: none; border-color: #3B82F6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }</span></span>
+<span><span class="st">      #category_select { min-width: 320px; }</span></span>
+<span><span class="st">      .chart-card { background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 20px 20px 8px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }</span></span>
+<span><span class="st">      .chart-title { font-size: 14px; font-weight: 600; color: #0f172a; margin: 0 0 2px 0; }</span></span>
+<span><span class="st">      .chart-subtitle { font-size: 12px; color: #94a3b8; margin: 0 0 16px 0; font-family: 'DM Mono', monospace; }</span></span>
+<span><span class="st">      .plotly .modebar { top: 8px !important; right: 8px !important; }</span></span>
+<span><span class="st">    "</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
+<span></span>
+<span>    <span class="fu">div</span><span class="op">(</span>class <span class="op">=</span> <span class="st">"dashboard-wrapper"</span>,</span>
+<span>      <span class="fu">div</span><span class="op">(</span>class <span class="op">=</span> <span class="st">"dashboard-header"</span>,</span>
+<span>        <span class="va">tags</span><span class="op">$</span><span class="fu">h1</span><span class="op">(</span><span class="st">"Singapore CPI Forecast Dashboard"</span><span class="op">)</span>,</span>
+<span>        <span class="va">tags</span><span class="op">$</span><span class="fu">p</span><span class="op">(</span><span class="st">"Hierarchical forecasts aggregated bottom-up · Jan 2020 – Dec 2026"</span><span class="op">)</span></span>
+<span>      <span class="op">)</span>,</span>
+<span>      <span class="fu">div</span><span class="op">(</span>class <span class="op">=</span> <span class="st">"controls-row"</span>,</span>
+<span>        <span class="fu">div</span><span class="op">(</span>class <span class="op">=</span> <span class="st">"control-group"</span>,</span>
+<span>          <span class="fu">div</span><span class="op">(</span>class <span class="op">=</span> <span class="st">"control-label"</span>, <span class="st">"Hierarchy Level"</span><span class="op">)</span>,</span>
+<span>          <span class="fu">selectInput</span><span class="op">(</span><span class="st">"level_select"</span>, label <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>                      choices  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html">setNames</a></span><span class="op">(</span><span class="va">all_levels</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="st">"Level"</span>, <span class="va">all_levels</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                      selected <span class="op">=</span> <span class="va">all_levels</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, width <span class="op">=</span> <span class="st">"160px"</span><span class="op">)</span></span>
+<span>        <span class="op">)</span>,</span>
+<span>        <span class="fu">div</span><span class="op">(</span>class <span class="op">=</span> <span class="st">"control-group"</span>,</span>
+<span>          <span class="fu">div</span><span class="op">(</span>class <span class="op">=</span> <span class="st">"control-label"</span>, <span class="st">"Category"</span><span class="op">)</span>,</span>
+<span>          <span class="fu">selectInput</span><span class="op">(</span><span class="st">"category_select"</span>, label <span class="op">=</span> <span class="cn">NULL</span>, choices <span class="op">=</span> <span class="cn">NULL</span>, width <span class="op">=</span> <span class="st">"380px"</span><span class="op">)</span></span>
+<span>        <span class="op">)</span></span>
+<span>      <span class="op">)</span>,</span>
+<span>      <span class="fu">div</span><span class="op">(</span>class <span class="op">=</span> <span class="st">"chart-card"</span>,</span>
+<span>        <span class="fu">uiOutput</span><span class="op">(</span><span class="st">"chart_header"</span><span class="op">)</span>,</span>
+<span>        <span class="fu">plotlyOutput</span><span class="op">(</span><span class="st">"cpi_plot"</span>, height <span class="op">=</span> <span class="st">"480px"</span><span class="op">)</span></span>
+<span>      <span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">server</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">input</span>, <span class="va">output</span>, <span class="va">session</span><span class="op">)</span> <span class="op">{</span></span>
+<span></span>
+<span>    <span class="fu">observeEvent</span><span class="op">(</span><span class="va">input</span><span class="op">$</span><span class="va">level_select</span>, <span class="op">{</span></span>
+<span>      <span class="va">lvl</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">as.integer</a></span><span class="op">(</span><span class="va">input</span><span class="op">$</span><span class="va">level_select</span><span class="op">)</span></span>
+<span>      <span class="va">cats</span> <span class="op">&lt;-</span> <span class="va">parent_lookup</span> <span class="op">%&gt;%</span></span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">Level</span> <span class="op">==</span> <span class="va">lvl</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>        <span class="fu">pull</span><span class="op">(</span><span class="va">series</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html">unique</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html">sort</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>      <span class="fu">updateSelectInput</span><span class="op">(</span><span class="va">session</span>, <span class="st">"category_select"</span>, choices <span class="op">=</span> <span class="va">cats</span><span class="op">)</span></span>
+<span>    <span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="va">output</span><span class="op">$</span><span class="va">chart_header</span> <span class="op">&lt;-</span> <span class="fu">renderUI</span><span class="op">(</span><span class="op">{</span></span>
+<span>      <span class="fu">req</span><span class="op">(</span><span class="va">input</span><span class="op">$</span><span class="va">category_select</span><span class="op">)</span></span>
+<span>      <span class="fu">tagList</span><span class="op">(</span></span>
+<span>        <span class="fu">div</span><span class="op">(</span>class <span class="op">=</span> <span class="st">"chart-title"</span>, <span class="va">input</span><span class="op">$</span><span class="va">category_select</span><span class="op">)</span>,</span>
+<span>        <span class="fu">div</span><span class="op">(</span>class <span class="op">=</span> <span class="st">"chart-subtitle"</span>,</span>
+<span>            <span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Level "</span>, <span class="va">input</span><span class="op">$</span><span class="va">level_select</span>, <span class="st">"  ·  CPI Index (Base: 2024 = 100)"</span><span class="op">)</span><span class="op">)</span></span>
+<span>      <span class="op">)</span></span>
+<span>    <span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span>    <span class="va">output</span><span class="op">$</span><span class="va">cpi_plot</span> <span class="op">&lt;-</span> <span class="fu">renderPlotly</span><span class="op">(</span><span class="op">{</span></span>
+<span>      <span class="fu">req</span><span class="op">(</span><span class="va">input</span><span class="op">$</span><span class="va">category_select</span><span class="op">)</span></span>
+<span>      <span class="va">s</span>           <span class="op">&lt;-</span> <span class="va">input</span><span class="op">$</span><span class="va">category_select</span></span>
+<span>      <span class="va">actual_data</span> <span class="op">&lt;-</span> <span class="va">plot_data</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">series</span> <span class="op">==</span> <span class="va">s</span>, <span class="va">.key</span> <span class="op">==</span> <span class="st">"actual"</span><span class="op">)</span></span>
+<span>      <span class="va">fc_data</span>     <span class="op">&lt;-</span> <span class="va">plot_data</span> <span class="op">%&gt;%</span> <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span><span class="va">series</span> <span class="op">==</span> <span class="va">s</span>, <span class="va">.key</span> <span class="op">==</span> <span class="st">"prediction"</span><span class="op">)</span></span>
+<span></span>
+<span>      <span class="va">p</span> <span class="op">&lt;-</span> <span class="fu">plot_ly</span><span class="op">(</span>height <span class="op">=</span> <span class="fl">480</span><span class="op">)</span></span>
+<span></span>
+<span>      <span class="co"># Only add CI ribbons and forecast line if forecast data exists</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html">nrow</a></span><span class="op">(</span><span class="va">fc_data</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">p</span> <span class="op">&lt;-</span> <span class="va">p</span> <span class="op">%&gt;%</span></span>
+<span>          <span class="fu">add_ribbons</span><span class="op">(</span></span>
+<span>            x         <span class="op">=</span> <span class="va">fc_data</span><span class="op">$</span><span class="va">date</span>,</span>
+<span>            ymin      <span class="op">=</span> <span class="va">fc_data</span><span class="op">$</span><span class="va">lo99</span>,</span>
+<span>            ymax      <span class="op">=</span> <span class="va">fc_data</span><span class="op">$</span><span class="va">hi99</span>,</span>
+<span>            name      <span class="op">=</span> <span class="st">"99% CI"</span>,</span>
+<span>            line      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"transparent"</span><span class="op">)</span>,</span>
+<span>            fillcolor <span class="op">=</span> <span class="st">"rgba(249, 115, 22, 0.10)"</span>,</span>
+<span>            hoverinfo <span class="op">=</span> <span class="st">"skip"</span></span>
+<span>          <span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>          <span class="fu">add_ribbons</span><span class="op">(</span></span>
+<span>            x         <span class="op">=</span> <span class="va">fc_data</span><span class="op">$</span><span class="va">date</span>,</span>
+<span>            ymin      <span class="op">=</span> <span class="va">fc_data</span><span class="op">$</span><span class="va">lo95</span>,</span>
+<span>            ymax      <span class="op">=</span> <span class="va">fc_data</span><span class="op">$</span><span class="va">hi95</span>,</span>
+<span>            name      <span class="op">=</span> <span class="st">"95% CI"</span>,</span>
+<span>            line      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"transparent"</span><span class="op">)</span>,</span>
+<span>            fillcolor <span class="op">=</span> <span class="st">"rgba(249, 115, 22, 0.15)"</span>,</span>
+<span>            hoverinfo <span class="op">=</span> <span class="st">"skip"</span></span>
+<span>          <span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>          <span class="fu">add_ribbons</span><span class="op">(</span></span>
+<span>            x         <span class="op">=</span> <span class="va">fc_data</span><span class="op">$</span><span class="va">date</span>,</span>
+<span>            ymin      <span class="op">=</span> <span class="va">fc_data</span><span class="op">$</span><span class="va">lo90</span>,</span>
+<span>            ymax      <span class="op">=</span> <span class="va">fc_data</span><span class="op">$</span><span class="va">hi90</span>,</span>
+<span>            name      <span class="op">=</span> <span class="st">"90% CI"</span>,</span>
+<span>            line      <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"transparent"</span><span class="op">)</span>,</span>
+<span>            fillcolor <span class="op">=</span> <span class="st">"rgba(249, 115, 22, 0.22)"</span>,</span>
+<span>            hoverinfo <span class="op">=</span> <span class="st">"skip"</span></span>
+<span>          <span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>          <span class="fu">add_trace</span><span class="op">(</span></span>
+<span>            x             <span class="op">=</span> <span class="va">fc_data</span><span class="op">$</span><span class="va">date</span>,</span>
+<span>            y             <span class="op">=</span> <span class="va">fc_data</span><span class="op">$</span><span class="va">cpi</span>,</span>
+<span>            type          <span class="op">=</span> <span class="st">"scatter"</span>, mode <span class="op">=</span> <span class="st">"lines"</span>,</span>
+<span>            name          <span class="op">=</span> <span class="st">"Forecast"</span>,</span>
+<span>            line          <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"#F97316"</span>, width <span class="op">=</span> <span class="fl">2.5</span>, dash <span class="op">=</span> <span class="st">"dot"</span><span class="op">)</span>,</span>
+<span>            hovertemplate <span class="op">=</span> <span class="st">"&lt;b&gt;%{x|%b %Y}&lt;/b&gt;&lt;br&gt;CPI: %{y:.2f}&lt;extra&gt;Forecast&lt;/extra&gt;"</span></span>
+<span>          <span class="op">)</span></span>
+<span>      <span class="op">}</span></span>
+<span></span>
+<span>      <span class="va">p</span> <span class="op">%&gt;%</span></span>
+<span>        <span class="fu">add_trace</span><span class="op">(</span></span>
+<span>          x             <span class="op">=</span> <span class="va">actual_data</span><span class="op">$</span><span class="va">date</span>,</span>
+<span>          y             <span class="op">=</span> <span class="va">actual_data</span><span class="op">$</span><span class="va">cpi</span>,</span>
+<span>          type          <span class="op">=</span> <span class="st">"scatter"</span>, mode <span class="op">=</span> <span class="st">"lines"</span>,</span>
+<span>          name          <span class="op">=</span> <span class="st">"Actual"</span>,</span>
+<span>          line          <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"#3B82F6"</span>, width <span class="op">=</span> <span class="fl">2.5</span><span class="op">)</span>,</span>
+<span>          hovertemplate <span class="op">=</span> <span class="st">"&lt;b&gt;%{x|%b %Y}&lt;/b&gt;&lt;br&gt;CPI: %{y:.2f}&lt;extra&gt;Actual&lt;/extra&gt;"</span></span>
+<span>        <span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/graphics/layout.html">layout</a></span><span class="op">(</span></span>
+<span>          xaxis <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>            title <span class="op">=</span> <span class="st">""</span>, showgrid <span class="op">=</span> <span class="cn">TRUE</span>, gridcolor <span class="op">=</span> <span class="st">"#f1f5f9"</span>, zeroline <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>            tickfont <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">11</span>, color <span class="op">=</span> <span class="st">"#64748b"</span>, family <span class="op">=</span> <span class="st">"DM Sans"</span><span class="op">)</span>,</span>
+<span>            rangeslider <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>visible <span class="op">=</span> <span class="cn">TRUE</span>, thickness <span class="op">=</span> <span class="fl">0.07</span>,</span>
+<span>                               bgcolor <span class="op">=</span> <span class="st">"#f8fafc"</span>, bordercolor <span class="op">=</span> <span class="st">"#e2e8f0"</span>, borderwidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>            rangeselector <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>              buttons <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>                <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>count <span class="op">=</span> <span class="fl">6</span>,  label <span class="op">=</span> <span class="st">"6M"</span>,  step <span class="op">=</span> <span class="st">"month"</span>, stepmode <span class="op">=</span> <span class="st">"backward"</span><span class="op">)</span>,</span>
+<span>                <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>count <span class="op">=</span> <span class="fl">12</span>, label <span class="op">=</span> <span class="st">"1Y"</span>,  step <span class="op">=</span> <span class="st">"month"</span>, stepmode <span class="op">=</span> <span class="st">"backward"</span><span class="op">)</span>,</span>
+<span>                <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>count <span class="op">=</span> <span class="fl">24</span>, label <span class="op">=</span> <span class="st">"2Y"</span>,  step <span class="op">=</span> <span class="st">"month"</span>, stepmode <span class="op">=</span> <span class="st">"backward"</span><span class="op">)</span>,</span>
+<span>                <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>step <span class="op">=</span> <span class="st">"all"</span>, label <span class="op">=</span> <span class="st">"All"</span><span class="op">)</span></span>
+<span>              <span class="op">)</span>,</span>
+<span>              bgcolor <span class="op">=</span> <span class="st">"#f8fafc"</span>, activecolor <span class="op">=</span> <span class="st">"#3B82F6"</span>,</span>
+<span>              bordercolor <span class="op">=</span> <span class="st">"#e2e8f0"</span>, font <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">11</span>, family <span class="op">=</span> <span class="st">"DM Sans"</span><span class="op">)</span></span>
+<span>            <span class="op">)</span></span>
+<span>          <span class="op">)</span>,</span>
+<span>          yaxis <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span></span>
+<span>            title    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>text <span class="op">=</span> <span class="st">"CPI Value"</span>,</span>
+<span>                            font <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">11</span>, color <span class="op">=</span> <span class="st">"#94a3b8"</span>, family <span class="op">=</span> <span class="st">"DM Sans"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>            showgrid <span class="op">=</span> <span class="cn">TRUE</span>, gridcolor <span class="op">=</span> <span class="st">"#f1f5f9"</span>, zeroline <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>            tickfont <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">11</span>, color <span class="op">=</span> <span class="st">"#64748b"</span>, family <span class="op">=</span> <span class="st">"DM Sans"</span><span class="op">)</span></span>
+<span>          <span class="op">)</span>,</span>
+<span>          legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>orientation <span class="op">=</span> <span class="st">"h"</span>, x <span class="op">=</span> <span class="fl">0</span>, xanchor <span class="op">=</span> <span class="st">"left"</span>,</span>
+<span>                        y <span class="op">=</span> <span class="op">-</span><span class="fl">0.32</span>, yanchor <span class="op">=</span> <span class="st">"top"</span>,</span>
+<span>                        font <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">12</span>, family <span class="op">=</span> <span class="st">"DM Sans"</span><span class="op">)</span>,</span>
+<span>                        bgcolor <span class="op">=</span> <span class="st">"rgba(0,0,0,0)"</span><span class="op">)</span>,</span>
+<span>          plot_bgcolor <span class="op">=</span> <span class="st">"#ffffff"</span>, paper_bgcolor <span class="op">=</span> <span class="st">"#ffffff"</span>,</span>
+<span>          margin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>t <span class="op">=</span> <span class="fl">10</span>, r <span class="op">=</span> <span class="fl">10</span>, b <span class="op">=</span> <span class="fl">60</span>, l <span class="op">=</span> <span class="fl">55</span><span class="op">)</span>,</span>
+<span>          hoverlabel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>bgcolor <span class="op">=</span> <span class="st">"#1e293b"</span>,</span>
+<span>                            font <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">12</span>, color <span class="op">=</span> <span class="st">"#ffffff"</span>, family <span class="op">=</span> <span class="st">"DM Sans"</span><span class="op">)</span>,</span>
+<span>                            bordercolor <span class="op">=</span> <span class="st">"#1e293b"</span><span class="op">)</span></span>
+<span>        <span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>        <span class="fu">config</span><span class="op">(</span>displayModeBar <span class="op">=</span> <span class="cn">TRUE</span>, displaylogo <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>               modeBarButtonsToRemove <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span><span class="st">"lasso2d"</span>, <span class="st">"select2d"</span>, <span class="st">"autoScale2d"</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="op">}</span><span class="op">)</span></span>
+<span>  <span class="op">}</span></span>
+<span></span>
+<span>  <span class="fu">shinyApp</span><span class="op">(</span><span class="va">ui</span>, <span class="va">server</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="fu">build_cpi_shiny</span><span class="op">(</span></span>
+<span>  parent_lookup <span class="op">=</span> <span class="va">parent_lookup</span>,</span>
+<span>  actuals_data  <span class="op">=</span> <span class="va">cpi_data_long</span>,</span>
+<span>  forecast_data <span class="op">=</span> <span class="va">reconciled_forecasts</span></span>
+<span><span class="op">)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section></section></main><!-- /main column --><script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+</body></html>
