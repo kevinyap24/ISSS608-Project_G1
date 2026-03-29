@@ -1,0 +1,487 @@
+-------------------------------------------- FINAL CODE --------------------------------------------
+
+## Introduction
+Building on from the EDA section, this part proceeds to implement a **time series forecasting** workflow for Singapore Consumer Price Index (CPI). 
+
+CPI dataset used in this study covers **monthly data from January 2020 to December 2025**, structured across hierarchical classification of expenditures ranging from overall CPI down to detailed items. This hierarchical structure mandates forecast to be generated at the most granular level and when aggregated up it must remain consistent.
+
+This study addresses this challenge through a **bottom-up hierarchical forecasting approach**, where forecasts are produced on each of the lowest-level index (leaf nodes) and subsequently aggregated up through hierarchy using the official Department of Statistics (DOS) weights to derive forecasts for all parent categories, including the overall cPI.
+
+## Methodology
+The forecasting workflow uses **modeltime** and *tidymodels** frameworks. These framework provides a unified interface for training, evaluating, and refitting time series models. These frameworks also support both classical statistical models and modern machine learning approaches. 
+
+Each of the CPI series are evaluated using the following forecasting models:
+
+| Model                  | Type                | Key Strength                                                        |
+|------------------------|---------------------|---------------------------------------------------------------------|
+| ETS                    | Classical           | Captures trend and seasonality via exponential smoothing            |
+| Auto-ARIMA             | Classical           | Automated order selection for optimal fit on stationary series      |
+| Auto-ARIMA + XGBoost   | Hybrid              | Combines Auto-ARIMA with XGBoost to capture non-linear residuals    |
+| Prophet                | Additive Regression | Robust to missing data and handles seasonal shifts flexibly         |
+
+Models are trained and evaluated using **nested forecasting** workflow and through `modeltime_nested_fit()` function. Each CPI leaf nodes are treated as independent nested dataset, with the last 12 months held out as a test set. The model with the **lowest RMSE** on the test set is selected as the best model for the particular serie. All selected models are then refitted on the full data before generating the 12-month forecast.
+
+After generating leaf-level forecasts, **weighted bottom-up aggregation** is applied. Parent-level forecasts are computed as the weighted average of their children forecasts, using the official DOS CPI basket weights. This process is repeated from the most granular level up to the overall CPI. Same aggregation is applied to the **90%**, **95%**, and **99%** Confidence Interval.
+
+## Time Series Forecasting Workflow
+The forecasting workflow is structured into the following stages:
+
+**Data Preparation** begins by loading the clean dataset produced from the EDA part. The data is padded to ensure complete monthly time series for every series, and missing values (if any) are imputed using linear interpolation using `ts_impute_vec()`.
+
+**Hierarchy Derivation**
+
+
+
+Load Packages
+```{r}
+pacman::p_load(readxl, tidyverse, timetk, modeltime, tidymodels, lubridate, plotly, shiny)
+```
+Load Data
+```{r}
+cpi_data_long <- read_rds("data/cpi_h.rds")
+```
+
+Pad & Impute
+```{r}
+cpi_data_long <- cpi_data_long %>%
+  group_by(series) %>%
+  arrange(date) %>%
+  pad_by_time(.date_var = date, .by = "month") %>%
+  mutate(cpi = ts_impute_vec(cpi, period = 1)) %>%
+  fill(cpi, .direction = "downup") %>%
+  ungroup()
+```
+
+Sanity Check
+```{r}
+cpi_data_long %>% filter(is.na(cpi))
+```
+Derive Parent Lookup
+```{r}
+parent_lookup <- cpi_data_long %>%
+  distinct(series, level, division, group) %>%
+  mutate(Parent = case_when(
+    level == 1 ~ "Consumer Price Index (CPI)",
+    level == 2 ~ division,
+    level == 3 ~ group,
+    TRUE ~ NA_character_
+  )) %>%
+  select(series, Level = level, Parent)
+```
+
+Identify Leaf Nodes (Series with No children)
+```{r}
+all_parents <- parent_lookup %>%
+  filter(!is.na(Parent)) %>%
+  pull(Parent) %>%
+  unique()
+
+leaf_categories <- cpi_data_long %>%
+  filter(level > 0,
+         !series %in% all_parents) %>%
+  distinct(series) %>%
+  pull(series)
+```
+
+
+Prepare Nested Forecasting Data
+```{r}
+nested_data_tbl <- cpi_data_long %>%
+  filter(series %in% leaf_categories) %>%
+  extend_timeseries(
+    .id_var = series,
+    .date_var = date,
+    .length_future = 12
+  ) %>%
+  nest_timeseries(
+    .id_var = series,
+    .length_future = 12
+  ) %>%
+  split_nested_timeseries(.length_test = 12)
+```
+
+Define Models
+```{r}
+model_ets     <- exp_smoothing() %>% set_engine("ets")
+model_arima   <- arima_reg()     %>% set_engine("auto_arima")
+model_boost   <- arima_boost()   %>% set_engine("auto_arima_xgboost")
+model_prophet <- prophet_reg()   %>% set_engine("prophet")
+```
+
+Build Workflows
+```{r}
+wf_ets <- workflow() %>%
+  add_model(model_ets) %>%
+  add_recipe(recipe(cpi ~ date, data = extract_nested_train_split(nested_data_tbl)))
+
+wf_arima <- workflow() %>%
+  add_model(model_arima) %>%
+  add_recipe(recipe(cpi ~ date, data = extract_nested_train_split(nested_data_tbl)))
+
+wf_prophet <- workflow() %>%
+  add_model(model_prophet) %>%
+  add_recipe(recipe(cpi ~ date, data = extract_nested_train_split(nested_data_tbl)))
+
+wf_boost <- workflow() %>%
+  add_model(model_boost) %>%
+  add_recipe(
+    recipe(cpi ~ date, data = extract_nested_train_split(nested_data_tbl)) %>%
+      step_timeseries_signature(date) %>%
+      step_rm(matches("(xts$)|(iso$)|(hour)|(minute)|(second)|(am.pm)")) %>%
+      step_dummy(all_nominal_predictors(), one_hot = TRUE)
+  )
+```
+
+Fit Models
+```{r}
+nested_modeltime_tbl <- modeltime_nested_fit(
+  nested_data = nested_data_tbl,
+  wf_ets, wf_arima, wf_boost, wf_prophet,
+  control = control_nested_fit(allow_par = FALSE, verbose = TRUE)
+)
+```
+
+Select Best Model
+```{r}
+best_nested_models <- nested_modeltime_tbl %>%
+  modeltime_nested_select_best(
+    metric                = "rmse",
+    minimize              = TRUE,
+    filter_test_forecasts = TRUE
+  )
+```
+
+Refit and Forecast Leaf Nodes
+```{r}
+refitted_nested_models <- best_nested_models %>%
+  modeltime_nested_refit(control = control_nested_refit(verbose = TRUE))
+
+leaf_fc_90 <- refitted_nested_models %>%
+  modeltime_nested_forecast(
+    h = 12,
+    conf_interval = 0.90,
+    control = control_nested_forecast(verbose = TRUE)
+  ) %>%
+  filter(.key == "prediction") %>%
+  select(date = .index, series, .value,
+         lo90 = .conf_lo, hi90 = .conf_hi)
+
+leaf_fc_95 <- refitted_nested_models %>%
+  modeltime_nested_forecast(
+    h = 12,
+    conf_interval = 0.95,
+    control = control_nested_forecast(verbose = TRUE)
+  ) %>%
+  filter(.key == "prediction") %>%
+  select(date = .index, series, lo95 = .conf_lo, hi95 = .conf_hi)
+
+leaf_fc_99 <- refitted_nested_models %>%
+  modeltime_nested_forecast(
+    h = 12,
+    conf_interval = 0.99,
+    control = control_nested_forecast(verbose = TRUE)
+  ) %>%
+  filter(.key == "prediction") %>%
+  select(date = .index, series, lo99 = .conf_lo, hi99 = .conf_hi)
+
+leaf_fc <- leaf_fc_90 %>%
+  left_join(leaf_fc_95, by = c("date", "series")) %>%
+  left_join(leaf_fc_99, by = c("date", "series"))
+```
+
+Define Weights
+```{r}
+weights_tbl <- tribble(
+  ~series,                                                                       ~Weight,
+  "FFBSS: Rice & Cereals",                                                        122,
+  "FFBSS: Meat",                                                                  101,
+  "FFBSS: Fish & Seafood",                                                         79,
+  "FFBSS: Milk, Other Dairy & Eggs",                                               64,
+  "FFBSS: Oils & Fats",                                                            12,
+  "FFBSS: Fruits & Nuts (FN)",                                                     79,
+  "FFBSS: Vegetables",                                                             82,
+  "FFBSS: Sugar, Confectionery & Desserts (SCD)",                                  27,
+  "FFBSS: Ready-Made & Oth. Food Nec",                                             44,
+  "FFBSS: Non-Alcoholic Beverages",                                                41,
+  "FBSS: Restaurants, Cafes & Pubs",                                              585,
+  "FBSS: Fast Food",                                                               85,
+  "FBSS: Hawker Food Incl. Food Courts (HF&FC)",                                  707,
+  "FBSS: Oth Catering Services, Incl Vending Machines",                            14,
+  "C&F: Clothing",                                                                129,
+  "C&F: Footwear",                                                                 36,
+  "Housing & Utilities: Accommodation",                                          2656,
+  "Housing & Utilities: Utilities & Other Fuels",                                 282,
+  "HDS: Furniture & Furnishings",                                                 128,
+  "HDS: Household Textiles",                                                       17,
+  "HDS: Household Appliances",                                                    101,
+  "HDS: Glassware, Tableware & Household Utensils",                                17,
+  "HDS: Tools & Equipment For House & Garden",                                      5,
+  "HDS: Household Services & Supplies (HSS)",                                     279,
+  "Health: Medicines & Health Products",                                           94,
+  "Health: Outpatient Services",                                                  428,
+  "Health: Inpatient Services",                                                   238,
+  "Health: Other Health Services (OHS)",                                           23,
+  "Health: Health Insurance",                                                     225,
+  "Transport: Private Transport",                                                 906,
+  "Transport: Land Transport Services",                                           262,
+  "Transport: Other Transport Services",                                          131,
+  "Transport: Transport Services Of Goods",                                         8,
+  "InfoComm: Information & Communication Equipment",                               91,
+  "InfoComm: Software Excl Games",                                                  3,
+  "InfoComm: InfoComm Services",                                                  287,
+  "RSC: Recreational & Cultural Goods",                                             9,
+  "RSC: Other Recreational Goods (ORG)",                                           33,
+  "RSC: Garden Products & Pets",                                                   27,
+  "RSC: Recreational Services",                                                   144,
+  "RSC: Cultural Services",                                                        52,
+  "RSC: Newspapers, Books & Stationery (NBS)",                                     20,
+  "RSC: Holiday Expenses",                                                        310,
+  "Education: General, Vocational & Higher Education (GVH Edu)",                 391,
+  "Education: Private Tuition & Other Educational Courses",                      184,
+  "Education: School Textbooks & Study Guides",                                    4,
+  "MG&S: Personal Care",                                                          211,
+  "MG&S: Alcoholic Drinks & Tobacco",                                              58,
+  "MG&S: Personal Effects",                                                        62,
+  "MG&S: Social Services",                                                         32,
+  "MG&S: Other Miscellaneous Services",                                            75
+)
+```
+
+Bottom-up Aggregation based on the above defined weight
+```{r}
+aggregate_bottom_up <- function(forecasts, parent_lookup, weights_tbl) {
+  all_levels <- forecasts %>%
+    left_join(weights_tbl, by = "series")
+
+  levels_to_agg <- parent_lookup %>%
+    filter(!is.na(Parent)) %>%
+    arrange(desc(Level)) %>%
+    pull(Level) %>%
+    unique()
+
+  for (lvl in levels_to_agg) {
+    child_nodes <- parent_lookup %>%
+      filter(Level == lvl) %>%
+      select(series, Parent)
+
+    parent_fc <- all_levels %>%
+      inner_join(child_nodes, by = "series") %>%
+      group_by(date, series = Parent) %>%
+      summarise(
+        .value = sum(.value * Weight) / sum(Weight),
+        lo90   = sum(lo90   * Weight) / sum(Weight),  
+        hi90   = sum(hi90   * Weight) / sum(Weight),  
+        lo95   = sum(lo95   * Weight) / sum(Weight),  
+        hi95   = sum(hi95   * Weight) / sum(Weight),  
+        lo99   = sum(lo99   * Weight) / sum(Weight),  
+        hi99   = sum(hi99   * Weight) / sum(Weight),  
+        Weight = sum(Weight),
+        .groups = "drop"
+      )
+
+    all_levels <- bind_rows(all_levels, parent_fc) %>%
+      distinct(date, series, .keep_all = TRUE)
+  }
+  return(all_levels)
+}
+
+reconciled_forecasts <- aggregate_bottom_up(leaf_fc, parent_lookup, weights_tbl)
+
+```
+
+
+```{r}
+build_cpi_shiny <- function(parent_lookup, actuals_data, forecast_data) {
+
+  all_series <- parent_lookup %>% pull(series) %>% unique()
+
+  actuals_all <- actuals_data %>%
+    filter(series %in% all_series) %>%
+    select(series, date, cpi) %>%
+    mutate(.key = "actual")
+
+  forecast_all <- forecast_data %>%
+    filter(series %in% all_series) %>%
+    select(series, date, cpi = .value,
+           lo90, hi90, lo95, hi95, lo99, hi99) %>%
+    mutate(.key = "prediction")
+
+  plot_data  <- bind_rows(actuals_all, forecast_all)
+  all_levels <- parent_lookup %>% pull(Level) %>% unique() %>% sort()
+
+  ui <- fluidPage(
+    tags$head(tags$style(HTML("
+      @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+      * { box-sizing: border-box; }
+      body { font-family: 'DM Sans', sans-serif; background: #f8fafc; color: #1e293b; margin: 0; padding: 0; }
+      .dashboard-wrapper { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+      .dashboard-header { margin-bottom: 24px; }
+      .dashboard-header h1 { font-size: 22px; font-weight: 600; color: #0f172a; margin: 0 0 4px 0; letter-spacing: -0.3px; }
+      .dashboard-header p { font-size: 13px; color: #94a3b8; margin: 0; }
+      .controls-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+      .control-group { display: flex; flex-direction: column; gap: 4px; }
+      .control-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.6px; color: #94a3b8; }
+      .control-group select { font-family: 'DM Sans', sans-serif; font-size: 13px; color: #1e293b; background: #ffffff;
+        border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 32px 8px 12px; appearance: none; -webkit-appearance: none;
+        background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\");
+        background-repeat: no-repeat; background-position: right 10px center; cursor: pointer; min-width: 160px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04); transition: border-color 0.15s, box-shadow 0.15s; }
+      .control-group select:focus { outline: none; border-color: #3B82F6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+      #category_select { min-width: 320px; }
+      .chart-card { background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 20px 20px 8px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+      .chart-title { font-size: 14px; font-weight: 600; color: #0f172a; margin: 0 0 2px 0; }
+      .chart-subtitle { font-size: 12px; color: #94a3b8; margin: 0 0 16px 0; font-family: 'DM Mono', monospace; }
+      .plotly .modebar { top: 8px !important; right: 8px !important; }
+    "))),
+
+    div(class = "dashboard-wrapper",
+      div(class = "dashboard-header",
+        tags$h1("Singapore CPI Forecast Dashboard"),
+        tags$p("Hierarchical forecasts aggregated bottom-up · Jan 2020 – Dec 2026")
+      ),
+      div(class = "controls-row",
+        div(class = "control-group",
+          div(class = "control-label", "Hierarchy Level"),
+          selectInput("level_select", label = NULL,
+                      choices  = setNames(all_levels, paste("Level", all_levels)),
+                      selected = all_levels[1], width = "160px")
+        ),
+        div(class = "control-group",
+          div(class = "control-label", "Category"),
+          selectInput("category_select", label = NULL, choices = NULL, width = "380px")
+        )
+      ),
+      div(class = "chart-card",
+        uiOutput("chart_header"),
+        plotlyOutput("cpi_plot", height = "480px")
+      )
+    )
+  )
+
+  server <- function(input, output, session) {
+
+    observeEvent(input$level_select, {
+      lvl  <- as.integer(input$level_select)
+      cats <- parent_lookup %>%
+        filter(Level == lvl) %>%
+        pull(series) %>% unique() %>% sort()
+      updateSelectInput(session, "category_select", choices = cats)
+    })
+
+    output$chart_header <- renderUI({
+      req(input$category_select)
+      tagList(
+        div(class = "chart-title", input$category_select),
+        div(class = "chart-subtitle",
+            paste0("Level ", input$level_select, "  ·  CPI Index (Base: 2024 = 100)"))
+      )
+    })
+
+    output$cpi_plot <- renderPlotly({
+      req(input$category_select)
+      s           <- input$category_select
+      actual_data <- plot_data %>% filter(series == s, .key == "actual")
+      fc_data     <- plot_data %>% filter(series == s, .key == "prediction")
+
+      p <- plot_ly(height = 480)
+
+      # Only add CI ribbons and forecast line if forecast data exists
+      if (nrow(fc_data) > 0) {
+        p <- p %>%
+          add_ribbons(
+            x         = fc_data$date,
+            ymin      = fc_data$lo99,
+            ymax      = fc_data$hi99,
+            name      = "99% CI",
+            line      = list(color = "transparent"),
+            fillcolor = "rgba(249, 115, 22, 0.10)",
+            hoverinfo = "skip"
+          ) %>%
+          add_ribbons(
+            x         = fc_data$date,
+            ymin      = fc_data$lo95,
+            ymax      = fc_data$hi95,
+            name      = "95% CI",
+            line      = list(color = "transparent"),
+            fillcolor = "rgba(249, 115, 22, 0.15)",
+            hoverinfo = "skip"
+          ) %>%
+          add_ribbons(
+            x         = fc_data$date,
+            ymin      = fc_data$lo90,
+            ymax      = fc_data$hi90,
+            name      = "90% CI",
+            line      = list(color = "transparent"),
+            fillcolor = "rgba(249, 115, 22, 0.22)",
+            hoverinfo = "skip"
+          ) %>%
+          add_trace(
+            x             = fc_data$date,
+            y             = fc_data$cpi,
+            type          = "scatter", mode = "lines",
+            name          = "Forecast",
+            line          = list(color = "#F97316", width = 2.5, dash = "dot"),
+            hovertemplate = "<b>%{x|%b %Y}</b><br>CPI: %{y:.2f}<extra>Forecast</extra>"
+          )
+      }
+
+      p %>%
+        add_trace(
+          x             = actual_data$date,
+          y             = actual_data$cpi,
+          type          = "scatter", mode = "lines",
+          name          = "Actual",
+          line          = list(color = "#3B82F6", width = 2.5),
+          hovertemplate = "<b>%{x|%b %Y}</b><br>CPI: %{y:.2f}<extra>Actual</extra>"
+        ) %>%
+        layout(
+          xaxis = list(
+            title = "", showgrid = TRUE, gridcolor = "#f1f5f9", zeroline = FALSE,
+            tickfont = list(size = 11, color = "#64748b", family = "DM Sans"),
+            rangeslider = list(visible = TRUE, thickness = 0.07,
+                               bgcolor = "#f8fafc", bordercolor = "#e2e8f0", borderwidth = 1),
+            rangeselector = list(
+              buttons = list(
+                list(count = 6,  label = "6M",  step = "month", stepmode = "backward"),
+                list(count = 12, label = "1Y",  step = "month", stepmode = "backward"),
+                list(count = 24, label = "2Y",  step = "month", stepmode = "backward"),
+                list(step = "all", label = "All")
+              ),
+              bgcolor = "#f8fafc", activecolor = "#3B82F6",
+              bordercolor = "#e2e8f0", font = list(size = 11, family = "DM Sans")
+            )
+          ),
+          yaxis = list(
+            title    = list(text = "CPI Value",
+                            font = list(size = 11, color = "#94a3b8", family = "DM Sans")),
+            showgrid = TRUE, gridcolor = "#f1f5f9", zeroline = FALSE,
+            tickfont = list(size = 11, color = "#64748b", family = "DM Sans")
+          ),
+          legend = list(orientation = "h", x = 0, xanchor = "left",
+                        y = -0.32, yanchor = "top",
+                        font = list(size = 12, family = "DM Sans"),
+                        bgcolor = "rgba(0,0,0,0)"),
+          plot_bgcolor = "#ffffff", paper_bgcolor = "#ffffff",
+          margin = list(t = 10, r = 10, b = 60, l = 55),
+          hoverlabel = list(bgcolor = "#1e293b",
+                            font = list(size = 12, color = "#ffffff", family = "DM Sans"),
+                            bordercolor = "#1e293b")
+        ) %>%
+        config(displayModeBar = TRUE, displaylogo = FALSE,
+               modeBarButtonsToRemove = list("lasso2d", "select2d", "autoScale2d"))
+    })
+  }
+
+  shinyApp(ui, server)
+}
+
+build_cpi_shiny(
+  parent_lookup = parent_lookup,
+  actuals_data  = cpi_data_long,
+  forecast_data = reconciled_forecasts
+)
+```
+
+
+
+
