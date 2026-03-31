@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>proposal – SG CPI Forecast</title>
+<title>proposal_ex2</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -24,15 +24,15 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-html/tabby.min.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/light-border.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-html-734cb40618f438257b19a1e532635a32.min.css" rel="stylesheet" append-hash="true" data-mode="light">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="proposal_ex2_files/libs/clipboard/clipboard.min.js"></script>
+<script src="proposal_ex2_files/libs/quarto-html/tabby.min.js"></script>
+<script src="proposal_ex2_files/libs/quarto-html/popper.min.js"></script>
+<script src="proposal_ex2_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="proposal_ex2_files/libs/quarto-html/anchor.min.js"></script>
+<link href="proposal_ex2_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="proposal_ex2_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="proposal_ex2_files/libs/quarto-html/quarto-html-734cb40618f438257b19a1e532635a32.min.css" rel="stylesheet" append-hash="true" data-mode="light">
+<link href="proposal_ex2_files/libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&amp;family=IBM+Plex+Sans:ital,wght@0,300;0,500;0,700;1,300&amp;display=swap" rel="stylesheet">
 
 
@@ -169,6 +169,7 @@ main.content, div#quarto-content, .page-columns {
   border-left-color: var(--red);
   background: rgba(192,57,43,0.1);
 }
+/* Subsection indentation in sidebar */
 .sidebar-nav a.sub {
   padding-left: 2.5rem;
   font-size: 0.82rem;
@@ -221,12 +222,6 @@ main.content, div#quarto-content, .page-columns {
   font-size: 1.05rem !important; font-weight: 600 !important; color: var(--mid) !important;
   margin-top: 1.5rem !important; margin-bottom: 0.6rem !important;
 }
-.proposal-section h4 {
-  font-family: 'IBM Plex Sans', sans-serif !important;
-  font-size: 0.95rem !important; font-weight: 600 !important; color: var(--mid) !important;
-  margin-top: 1.2rem !important; margin-bottom: 0.4rem !important;
-  font-style: italic;
-}
 .proposal-section p {
   font-family: 'IBM Plex Sans', sans-serif;
   font-size: 0.975rem; font-weight: 300; line-height: 1.9;
@@ -266,28 +261,13 @@ main.content, div#quarto-content, .page-columns {
 }
 .chip.red { background: rgba(192,57,43,0.1); border-color: rgba(192,57,43,0.3); color: var(--red); }
 
-/* Timeline table */
-.timeline-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.875rem; }
-.timeline-table thead { background: var(--dark); }
-.timeline-table thead th {
-  padding: 0.65rem 1rem;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
-  font-weight: 600; color: var(--cream); border: none; text-align: left;
-}
-.timeline-table tbody td {
-  padding: 0.6rem 1rem; border-bottom: 1px solid #d8d2c8;
-  font-weight: 300; color: var(--mid); font-family: 'IBM Plex Sans', sans-serif;
-}
-.timeline-table tbody tr:hover { background: var(--off-white); }
-.timeline-table .bar { color: var(--red); font-size: 1rem; letter-spacing: -1px; }
-
 @media (max-width: 860px) {
   .proposal-sidebar { display: none; }
   .proposal-main { margin-left: 0; padding: 2rem 1.5rem 4rem; }
   .sg-nav { padding: 0 1.5rem; }
 }
 
+/* ── Code chunks ── */
 div.cell { margin: 1.5rem 0; }
 div.sourceCode {
   background: var(--dark) !important;
@@ -306,6 +286,14 @@ div.sourceCode pre {
   line-height: 1.6 !important;
   color: #f5f0e8 !important;
 }
+details.code-fold summary {
+  font-family: 'IBM Plex Mono', monospace !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.08em !important;
+  color: var(--muted) !important;
+  cursor: pointer; padding: 0.3rem 0; list-style: none;
+}
+details.code-fold summary:hover { color: var(--red-light) !important; }
 div.cell-output-display {
   margin-top: 1rem; border: 1px solid #d8d2c8;
   padding: 0.5rem; background: white;
@@ -332,7 +320,7 @@ div.cell-output-display {
       <div class="sidebar-logo-icon">SG<br>CPI</div>
       <div class="sidebar-logo-links">
         <a href="index.html" title="Home">🏠</a>
-        <a href="https://github.com/kevinyap24/ISSS608-Project_G1" title="GitHub" target="_blank">⌥</a>
+        <a href="https://github.com/" title="GitHub" target="_blank">⌥</a>
       </div>
     </div>
 
@@ -349,16 +337,15 @@ div.cell-output-display {
       <a href="#methodology-forecasting" class="sub">3.3 · Forecasting</a>
       <a href="#prototype">4 · Prototype</a>
       <a href="#minutes">5 · Minutes of Meeting</a>
-      <a href="#timeline">6 · Timeline &amp; Allocation</a>
     </nav>
   </aside>
 
   <!-- ── MAIN CONTENT ── -->
-  <main class="proposal-main"><header id="title-block-header" class="quarto-title-block"></header>
+  <main class="proposal-main">
 
     <h1 class="proposal-page-title">Forecasting Singapore's Consumer Price Index</h1>
-    <div class="proposal-author-label">Kevin A. Suyapto &nbsp;·&nbsp; Lee Jangho &nbsp;·&nbsp; Pan Yiqiong</div>
-    <div class="proposal-author">ISS608 Project — Group 1 &nbsp;·&nbsp; 15 Mar, 2026</div>
+    <div class="proposal-author-label">Kevin A. SUYAPTO, LEE Jangho, PAN Yiqiong</div>
+    <div class="proposal-author">ISS608 Project — Group 1</div>
     <hr class="proposal-divider">
 
     <!-- ══════════════════════════════════════════
@@ -369,18 +356,12 @@ div.cell-output-display {
 
       <h3 class="anchored">What is CPI?</h3>
       <p>
-        <strong>Consumer Price Index (CPI)</strong> is a widely used economic indicator that measures
-        inflation by tracking changes in the price level of a basket of goods and services consumed
-        by households. CPI provides an important reference for economic policy, wage adjustments, and
-        cost of living assessments. In Singapore, CPI statistics are compiled and published by the
-        Singapore Department of Statistics and are structured into 10 expenditure categories such as
-        food, housing, transport, healthcare, and recreation.
-      </p>
-      <p>
-        The CPI dataset naturally forms a hierarchical structure, where detailed consumption items
-        aggregate into broader categories and ultimately contribute to the overall inflation index.
-        For example, individual items such as rice, meat, and vegetables belong to lower level
-        sub-categories, which aggregate into food-related groups and eventually into the overall CPI.
+        <strong>Consumer Price Index (CPI)</strong> is a measure of the average change over time in
+        the price paid by households for a fixed basket of goods and services, representing typical
+        consumption patterns in a specific country. Singapore CPI is compiled on a monthly basis and
+        the categories covered are <strong>Food, Clothing and Footwear, Housing &amp; Utilities,
+        Household Durables &amp; Services, Health, Transport, Information &amp; Communication,
+        Recreation, Sport &amp; Culture, Education, Miscellaneous Goods &amp; Services</strong>.
       </p>
 
       <h3 class="anchored">Why CPI?</h3>
@@ -391,18 +372,18 @@ div.cell-output-display {
         disruptions in supply chain activities.
       </p>
       <p>
-        <strong>For households:</strong> The rise in inflation erodes purchasing power, making the
+        For <strong>households</strong>: The rise in inflation erodes purchasing power, making the
         price of everyday essentials such as food, transport, and utilities more expensive. CPI
         forecasts help households plan ahead — adjusting monthly budgets, timing big-ticket
         purchases, and planning savings and investments.
       </p>
       <p>
-        <strong>For businesses:</strong> Pricing strategies and cost planning are tightly related to
+        For <strong>businesses</strong>: Pricing strategies and cost planning are tightly related to
         expected inflation of direct materials. Access to reliable CPI forecasts allows businesses to
         anticipate pressures in the cost of doing business tied to inflation.
       </p>
       <p>
-        <strong>For policy makers:</strong> Unlike central banks in most countries, monetary policy
+        For <strong>policy makers</strong>: Unlike central banks in most countries, monetary policy
         managed by the Monetary Authority of Singapore (MAS) is centered on managing the Singapore
         Dollar against a trade-weighted basket of currencies (S$NEER). A stronger S$NEER makes
         imports cheaper, directly dampening consumer prices. CPI forecasts therefore complement
@@ -418,21 +399,9 @@ div.cell-output-display {
 
       <h3 class="anchored">Scope of Analysis</h3>
       <p>
-        This study examines monthly Singapore CPI data from <strong>January 2020 to December 2025</strong>,
-        covering multiple CPI categories from the overall index to detailed expenditure components
-        (Base Year: 2024 = 100), sourced from the CEIC database via SMU Library.
-      </p>
-      <p>
-        The chosen period captures a particularly turbulent inflation cycle. Beginning just before
-        the COVID-19 pandemic, the dataset spans the Circuit Breaker disruption of 2020, the global
-        supply chain constraints and demand surge of 2021–2022, and the subsequent disinflation into
-        2024–2025. This offers a basis for studying how inflation dynamics evolved across different
-        expenditure categories under rapidly shifting economic conditions.
-      </p>
-      <p>
-        By combining exploratory visualisation, time series decomposition, and forecasting, this
-        study aims to characterise the behaviour of inflation across CPI components and generate
-        near-term forecasts for future price movements.
+        This project applies a suite of time-series forecasting models to Singapore CPI data sourced
+        from <strong>CEIC</strong>, spanning January 2020 to January 2026 (Base Year: 2024 = 100).
+        The analysis covers the following indices:
       </p>
       <div class="tag-row">
         <span class="chip red">Headline CPI</span>
@@ -459,12 +428,8 @@ div.cell-output-display {
         The dataset is obtained from the <strong>CEIC Database</strong>, accessible via the SMU
         Library. It contains monthly Singapore CPI data with base year 2024, spanning from January
         1961 to January 2026, last updated on 23 February 2026. For this project, the analysis
-        period is restricted to <strong>January 2020 – January 2025</strong> to focus on the
+        period is restricted to <strong>January 2020 – January 2026</strong> to focus on the
         post-pandemic inflation dynamics.
-      </p>
-      <p>
-        Since this project focuses on time series analysis, the original CPI dataset in wide format
-        was transformed into a long format to make it suitable for time series modelling and analysis.
       </p>
 
       <h3 class="anchored">CPI Hierarchy</h3>
@@ -585,51 +550,18 @@ div.cell-output-display {
     <section class="proposal-section" id="methodology-eda">
       <h2 class="anchored">3.1 · Data Preparation and EDA</h2>
 
-      <h3 class="anchored">Data Wrangling</h3>
+      <h3 class="anchored">Subtitle 1</h3>
       <p>
-        The dataset was obtained from the <strong>CEIC database via the SMU Library</strong> and
-        contains monthly Consumer Price Index (CPI) data from January 1961 to January 2026, with
-        2024 = 100 as the base year. The data was imported into R using <code>read_excel()</code>
-        from the <strong>readxl</strong> package. The dataset was initially structured in a
-        <strong>wide format</strong>, where rows represent dates and columns represent CPI categories
-        and subcategories.
+      ...
       </p>
+      <h3 class="anchored">Subtitle 2</h3>
       <p>
-        To focus on recent inflation dynamics, the dataset was filtered to include the period
-        <strong>January 2020 to December 2025</strong> using <code>mutate()</code>,
-        <code>as_date()</code>, and <code>filter()</code> from the <strong>dplyr</strong> and
-        <strong>lubridate</strong> packages. The dataset was then reshaped into a
-        <strong>tidy long format</strong> using <code>pivot_longer()</code> from <strong>tidyr</strong>,
-        allowing each CPI category to be treated as an individual time series.
-      </p>
-      <p>
-        Given the hierarchical structure of CPI categories, labels were generated using
-        <code>mutate()</code> and <code>str_detect()</code> from the <strong>stringr</strong>
-        package to distinguish between different levels of CPI aggregation. Column names containing
-        long hierarchical strings were also standardised using functions from <strong>stringr</strong>
-        and <strong>dplyr</strong> to improve readability. Data integrity checks were performed using
-        <code>sum(is.na())</code> to ensure that no missing values or misaligned entries were present.
-        The cleaned dataset was then saved using <code>write_rds()</code> for reproducibility. An
-        interactive data table was also created using the <strong>DT</strong> package to enable
-        sorting, filtering, pagination, and export options.
+        ...
       </p>
 
-      <h3 class="anchored">Exploratory Data Analysis</h3>
+      <h3 class="anchored">Subtitle 3</h3>
       <p>
-        Exploratory data analysis was conducted to understand the <strong>trend, seasonality, and
-        temporal dependence</strong> of CPI series. Trend patterns are visualised using
-        <code>plot_time_series()</code> from the <strong>timetk</strong> package and
-        <strong>ggplot2</strong> for customised plotting. Seasonal behaviour was examined using
-        <code>plot_seasonal_diagnostics()</code> from <strong>timetk</strong> to detect monthly,
-        quarterly, and yearly patterns. Temporal dependence was further analysed using
-        <code>plot_acf_diagnostics()</code> to generate <strong>ACF, PACF, and CCF plots</strong>,
-        which help assess lag relationships and inform time series modelling.
-      </p>
-      <p>
-        To support <strong>Shiny dashboard development</strong>, reusable wrapper functions were
-        created for each EDA component. These functions expose key parameters, allowing flexible
-        selection of CPI series, hierarchical levels, and visualisation options. This design improves
-        interactivity, reproducibility, and scalability when exploring CPI dynamics across categories.
+        ...
       </p>
     </section>
 
@@ -638,41 +570,23 @@ div.cell-output-display {
     <!-- 3.2 TIME SERIES DECOMPOSITION -->
     <section class="proposal-section" id="methodology-decomposition">
       <h2 class="anchored">3.2 · Time Series Decomposition</h2>
-
-      <h3 class="anchored">STL Decomposition</h3>
       <p>
-        Seasonal and Trend decomposition using Loess (<strong>STL</strong>) is applied to each CPI
-        series. STL is widely used for economic time series because it is robust to outliers and
-        flexible enough to handle changing seasonal patterns. This is particularly relevant for
-        Singapore CPI data, which experienced structural disruptions during the COVID-19 pandemic
-        and the subsequent inflation cycle.
-      </p>
-      <p>
-        Each CPI variable is converted into a monthly time series beginning in <strong>January
-        2020</strong>, with a frequency of <strong>12 observations per year</strong>. The STL
-        algorithm then decomposes the series into <strong>trend</strong>, <strong>seasonal</strong>,
-        and <strong>remainder</strong> components using locally weighted regression (Loess). This
-        approach allows the seasonal component to evolve gradually over time rather than assuming a
-        fixed seasonal structure.
+        ...
       </p>
 
-      <h3 class="anchored">Observed Series Summary</h3>
+      <h3 class="anchored">Subtitle 1</h3>
       <p>
-        To provide an overview of the observed CPI series, summary statistics are computed for each
-        CPI category. These include the <strong>starting value in January 2020</strong>, the
-        <strong>ending value in December 2025</strong>, the <strong>absolute increase</strong>, and
-        the <strong>percentage change</strong> over the study period. These summary measures provide
-        a quick comparison of inflation dynamics across different CPI components.
+        ...
       </p>
 
-      <h3 class="anchored">Decomposition Interpretation</h3>
+      <h3 class="anchored">Subtitle 2</h3>
       <p>
-        The magnitude of each component (trend, seasonal, and remainder) is quantified and
-        normalised by the mean of the corresponding CPI series. This normalisation allows the
-        relative importance of each component to be compared across different CPI categories. Series
-        with a dominant trend component indicate persistent inflation movements, while stronger
-        seasonal components suggest regular cyclical price behaviour. Larger remainder components
-        may indicate irregular shocks or volatility not explained by structural patterns.
+        ...
+      </p>
+
+      <h3 class="anchored">Subtitle 3</h3>
+      <p>
+        ...
       </p>
     </section>
 
@@ -713,7 +627,7 @@ div.cell-output-display {
 <tr class="odd">
 <td>Auto-ARIMA + XGBoost</td>
 <td>Hybrid</td>
-<td>Combines Auto-ARIMA with XGBoost to capture non-linear residuals</td>
+<td>Combines Auto-ARIMA with XGBoost to capture non-linear residual patterns</td>
 </tr>
 <tr class="even">
 <td>Prophet</td>
@@ -748,19 +662,33 @@ div.cell-output-display {
     <section class="proposal-section" id="prototype">
       <h2 class="anchored">4 · Prototype</h2>
       <p>The following wireframes illustrate the planned layout of the R Shiny application.</p>
-
+      
       <h3 class="anchored">Landing Page</h3>
       <img src="images/Landing_page.jpg" alt="RShiny App Landing Page Prototype" style="width:100%; border: 1px solid #d8d2c8; margin-top: 1rem;">
-
+      <p> 
+        DESCRIPTION FOR LANDING PAGE HERE
+      </p>
+      
       <h3 class="anchored">EDA Page</h3>
       <img src="images/EDA.jpg" alt="RShiny App EDA Page Prototype" style="width:100%; border: 1px solid #d8d2c8; margin-top: 1rem;">
-
+      <p> 
+        DESCRIPTION FOR EDA PAGE HERE
+      </p>
+      
       <h3 class="anchored">Data Table</h3>
       <img src="images/datatable.jpg" alt="RShiny App Data Table Prototype" style="width:100%; border: 1px solid #d8d2c8; margin-top: 1rem;">
-
-      <h3 class="anchored">Forecasting Page</h3>
-      <img src="images/ForecastSketch.png" alt="RShiny App Forecasting Page Prototype" style="width:100%; border: 1px solid #d8d2c8; margin-top: 1rem;">
     </section>
+      <p> 
+        DESCRIPTION FOR DATA TABLE PAGE HERE
+      </p>
+    
+    <h3 class="anchored">Forecasting Page</h3>
+    <img src="images/ForecastSketch.png" alt="RShiny App Data Table Prototype" style="width:100%; border: 1px solid #d8d2c8; margin-top: 1rem;">
+    
+      <p> 
+        DESCRIPTION FOR FORECAST HERE
+      </p>
+    
 
     <hr class="proposal-divider">
 
@@ -784,114 +712,7 @@ div.cell-output-display {
 
       <h3 class="anchored">Meeting 3 — TBD</h3>
       <p><em>Date: TBD &nbsp;·&nbsp; Attendees: All group members</em></p>
-      <p>Topic TBD.</p>
-    </section>
-
-    <hr class="proposal-divider">
-
-    <!-- ══════════════════════════════════════════
-         6. PROJECT TIMELINE AND WORK ALLOCATION
-    ══════════════════════════════════════════ -->
-    <section class="proposal-section" id="timeline">
-      <h2 class="anchored">6 · Project Timeline and Work Allocation</h2>
-      <p>
-        The project is divided into several stages covering data preparation, exploratory analysis,
-        time series modelling, and application development. Tasks are distributed among team members
-        according to their assigned analytical modules.
-      </p>
-
-      <h3 class="anchored">Work Allocation</h3>
-      
-<table class="proposal-table caption-top">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th">Task</th>
-<th data-quarto-table-cell-role="th">Team Member</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Data Preparation &amp; Exploratory Data Analysis</td>
-<td>Pan Yiqiong</td>
-</tr>
-<tr class="even">
-<td>Time Series Decomposition</td>
-<td>Lee Jangho</td>
-</tr>
-<tr class="odd">
-<td>Time Series Forecasting</td>
-<td>Kevin A. Suyapto</td>
-</tr>
-<tr class="even">
-<td>Shiny Application Development</td>
-<td>All Members</td>
-</tr>
-<tr class="odd">
-<td>Final Report &amp; Presentation</td>
-<td>All Members</td>
-</tr>
-</tbody>
-</table>
-
-
-      <h3 class="anchored">Project Timeline</h3>
-      
-<table class="timeline-table caption-top">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th">Task</th>
-<th data-quarto-table-cell-role="th">Week 1</th>
-<th data-quarto-table-cell-role="th">Week 2</th>
-<th data-quarto-table-cell-role="th">Week 3</th>
-<th data-quarto-table-cell-role="th">Week 4</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Project Setup &amp; Data Collection</td>
-<td class="bar">██</td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>Exploratory Data Analysis</td>
-<td class="bar">██</td>
-<td class="bar">██</td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>Time Series Decomposition</td>
-<td></td>
-<td class="bar">██</td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td>Forecasting Model Development</td>
-<td></td>
-<td></td>
-<td class="bar">██</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>Shiny App Development</td>
-<td></td>
-<td></td>
-<td class="bar">██</td>
-<td class="bar">██</td>
-</tr>
-<tr class="even">
-<td>Final Report &amp; Presentation</td>
-<td></td>
-<td></td>
-<td></td>
-<td class="bar">██</td>
-</tr>
-</tbody>
-</table>
-
+      <p>Topic TBD. <a href="minutes/meeting3.pdf" target="_blank">View minutes →</a></p>
     </section>
 
   </main>
@@ -901,7 +722,7 @@ div.cell-output-display {
 (function() {
   var sections  = ['overview','data','methodology','methodology-eda',
                    'methodology-decomposition','methodology-forecasting',
-                   'prototype','minutes','timeline'];
+                   'prototype','minutes'];
   var sideLinks = document.querySelectorAll('.sidebar-nav a');
 
   function updateActive() {
@@ -937,7 +758,6 @@ div.cell-output-display {
   });
 })();
 </script>
-
 
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {

@@ -2,15 +2,20 @@ project:
   type: website
   output-dir: _site
   render:
+    - index.qmd
     - proposal.qmd
+    - poster.qmd
 
 website:
   title: "SG CPI Forecast"
   navbar:
     left:
+      - text: "Home"
+        href: index.qmd
       - text: "Proposal"
         href: proposal.qmd
-
+      - text: "Poster"
+        href: poster.qmd
 format:
   html:
     toc: true

@@ -1,15 +1,90 @@
--------------------------------------------- FINAL CODE --------------------------------------------
+---
+title: "TS FC"
+author: "Kevin"
+date: "27 Mar, 2026"
+date-modified: last-modified
+
+execute:
+  echo: true
+  eval: true
+  message: false
+  warning: false
+  freeze: true
+
+format:
+  html:
+    toc: true
+    code-link: true
+
+number-sections: true
+number-depth: 6
+
+editor: visual
+---
+
+## Introduction
+Building on from the EDA section, this part proceeds to implement a **time series forecasting** workflow for Singapore Consumer Price Index (CPI). 
+
+CPI dataset used in this study covers **monthly data from January 2020 to December 2025**, structured across hierarchical classification of expenditures ranging from overall CPI down to detailed items. This hierarchical structure mandates forecast to be generated at the most granular level and when aggregated up it must remain consistent.
+
+
+## Methodology
+The forecasting workflow uses **modeltime** and *tidymodels** frameworks. These framework provides a unified interface for training, evaluating, and refitting time series models. These frameworks also support both classical statistical models and modern machine learning approaches. 
+
+Each of the CPI series are evaluated using the following forecasting models:
+
+| Model                  | Type                | Key Strength                                                        |
+|------------------------|---------------------|---------------------------------------------------------------------|
+| ETS                    | Classical           | Captures trend and seasonality via exponential smoothing            |
+| Auto-ARIMA             | Classical           | Automated order selection for optimal fit on stationary series      |
+| Auto-ARIMA + XGBoost   | Hybrid              | Combines Auto-ARIMA with XGBoost to capture non-linear residuals    |
+| Prophet                | Additive Regression | Robust to missing data and handles seasonal shifts flexibly         |
+
+Models are trained and evaluated using **nested forecasting** workflow and through `modeltime_nested_fit()` function. Each CPI leaf nodes are treated as independent nested dataset, with the last 12 months held out as a test set. The model with the **lowest RMSE** on the test set is selected as the best model for the particular serie. All selected models are then refitted on the full data before generating the 12-month forecast.
+
+After generating leaf-level forecasts, **weighted bottom-up aggregation** is applied. Parent-level forecasts are computed as the weighted average of their children forecasts, using the official DOS CPI basket weights. This process is repeated from the most granular level up to the overall CPI. Same aggregation is applied to the **90%**, **95%**, and **99%** Confidence Interval.
+
+## Time Series Forecasting Workflow
+The forecasting workflow is structured into the following stages:
+
+1. **Data Preparation** begins by loading the clean dataset produced from the EDA part. The data is padded to ensure complete monthly time series for every series, and missing values (if any) are imputed using linear interpolation using `ts_impute_vec()`.
+
+2. **Hierarchy Derivation** extracts the parent-child relationships. Leaf nodes are identified as series that never appear as a parent of any other series in the dataset.
+
+3. **Nested model Training** filters the data to leaf nodes and trains the four models on the leaf nodes only across all CPI using `modeltime_nested_fit()`. The best model is selected based on the minimal RMSE on the 12-month holdout test set.
+
+4. **Refitting and Forecasting** refits each selected model on the full dataset and generates 12 month foreacast at three different Confidence Intervals: 90%, 95%, 99%.
+
+5. **Bottom-up Aggregation** combines leaf-level forecasts into parent-level forecasts using official expenditure weights defined by DOS.
+
+
+## Getting Started
+### Installing and Loading the Required Libraries
 
 Load Packages
 ```{r}
 pacman::p_load(readxl, tidyverse, timetk, modeltime, tidymodels, lubridate, plotly, shiny)
 ```
+<<<<<<< HEAD
 Load Data
+=======
+
+### Loading the Dataset
+The CPI dataset is loaded from the cleaned RDS file produced from EDA. The file contains monthly CPI data in long format with hierarchy columns, covering January 2020 to December 2025.
+
 ```{r}
 cpi_data_long <- read_rds("data/cpi_h.rds")
 ```
 
-Pad & Impute
+## Data Preparation
+### Padding and Imputing Missing Values
+
+The data is grouped by series and padded to ensure complete monthly sequence for every CPI category. Even though this dataset has been vetted for nulls, for reusability, any gaps introduced during padding, if the dataset contains nulls or inconsistencies, are filled using linear interpolation via `ts_impute_vec()` with a period of 1, followed by a forward and backward fill as a safety net for any remaining edge cases.
+
+```{r}
+cpi_data_long %>% filter(is.na(cpi))
+```
+
 ```{r}
 cpi_data_long <- cpi_data_long %>%
   group_by(series) %>%
@@ -20,11 +95,19 @@ cpi_data_long <- cpi_data_long %>%
   ungroup()
 ```
 
-Sanity Check
+A sanity check confirms no missing values remain after imputation.
+
 ```{r}
 cpi_data_long %>% filter(is.na(cpi))
 ```
-Derive Parent Lookup
+
+### Deriving Parent Lookup Table
+Rather than defining the parent-child relationships manually, the relationships are to be defined directly from the dataset's existing hierarchy columns. Each series is assigned a parent based on its level
+
+**Level 1** series consolidate to the overall CPI.
+**Level 2** series report to their `division`.
+**Level 3** report to their `group`.
+
 ```{r}
 parent_lookup <- cpi_data_long %>%
   distinct(series, level, division, group) %>%
@@ -37,7 +120,9 @@ parent_lookup <- cpi_data_long %>%
   select(series, Level = level, Parent)
 ```
 
-Identify Leaf Nodes (Series with No children)
+### Identifying Leaf Nodes (Series with No children)
+Leaf nodes are series that never appear as a parent of any other series. This approach handles mixed-depth of the CPI hierarchy, where Food series extend to level 3 while other branches are at level 2.
+
 ```{r}
 all_parents <- parent_lookup %>%
   filter(!is.na(Parent)) %>%
@@ -51,8 +136,10 @@ leaf_categories <- cpi_data_long %>%
   pull(series)
 ```
 
+## Nested Forecasting
+### Preparing Nested Forecasting Data
+The data is filtered to leaf nodes only and structured into a nested time series format using `nest_timeseries()`. Each series is extended by 12 months to create placeholders for forecasting data. The last 12 months of observation data is reserved as hold-out period data (test set) using `split_nested_timeseries()`.
 
-Prepare Nested Forecasting Data
 ```{r}
 nested_data_tbl <- cpi_data_long %>%
   filter(series %in% leaf_categories) %>%
@@ -68,7 +155,12 @@ nested_data_tbl <- cpi_data_long %>%
   split_nested_timeseries(.length_test = 12)
 ```
 
-Define Models
+### Defining Models
+Four models are specified as candidates fore each CPI series. 
+
+**ETS and ARIMA** are classical statistical models that are suited for short monthly time series with clear trend and seasonal patterns.
+**ARIMA boost** is an enhanced version of ARIMA by adding gradient-boosted tree features using machine learning, allowing it to capture non-linear patterns.
+**Prophet** decomposes series into trends, seasonality, and holiday effects.
 ```{r}
 model_ets     <- exp_smoothing() %>% set_engine("ets")
 model_arima   <- arima_reg()     %>% set_engine("auto_arima")
@@ -76,7 +168,9 @@ model_boost   <- arima_boost()   %>% set_engine("auto_arima_xgboost")
 model_prophet <- prophet_reg()   %>% set_engine("prophet")
 ```
 
-Build Workflows
+### Building Model Workflows
+Each model is wrapped in a `workflow()` paired with a recipe. The ARIMA-Boost workflow includes additional preprocessing steps to extract time series features such as month, quarter, and year indicators, which serve as predictors for the XGBoost component.
+
 ```{r}
 wf_ets <- workflow() %>%
   add_model(model_ets) %>%
@@ -100,7 +194,8 @@ wf_boost <- workflow() %>%
   )
 ```
 
-Fit Models
+### Fitting Models
+All four models above are fitted simultaneously across all leaf-nodes using `model_nested_fit()`.
 ```{r}
 nested_modeltime_tbl <- modeltime_nested_fit(
   nested_data = nested_data_tbl,
@@ -109,7 +204,8 @@ nested_modeltime_tbl <- modeltime_nested_fit(
 )
 ```
 
-Select Best Model
+### Selecting the Best Model
+The best performing model for each series is selected based on the lowest Root Mean Squared Error (RMSE) on the test data. This ensures that the model used to generate forecast data has demonstrated accuracy to unseen data.
 ```{r}
 best_nested_models <- nested_modeltime_tbl %>%
   modeltime_nested_select_best(
@@ -119,7 +215,9 @@ best_nested_models <- nested_modeltime_tbl %>%
   )
 ```
 
-Refit and Forecast Leaf Nodes
+### Refitting and Forecasting Leaf Nodes
+Models selected as the best models are refitted to the full dataset, including the hold-out period data, before generating the 12-month forecast data. Forecasts are generated at three Confidence Interval levels of 90%, 95%, and 99% by running `refitted_nested_models()` three times for each of the Confidence Intervals and joining the resulting CI into a single table.
+
 ```{r}
 refitted_nested_models <- best_nested_models %>%
   modeltime_nested_refit(control = control_nested_refit(verbose = TRUE))
@@ -157,7 +255,9 @@ leaf_fc <- leaf_fc_90 %>%
   left_join(leaf_fc_99, by = c("date", "series"))
 ```
 
-Define Weights
+### Defining Weights
+The official DOS CPI expenditure weights are defined for each leaf node. These weights reflect the relative importance of each consumption category within the total CPI basket of 10,000 units. They are used to compute weighted average forecasts for all parent categories during aggregation.
+
 ```{r}
 weights_tbl <- tribble(
   ~series,                                                                       ~Weight,
@@ -215,7 +315,9 @@ weights_tbl <- tribble(
 )
 ```
 
-Bottom-up Aggregation based on the above defined weight
+### Bottom-up Aggregation
+The `aggregate_bottom_up()` function iterates through the hierarchy from the deepest level upward. At each level, child forecasts are joined to their respective parent using the `parent_lookup` table, and the parent's forecast is computed as the expenditure-weighted average of its children's forecasts. Both the point forecast and all confidence interval bounds are aggregated using the same weights.
+
 ```{r}
 aggregate_bottom_up <- function(forecasts, parent_lookup, weights_tbl) {
   all_levels <- forecasts %>%
@@ -257,8 +359,13 @@ reconciled_forecasts <- aggregate_bottom_up(leaf_fc, parent_lookup, weights_tbl)
 
 ```
 
+```{r}
+write_rds(parent_lookup, "data/parent_lookup.rds")
+write_rds(reconciled_forecasts, "data/reconciled_forecasts.rds")
+```
 
 ```{r}
+#| eval: false
 build_cpi_shiny <- function(parent_lookup, actuals_data, forecast_data) {
 
   all_series <- parent_lookup %>% pull(series) %>% unique()
@@ -449,7 +556,3 @@ build_cpi_shiny(
   forecast_data = reconciled_forecasts
 )
 ```
-
-
-
-
