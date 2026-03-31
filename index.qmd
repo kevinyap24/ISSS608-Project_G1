@@ -331,7 +331,7 @@ main.content, div#quarto-content, .page-columns {
   <div class="sg-nav-links">
     <a href="#home">Home</a>
     <a href="#about">About</a>
-    <a href="#projects">RShiny App</a>
+    <a href="https://vaag1ay2526.shinyapps.io/cpi-shiny/" target="_blank">RShiny App</a>
     <a href="proposal.html">Proposal</a>
     <a href="poster.html">Poster</a>
   </div>
@@ -347,7 +347,7 @@ main.content, div#quarto-content, .page-columns {
       Customer Price Index (CPI)
     </h1>
     <div class="sg-hero-cta">
-      <a href="#projects" class="sg-btn-primary">RShiny App</a>
+      <a href="https://vaag1ay2526.shinyapps.io/cpi-shiny/" target="_blank" class="sg-btn-primary">RShiny App</a>
       <a href="#about"    class="sg-btn-secondary">About the Project</a>
     </div>
   </div>
