@@ -1,0 +1,68 @@
+level,division,group,class,weight,division_key,group_key,class_key,join_label,join_key
+all_items,ALL ITEMS,,,10000,all_items,,,ALL ITEMS,all_items
+aggregate,ALL ITEMS LESS IMPUTED RENTALS FOR HOUSING,,,7862,all_items_less_imputed_rentals_for_housing,,,ALL ITEMS LESS IMPUTED RENTALS FOR HOUSING,all_items_less_imputed_rentals_for_housing
+aggregate,ALL ITEMS LESS ACCOMMODATION,,,7344,all_items_less_accommodation,,,ALL ITEMS LESS ACCOMMODATION,all_items_less_accommodation
+aggregate,MAS CORE INFLATION MEASURE,,,6438,mas_core_inflation_measure,,,MAS CORE INFLATION MEASURE,mas_core_inflation_measure
+division,FOOD,,,2042,food,,,FOOD,food
+group,FOOD,Food excl Food & Beverage Serving Services,,651,food,food_excl_food_and_beverage_serving_services,,Food excl Food & Beverage Serving Services,food_excl_food_and_beverage_serving_services
+class,FOOD,Food excl Food & Beverage Serving Services,Rice & Cereal Products,122,food,food_excl_food_and_beverage_serving_services,rice_and_cereal_products,Rice & Cereal Products,rice_and_cereal_products
+class,FOOD,Food excl Food & Beverage Serving Services,Meat,101,food,food_excl_food_and_beverage_serving_services,meat,Meat,meat
+class,FOOD,Food excl Food & Beverage Serving Services,Fish & Other Seafood,79,food,food_excl_food_and_beverage_serving_services,fish_and_other_seafood,Fish & Other Seafood,fish_and_other_seafood
+class,FOOD,Food excl Food & Beverage Serving Services,"Milk, Other Dairy Products & Eggs",64,food,food_excl_food_and_beverage_serving_services,milk_other_dairy_products_and_eggs,"Milk, Other Dairy Products & Eggs",milk_other_dairy_products_and_eggs
+class,FOOD,Food excl Food & Beverage Serving Services,Oils & Fats,12,food,food_excl_food_and_beverage_serving_services,oils_and_fats,Oils & Fats,oils_and_fats
+class,FOOD,Food excl Food & Beverage Serving Services,Fruits & Nuts,79,food,food_excl_food_and_beverage_serving_services,fruits_and_nuts,Fruits & Nuts,fruits_and_nuts
+class,FOOD,Food excl Food & Beverage Serving Services,Vegetables,82,food,food_excl_food_and_beverage_serving_services,vegetables,Vegetables,vegetables
+class,FOOD,Food excl Food & Beverage Serving Services,"Sugar, Confectionery & Desserts",27,food,food_excl_food_and_beverage_serving_services,sugar_confectionery_and_desserts,"Sugar, Confectionery & Desserts",sugar_confectionery_and_desserts
+class,FOOD,Food excl Food & Beverage Serving Services,Ready-Made Food & Other Food Products nec,44,food,food_excl_food_and_beverage_serving_services,ready_made_food_and_other_food_products_nec,Ready-Made Food & Other Food Products nec,ready_made_food_and_other_food_products_nec
+class,FOOD,Food excl Food & Beverage Serving Services,Non-Alcoholic Beverages,41,food,food_excl_food_and_beverage_serving_services,non_alcoholic_beverages,Non-Alcoholic Beverages,non_alcoholic_beverages
+group,FOOD,Food & Beverage Serving Services,,1391,food,food_and_beverage_serving_services,,Food & Beverage Serving Services,food_and_beverage_serving_services
+class,FOOD,Food & Beverage Serving Services,"Restaurants, Cafes & Pubs",585,food,food_and_beverage_serving_services,restaurants_cafes_and_pubs,"Restaurants, Cafes & Pubs",restaurants_cafes_and_pubs
+class,FOOD,Food & Beverage Serving Services,Fast Food Restaurants,85,food,food_and_beverage_serving_services,fast_food_restaurants,Fast Food Restaurants,fast_food_restaurants
+class,FOOD,Food & Beverage Serving Services,"Hawker Centres, and Food Courts, Coffee Shops & Kiosks",707,food,food_and_beverage_serving_services,hawker_centres_and_food_courts_coffee_shops_and_kiosks,"Hawker Centres, and Food Courts, Coffee Shops & Kiosks",hawker_centres_and_food_courts_coffee_shops_and_kiosks
+class,FOOD,Food & Beverage Serving Services,"Other Catering Services, incl Vending Machines",14,food,food_and_beverage_serving_services,other_catering_services_incl_vending_machines,"Other Catering Services, incl Vending Machines",other_catering_services_incl_vending_machines
+division,CLOTHING & FOOTWEAR,,,165,clothing_and_footwear,,,CLOTHING & FOOTWEAR,clothing_and_footwear
+class,CLOTHING & FOOTWEAR,,Clothing,129,clothing_and_footwear,,clothing,Clothing,clothing
+class,CLOTHING & FOOTWEAR,,Footwear,36,clothing_and_footwear,,footwear,Footwear,footwear
+division,HOUSING & UTILITIES,,,2938,housing_and_utilities,,,HOUSING & UTILITIES,housing_and_utilities
+class,HOUSING & UTILITIES,,Accommodation,2656,housing_and_utilities,,accommodation,Accommodation,accommodation
+class,HOUSING & UTILITIES,,Utilities & Other Fuels,282,housing_and_utilities,,utilities_and_other_fuels,Utilities & Other Fuels,utilities_and_other_fuels
+division,HOUSEHOLD DURABLES & SERVICES,,,547,household_durables_and_services,,,HOUSEHOLD DURABLES & SERVICES,household_durables_and_services
+class,HOUSEHOLD DURABLES & SERVICES,,Furniture & Furnishings,128,household_durables_and_services,,furniture_and_furnishings,Furniture & Furnishings,furniture_and_furnishings
+class,HOUSEHOLD DURABLES & SERVICES,,Household Textiles,17,household_durables_and_services,,household_textiles,Household Textiles,household_textiles
+class,HOUSEHOLD DURABLES & SERVICES,,Household Appliances,101,household_durables_and_services,,household_appliances,Household Appliances,household_appliances
+class,HOUSEHOLD DURABLES & SERVICES,,"Glassware, Tableware & Household Utensils",17,household_durables_and_services,,glassware_tableware_and_household_utensils,"Glassware, Tableware & Household Utensils",glassware_tableware_and_household_utensils
+class,HOUSEHOLD DURABLES & SERVICES,,Tools & Equipment for House & Garden,5,household_durables_and_services,,tools_and_equipment_for_house_and_garden,Tools & Equipment for House & Garden,tools_and_equipment_for_house_and_garden
+class,HOUSEHOLD DURABLES & SERVICES,,Household Services & Supplies,279,household_durables_and_services,,household_services_and_supplies,Household Services & Supplies,household_services_and_supplies
+division,HEALTH,,,1008,health,,,HEALTH,health
+class,HEALTH,,Medicines & Health Products,94,health,,medicines_and_health_products,Medicines & Health Products,medicines_and_health_products
+class,HEALTH,,Outpatient Care Services,428,health,,outpatient_care_services,Outpatient Care Services,outpatient_care_services
+class,HEALTH,,Inpatient Care Services,238,health,,inpatient_care_services,Inpatient Care Services,inpatient_care_services
+class,HEALTH,,Other Health Services,23,health,,other_health_services,Other Health Services,other_health_services
+class,HEALTH,,Health Insurance,225,health,,health_insurance,Health Insurance,health_insurance
+division,TRANSPORT,,,1307,transport,,,TRANSPORT,transport
+class,TRANSPORT,,Private Transport,906,transport,,private_transport,Private Transport,private_transport
+class,TRANSPORT,,Land Transport Services,262,transport,,land_transport_services,Land Transport Services,land_transport_services
+class,TRANSPORT,,Other Transport Services,131,transport,,other_transport_services,Other Transport Services,other_transport_services
+class,TRANSPORT,,Transport Services of Goods,8,transport,,transport_services_of_goods,Transport Services of Goods,transport_services_of_goods
+division,INFORMATION & COMMUNICATION,,,381,information_and_communication,,,INFORMATION & COMMUNICATION,information_and_communication
+class,INFORMATION & COMMUNICATION,,Information & Communication Equipment,91,information_and_communication,,information_and_communication_equipment,Information & Communication Equipment,information_and_communication_equipment
+class,INFORMATION & COMMUNICATION,,Software excl Games,3,information_and_communication,,software_excl_games,Software excl Games,software_excl_games
+class,INFORMATION & COMMUNICATION,,Information & Communication Services,287,information_and_communication,,information_and_communication_services,Information & Communication Services,information_and_communication_services
+division,"RECREATION, SPORT & CULTURE",,,595,recreation_sport_and_culture,,,"RECREATION, SPORT & CULTURE",recreation_sport_and_culture
+class,"RECREATION, SPORT & CULTURE",,Recreation & Cultural Goods,9,recreation_sport_and_culture,,recreation_and_cultural_goods,Recreation & Cultural Goods,recreation_and_cultural_goods
+class,"RECREATION, SPORT & CULTURE",,Other Recreational Goods,33,recreation_sport_and_culture,,other_recreational_goods,Other Recreational Goods,other_recreational_goods
+class,"RECREATION, SPORT & CULTURE",,Garden Products & Pets,27,recreation_sport_and_culture,,garden_products_and_pets,Garden Products & Pets,garden_products_and_pets
+class,"RECREATION, SPORT & CULTURE",,Recreational Services,144,recreation_sport_and_culture,,recreational_services,Recreational Services,recreational_services
+class,"RECREATION, SPORT & CULTURE",,Cultural Services,52,recreation_sport_and_culture,,cultural_services,Cultural Services,cultural_services
+class,"RECREATION, SPORT & CULTURE",,"Newspapers, Books & Stationery",20,recreation_sport_and_culture,,newspapers_books_and_stationery,"Newspapers, Books & Stationery",newspapers_books_and_stationery
+class,"RECREATION, SPORT & CULTURE",,Holiday Expenses,310,recreation_sport_and_culture,,holiday_expenses,Holiday Expenses,holiday_expenses
+division,EDUCATION,,,579,education,,,EDUCATION,education
+class,EDUCATION,,"General, Vocational & Higher Education",391,education,,general_vocational_and_higher_education,"General, Vocational & Higher Education",general_vocational_and_higher_education
+class,EDUCATION,,Private Tuition & Other Educational Courses,184,education,,private_tuition_and_other_educational_courses,Private Tuition & Other Educational Courses,private_tuition_and_other_educational_courses
+class,EDUCATION,,School Textbooks & Study Guides,4,education,,school_textbooks_and_study_guides,School Textbooks & Study Guides,school_textbooks_and_study_guides
+division,MISCELLANEOUS GOODS & SERVICES,,,438,miscellaneous_goods_and_services,,,MISCELLANEOUS GOODS & SERVICES,miscellaneous_goods_and_services
+class,MISCELLANEOUS GOODS & SERVICES,,Personal Care,211,miscellaneous_goods_and_services,,personal_care,Personal Care,personal_care
+class,MISCELLANEOUS GOODS & SERVICES,,Alcoholic Beverages & Tobacco,58,miscellaneous_goods_and_services,,alcoholic_beverages_and_tobacco,Alcoholic Beverages & Tobacco,alcoholic_beverages_and_tobacco
+class,MISCELLANEOUS GOODS & SERVICES,,Other Personal Effects,62,miscellaneous_goods_and_services,,other_personal_effects,Other Personal Effects,other_personal_effects
+class,MISCELLANEOUS GOODS & SERVICES,,Social Services,32,miscellaneous_goods_and_services,,social_services,Social Services,social_services
+class,MISCELLANEOUS GOODS & SERVICES,,Other Miscellaneous Services,75,miscellaneous_goods_and_services,,other_miscellaneous_services,Other Miscellaneous Services,other_miscellaneous_services
