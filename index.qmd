@@ -247,7 +247,7 @@ main.content, div#quarto-content, .page-columns {
 .sg-project-card {
   background: var(--dark); padding: 2rem;
   position: relative; overflow: hidden;
-  transition: background 0.3s; cursor: pointer;
+  transition: background 0.3s; cursor: default;
 }
 .sg-project-card::after {
   content:''; position:absolute; bottom:0; left:0; right:0;
@@ -357,10 +357,10 @@ main.content, div#quarto-content, .page-columns {
 
 <!-- ── STATS BAR ── -->
 <div class="sg-stats">
-  <div class="sg-stat"><div class="sg-stat-num">10</div><div class="sg-stat-label">Years of CPI data analysed</div></div>
-  <div class="sg-stat"><div class="sg-stat-num">4</div><div class="sg-stat-label">Forecasting models compared</div></div>
-  <div class="sg-stat"><div class="sg-stat-num">xx%</div><div class="sg-stat-label">Best-model directional accuracy</div></div>
-  <div class="sg-stat"><div class="sg-stat-num">SG$</div><div class="sg-stat-label">Focus on domestic price drivers</div></div>
+  <div class="sg-stat"><div class="sg-stat-num">6</div><div class="sg-stat-label">Years of CPI data (2020–2025)</div></div>
+<div class="sg-stat"><div class="sg-stat-num">4</div><div class="sg-stat-label">Forecasting models compared</div></div>
+<div class="sg-stat"><div class="sg-stat-num">51</div><div class="sg-stat-label">CPI leaf-node series forecasted</div></div>
+<div class="sg-stat"><div class="sg-stat-num">1.69</div><div class="sg-stat-label">Lowest avg RMSE (ETS model)</div></div>
 </div>
 
 <!-- ── ABOUT ── -->
@@ -374,11 +374,11 @@ main.content, div#quarto-content, .page-columns {
       <p>Data is sourced from <strong>CEIC Data</strong>.</p>
     </div>
     <div class="sg-about-cards">
-      <div class="sg-about-card"><div class="sg-about-card-title">01 · Objective</div><p>Produce accurate 12 month ahead CPI forecasts for Singapore across headline and core measures.</p></div>
-      <div class="sg-about-card"><div class="sg-about-card-title">02 · Methodology</div><p>ETS, ARIMA, AUTO-ARIMA(XGBoost), and Prhophet models.</p></div>
-      <div class="sg-about-card"><div class="sg-about-card-title">03 · Data Sources</div><p>CEIC Database.</p></div>
-      <div class="sg-about-card"><div class="sg-about-card-title">04 · Tools</div><p>Built in R with tidymodels, fable, and forecast packages. Documented via Quarto.</p></div>
-      <div class="sg-about-card"><div class="sg-about-card-title">05 · Audience</div><p>Economists, policy researchers, and data scientists interested in Singapore macroeconomics.</p></div>
+      <div class="sg-about-card"><div class="sg-about-card-title">01 · Objective</div><p>Evaluate and compare time-series forecasting models to generate 12-month ahead CPI forecasts for Singapore across all expenditure categories.</p></div>
+<div class="sg-about-card"><div class="sg-about-card-title">02 · Methodology</div><p>ETS, Auto-ARIMA, ARIMA+XGBoost, and Prophet models, evaluated using nested forecasting with a 12-month holdout test set. Forecasts are reconciled bottom-up using official DOS basket weights.</p></div>
+<div class="sg-about-card"><div class="sg-about-card-title">03 · Data Sources</div><p>CEIC Database via SMU Library. Monthly Singapore CPI data (Base: 2024 = 100), covering January 2020 to December 2025.</p></div>
+<div class="sg-about-card"><div class="sg-about-card-title">04 · Tools</div><p>Built in R with modeltime, tidymodels, timetk, and plotly. Interactive dashboard developed in R Shiny. Documented via Quarto.</p></div>
+<div class="sg-about-card"><div class="sg-about-card-title">05 · Audience</div><p>Economists, policy researchers, and data scientists interested in Singapore macroeconomics and inflation dynamics.</p></div>
     </div>
   </div>
 </section>
@@ -387,7 +387,7 @@ main.content, div#quarto-content, .page-columns {
 <section class="sg-projects" id="projects">
   <div class="sg-projects-inner">
     <div class="sg-section-tag">RShiny App</div>
-    <h2 class="sg-section-title">Interactive <em>Modules</em></h2>
+    <h2 class="sg-section-title">Interactive Modules</h2>
     <p class="sg-projects-intro">Explore Singapore's CPI data through three interactive modules built in R Shiny — from raw data exploration to model-based forecasting.</p>
     <div class="sg-projects-grid" style="grid-template-columns: repeat(3, 1fr);">
 
@@ -395,21 +395,21 @@ main.content, div#quarto-content, .page-columns {
         <div class="sg-project-num">MODULE · 01</div>
         <div class="sg-project-arrow">↗</div>
         <div class="sg-project-name">Exploratory Data Analysis</div>
-        <div class="sg-project-desc">Interactively explore Singapore CPI trends across categories and time periods. Visualise distributions, correlations, and year-on-year changes.</div>
+        <div class="sg-project-desc">Explore Singapore CPI trends, seasonal patterns, and temporal dependencies across expenditure categories. Includes time series plots, seasonal diagnostics, and ACF/PACF analysis.</div>
       </div>
 
       <div class="sg-project-card">
         <div class="sg-project-num">MODULE · 02</div>
         <div class="sg-project-arrow">↗</div>
         <div class="sg-project-name">Time Series Decomposition</div>
-        <div class="sg-project-desc">Break down CPI time series into trend, seasonal, and residual components. Compare decomposition methods across different CPI sub-indices.</div>
+        <div class="sg-project-desc">Decompose CPI series into trend, seasonal, and remainder components using STL. Examine the relative dominance of each component across CPI categories.</div>
       </div>
 
       <div class="sg-project-card">
         <div class="sg-project-num">MODULE · 03</div>
         <div class="sg-project-arrow">↗</div>
         <div class="sg-project-name">Forecasting</div>
-        <div class="sg-project-desc">Generate and compare CPI forecasts using multiple models. Adjust forecast horizon and parameters interactively to evaluate model performance.</div>
+        <div class="sg-project-desc">Explore 12-month CPI forecasts generated using ETS, ARIMA, ARIMA+XGBoost, and Prophet. Switch between auto mode (best model by RMSE) and manual model selection across all CPI hierarchy levels.</div>
       </div>
 
     </div>
@@ -458,12 +458,7 @@ main.content, div#quarto-content, .page-columns {
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
-  // ── Project card click → projects page ──
-  document.querySelectorAll('.sg-project-card').forEach(function(card, i) {
-    card.addEventListener('click', function() {
-      window.location.href = 'projects.html#project-' + (i + 1);
-    });
-  });
+  
 })();
 </script>
 ```
