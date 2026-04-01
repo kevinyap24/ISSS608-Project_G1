@@ -1,32 +1,35 @@
-library(shiny)
-library(shinythemes)
-library(dplyr)
-library(lubridate)
-library(plotly)
-library(timetk)
-library(ggplot2)
-library(shinyWidgets)
-library(readr)
-library(tidyr)
-library(DT)
-library(htmltools)
-library(bslib)
-library(reactable)
-library(reactablefmtr)
-library(bsicons)
+pacman::p_load(
+  shiny,
+  shinythemes,
+  dplyr,
+  lubridate,
+  plotly,
+  timetk,
+  ggplot2,
+  shinyWidgets,
+  readr,
+  tidyr,
+  DT,
+  htmltools,
+  bslib,
+  reactable,
+  reactablefmtr,
+  bsicons,
+  shinycssloaders
+)
 
 
 # =========================================================
 # LOAD DATA
 # =========================================================
 
-cpi_data_raw <- read_rds("data/cpi_h.rds")
+aa_cpi_data_raw <- read_rds("data/aa_cpi.rds")
 
-if (!"class" %in% names(cpi_data_raw)) {
-  cpi_data_raw$class <- NA_character_
+if (!"class" %in% names(aa_cpi_data_raw)) {
+  aa_cpi_data_raw$class <- NA_character_
 }
 
-cpi_data <- cpi_data_raw %>%
+aa_cpi_data <- aa_cpi_data_raw %>%
   mutate(
     date = as.Date(date),
     division = trimws(as.character(division)),
@@ -40,69 +43,15 @@ cpi_data <- cpi_data_raw %>%
   )
 
 
-cpi_dashboard <- read_rds("data/aa_cpi_dashboard.rds")
+aa_cpi_dashboard <- read_rds("data/aa_cpi_dashboard.rds")
+aa_dashboard_table <- read_rds("data/aa_dashboard_table.rds")
+aa_latest_lvl1 <- read_rds("data/aa_latest_lvl1.rds")
 
-# =========================
-# REACTABLE DATA PREP
-# =========================
 
-aa_dashboard_table_data <- reactive({
-  req(cpi_dashboard)
-  
-  aa_latest_date <- max(cpi_dashboard$date, na.rm = TRUE)
-  aa_start_12m <- aa_latest_date %m-% months(11)
-  
-  aa_spark <- cpi_dashboard %>%
-    mutate(date = as.Date(date)) %>%
-    filter(
-      level == 1,
-      date >= aa_start_12m,
-      date <= aa_latest_date
-    ) %>%
-    arrange(series, date) %>%
-    group_by(series) %>%
-    summarise(
-      trend_12m = list(cpi),
-      .groups = "drop"
-    )
-  
-  aa_latest <- cpi_dashboard %>%
-    mutate(date = as.Date(date)) %>%
-    filter(
-      level == 1,
-      date == aa_latest_date
-    ) %>%
-    select(series, cpi, yoy_pct, contribution_pp, weight_pct) %>%
-    mutate(
-      cpi = round(cpi, 2),
-      yoy_pct = round(yoy_pct, 2),
-      contribution_pp = round(contribution_pp, 2),
-      weight_pct = round(weight_pct, 2)
-    ) %>%
-    left_join(aa_spark, by = "series") %>%
-    arrange(desc(contribution_pp)) %>%
-    select(series, cpi, trend_12m, yoy_pct, weight_pct, contribution_pp)
-  
-  aa_latest
-})
 
 # =========================================================
 # DT STYLES
 # =========================================================
-
-compact_dt_css <- tags$style(HTML("
-  table.dataTable tbody td {
-    padding: 4px 6px !important;
-    font-size: 13px !important;
-  }
-  table.dataTable thead th {
-    padding: 6px 6px !important;
-    font-size: 13px !important;
-  }
-  div.dataTables_filter input {
-    font-size: 13px;
-  }
-"))
 
 trend_js <- JS(
   "function(data, type, row, meta) {",
@@ -118,7 +67,7 @@ trend_js <- JS(
 # DISPLAY DATA
 # =========================================================
 
-cpi_h_display <- cpi_data %>%
+cpi_h_display <- aa_cpi_data %>%
   arrange(series, date) %>%
   group_by(series) %>%
   mutate(
@@ -255,7 +204,7 @@ plot_cpi_time_series <- function(data,
   }
   
   if (is.null(title)) {
-    title <- default_title
+    title <- " "
   }
   
   if (use_year_colour && facet_by) {
@@ -463,7 +412,7 @@ plot_cpi_seasonal <- function(data,
       .feature_set = feature_set,
       .geom = geom,
       .geom_color = geom_color,
-      .title = paste("Seasonal Diagnostics:", s),
+      .title = "",
       .x_lab = "Date",
       .y_lab = "CPI Index",
       .interactive = interactive
@@ -473,6 +422,24 @@ plot_cpi_seasonal <- function(data,
       if (interactive) {
         p <- p %>%
           plotly::layout(
+            xaxis = list(
+              tickmode = "array",
+              tickvals = 1:12,
+              ticktext = c("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
+              title = list(
+                text = "Date",
+                font = list(size = 10)
+              ),
+              tickfont = list(size = 9)
+            ),
+            yaxis = list(
+              title = list(
+                text = "CPI Index",
+                font = list(size = 10)
+              ),
+              tickfont = list(size = 9)
+            ),
             annotations = list(
               list(
                 text = caption_text,
@@ -607,8 +574,8 @@ plot_cpi_acf <- function(data,
       .hline_color = hline_color,
       .white_noise_line_type = white_noise_line_type,
       .white_noise_line_color = white_noise_line_color,
-      .title = plot_title,
-      .x_lab = "Lag",
+      .title = "",
+      .x_lab = paste0("Lag (selected = ", lags, ")"),
       .y_lab = "Correlation",
       .interactive = interactive,
       .plotly_slider = plotly_slider
@@ -708,258 +675,239 @@ ui <- navbarPage(
     bootswatch = "flatly",
     base_font = bslib::font_google("Inter")
   ),
-  
+
   tabPanel(
     "Dashboard",
     fluidPage(
       fluid = TRUE,
-      
             tags$head(
               tags$style(HTML("
-        .container-fluid {
-          padding-top: 6px;
-          padding-bottom: 6px;
-        }
-
-        .aa-hero-wrap {
-          margin-bottom: 0;
-          height: 100%;
-        }
-
-        .aa-hero-wrap .bslib-value-box,
-        .aa-hero-wrap .value-box {
-          min-height: 100px !important;
-          height: 100% !important;
-          border-radius: 14px !important;
-          overflow: hidden !important;
-        }
-
-        .aa-hero-wrap .value-box-grid {
-          min-height: 100px !important;
-          height: 100% !important;
-          display: grid !important;
-          grid-template-columns: 160px minmax(0, 1fr) !important;
-          column-gap: 16px !important;
-          align-items: center !important;
-          padding: 14px 18px !important;
-        }
-
-        .aa-hero-wrap .value-box-showcase {
-          width: 190px !important;
-          min-width: 190px !important;
-          height: 130px !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          overflow: hidden !important;
-        }
-
-        .aa-hero-wrap .value-box-body {
-          min-width: 0 !important;
-          display: flex !important;
-          flex-direction: column !important;
-          justify-content: center !important;
-        }
-
-        .aa-hero-wrap .value-box-title {
-          font-size: 1.05rem !important;
-          font-weight: 600 !important;
-          line-height: 1.2 !important;
-          margin-bottom: 8px !important;
-        }
-
-        .aa-hero-main {
-          font-size: 2.8rem;
-          font-weight: 700;
-          line-height: 1;
-          margin-bottom: 12px;
-        }
-
-        .aa-hero-line {
-          font-size: 0.95rem;
-          line-height: 1.3;
-          margin-bottom: 4px;
-          opacity: 0.98;
-        }
-
-        .aa-hero-spark {
-          width: 185px;
-          height: 120px;
-        }
-
-        .aa-right-container {
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .aa-kpi-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          grid-template-rows: 1fr 1fr;
-          gap: 4px;
-          height: 100%;
-          flex: 1;
-        }
-
-        .aa-kpi-wrap {
-          min-width: 0;
-          min-height: 82px;
-          height: 100%;
-        }
-
-        .aa-kpi-wrap .bslib-value-box,
-        .aa-kpi-wrap .value-box {
-          min-height: 82px !important;
-          height: 100% !important;
-          border-radius: 10px !important;
-          margin-bottom: 0 !important;
-          overflow: hidden !important;
-        }
-
-        .aa-kpi-wrap .value-box-grid {
-          height: 100% !important;
-          display: grid !important;
-          grid-template-columns: 42px minmax(0, 1fr) !important;
-          column-gap: 8px !important;
-          align-items: center !important;
-          padding: 8px 10px !important;
-        }
-
-        .aa-kpi-wrap .value-box-showcase {
-          width: 42px !important;
-          height: 30px !important;
-          min-width: 42px !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          overflow: hidden !important;
-        }
-
-        .aa-kpi-wrap .value-box-body {
-          min-width: 0 !important;
-          display: flex !important;
-          flex-direction: column !important;
-          justify-content: center !important;
-          gap: 2px !important;
-        }
-
-        .aa-kpi-wrap .value-box-title {
-          margin: 0 !important;
-          font-size: 0.8rem !important;
-          line-height: 1.08 !important;
-          font-weight: 600 !important;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .aa-kpi-wrap .value-box-value {
-          margin: 0 !important;
-          line-height: 1.02 !important;
-          font-size: 1.02rem !important;
-          font-weight: 700 !important;
-        }
-
-        .aa-kpi-wrap .value-box-value > div,
-        .aa-kpi-wrap .value-box-value > span,
-        .aa-kpi-wrap .value-box-value p {
-          margin: 0 !important;
-          font-size: inherit !important;
-          line-height: inherit !important;
-          font-weight: inherit !important;
-        }
-
-        .aa-kpi-subtitle {
-          margin: 1px 0 0 0 !important;
-          font-size: 0.75rem !important;
-          line-height: 1.08 !important;
-          font-weight: 500 !important;
-          opacity: 0.95;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .aa-kpi-text {
-          display: inline-block;
-          max-width: 100%;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          vertical-align: bottom;
-        }
-
-        .aa-box {
-          width: 100%;
-          overflow-x: hidden;
-          padding: 0;
-          margin-bottom: 0;
-        }
-
-        .bslib-layout-columns {
-          align-items: stretch !important;
-        }
-
-        .bslib-layout-columns > div:first-child,
-        .bslib-layout-columns > div:last-child {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .bslib-layout-columns > div:first-child .aa-hero-wrap,
-        .bslib-layout-columns > div:last-child .aa-right-container {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .bslib-layout-columns > div:first-child .aa-hero-wrap .bslib-value-box,
-        .bslib-layout-columns > div:first-child .aa-hero-wrap .value-box {
-          flex: 1;
-        }
-
-        @media (max-width: 1200px) {
-          .aa-hero-wrap .value-box-grid {
-            grid-template-columns: 170px minmax(0, 1fr) !important;
-          }
-
-          .aa-hero-wrap .value-box-showcase {
-            width: 160px !important;
-            min-width: 160px !important;
-          }
-
-          .aa-hero-spark {
-            width: 150px;
-            height: 110px;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .aa-hero-wrap .value-box-grid {
-            grid-template-columns: 1fr !important;
-            row-gap: 12px !important;
-          }
-
-          .aa-hero-wrap .value-box-showcase {
-            width: 100% !important;
-            justify-content: flex-start !important;
-          }
-
-          .aa-kpi-grid {
-            grid-template-columns: 1fr;
-            grid-template-rows: auto;
-          }
-        }
-      "))
-            ),
+              .aa-fadein {
+              animation: aaFadeIn 0.5s ease-in-out;
+            }
+          
+            @keyframes aaFadeIn {
+              from {
+                opacity: 0;
+                transform: translateY(6px);
+              }
+              to {
+                opacity: 1;
+                transform: translateY(0);
+              }
+            }
+          
+            .shiny-spinner-output-container {
+              width: 100%;
+            }
             
+    
+    .aa-hero-wrap {
+      margin-bottom: 0;
+      height: 100%;
+    }
+    
+    .aa-hero-wrap .bslib-value-box,
+    .aa-hero-wrap .value-box {
+      min-height: 100px !important;
+      height: 100% !important;
+      border-radius: 14px !important;
+      overflow: hidden !important;
+    }
+    
+          .aa-hero-wrap .value-box-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 200px;
+        column-gap: 16px !important;
+        align-items: center !important;
+        padding: 14px 18px !important;
+      }
+    
+    .aa-hero-wrap .value-box-showcase {
+      min-width: 150px !important;
+      min-height: 130px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      overflow: hidden !important;
+    }
+    
+    .aa-hero-wrap .value-box-body {
+      min-width: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+    }
+    
+    .aa-hero-wrap .value-box-title {
+      font-size: 1.05rem !important;
+      font-weight: 600 !important;
+      line-height: 1.2 !important;
+      margin-bottom: 8px !important;
+    }
+    
+    .aa-hero-main {
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+    
+    .aa-hero-line {
+      font-size: 0.95rem;
+      line-height: 1.3;
+      margin-bottom: 4px;
+      opacity: 0.98;
+    }
+    
+    .aa-hero-spark {
+      width: 185px;
+      height: 120px;
+    }
+    
+    .aa-right-container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .aa-kpi-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 4px;
+      height: 100%;
+      flex: 1;
+    }
+    
+    .aa-kpi-wrap {
+      min-width: 0;
+      min-height: 82px;
+      height: 100%;
+    }
+    
+    .aa-kpi-wrap .bslib-value-box,
+    .aa-kpi-wrap .value-box {
+      min-height: 82px !important;
+      height: 100% !important;
+      border-radius: 10px !important;
+      margin-bottom: 0 !important;
+      overflow: hidden !important;
+    }
+    
+    .aa-kpi-wrap .value-box-grid {
+      height: 100% !important;
+      display: grid !important;
+      grid-template-columns: 42px minmax(0, 1fr) !important;
+      column-gap: 8px !important;
+      align-items: center !important;
+      padding: 8px 10px !important;
+    }
+    
+    .aa-kpi-wrap .value-box-showcase {
+      width: 42px !important;
+      height: 30px !important;
+      min-width: 42px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      overflow: hidden !important;
+    }
+    
+    .aa-kpi-wrap .value-box-body {
+      min-width: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      gap: 2px !important;
+    }
+    
+    .aa-kpi-wrap .value-box-title {
+      margin: 0 !important;
+      font-size: 0.8rem !important;
+      line-height: 1.08 !important;
+      font-weight: 600 !important;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .aa-kpi-wrap .value-box-value {
+      margin: 0 !important;
+      line-height: 1.02 !important;
+      font-size: 1.02rem !important;
+      font-weight: 700 !important;
+    }
+    
+    .aa-kpi-wrap .value-box-value > div,
+    .aa-kpi-wrap .value-box-value > span,
+    .aa-kpi-wrap .value-box-value p {
+      margin: 0 !important;
+      font-size: inherit !important;
+      line-height: inherit !important;
+      font-weight: inherit !important;
+    }
+    
+    .aa-kpi-subtitle {
+      margin: 1px 0 0 0 !important;
+      font-size: 0.75rem !important;
+      line-height: 1.08 !important;
+      font-weight: 500 !important;
+      opacity: 0.95;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .aa-kpi-text {
+      display: inline-block;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: bottom;
+    }
+    
+    .aa-box {
+      width: 100%;
+      overflow-x: hidden;
+      padding: 0;
+      margin-bottom: 0;
+    }
+    
+    .bslib-layout-columns {
+      align-items: stretch !important;
+    }
+    
+    .bslib-layout-columns > div:first-child,
+    .bslib-layout-columns > div:last-child {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .bslib-layout-columns > div:first-child .aa-hero-wrap,
+    .bslib-layout-columns > div:last-child .aa-right-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .bslib-layout-columns > div:first-child .aa-hero-wrap .bslib-value-box,
+    .bslib-layout-columns > div:first-child .aa-hero-wrap .value-box {
+      flex: 1;
+    }
+      "))
+      ),
             bslib::layout_columns(
               col_widths = c(6, 6),
               
               div(
-                class = "aa-hero-wrap",
-                uiOutput("aa_hero_cpi")
+                class = "aa-hero-wrap aa-fadein",
+                withSpinner(
+                  uiOutput("aa_hero_cpi"),
+                  type = 4,
+                  color = "#1f8f53"
+                )
               ),
               
               div(
@@ -987,7 +935,7 @@ ui <- navbarPage(
             
             # title + tooltip inline
             div(
-              style = "display:flex; align-items:center; gap:6px; font-size:18px; font-weight:700; color:#1f2d3d;",
+              style = "display:flex; align-items:center; gap:6px; font-size:16px; font-weight:700; color:#1f2d3d;",
               
               "Major Category Contribution Dashboard",
               
@@ -997,24 +945,60 @@ ui <- navbarPage(
               )
             ),
             
-            # subtitle (clean, no tooltip)
+            # subtitle
             div(
-              style = "font-size:13px; color:#6b7280; margin-top:2px;",
-              "Latest CPI, trend, inflation rate, weight, and contribution by major category"
+              style = "font-size:10px; color:#6b7280; margin-top:2px;",
+              "Latest CPI, 12-month trend (2024-2025), YoY% (inflation rate), weight in percentage, and contribution percent points by major category"
             )
           )
         ),
         
-        reactable::reactableOutput("aa_dashboard_table")
+        tagList(
+          reactable::reactableOutput("aa_dashboard_table"),
+          
+          div(
+            style = "
+              font-size:12px;
+              color:#6b7280;
+              margin-top:6px;
+              text-align:right;
+            ",
+            "Source: Singapore Department of Statistics | CEIC Database| Base Year: 2024"
+          )
+        )
       )
     )
   ),
   
+  
   tabPanel(
     "Data Explorer",
     fluidPage(
-      br(),
-      compact_dt_css,
+      tags$style(HTML("
+  
+  .dataTables_wrapper .dataTables_filter input,
+  .dataTables_wrapper select {
+    height: 26px !important;
+    font-size: 12px !important;
+  }
+
+  table.dataTable thead input {
+    height: 24px !important;
+    font-size: 12px !important;
+    padding: 2px 4px !important;
+  }
+  
+  table.dataTable {
+    border-spacing: 0px !important;
+  }
+
+  table.dataTable td,
+  table.dataTable th {
+    white-space: nowrap;
+  }
+
+
+")),
       
       div(
         style = "
@@ -1026,20 +1010,28 @@ ui <- navbarPage(
       ",
         
         div(
-          style = "text-align: center; margin-bottom: 20px;",
-          h3(
+          style = "text-align: center; margin-bottom: 8px;",
+          h5(
             "CPI Data Explorer",
             style = "color: #2c3e50; margin-bottom: 5px;"
-          ),
-          uiOutput("aa_cpi_table_subtitle")
+          )
+          
         ),
         
         div(
-          style = "display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;",
+          style = "
+              display:flex;
+              justify-content:space-between;
+              align-items:center;
+              margin-bottom:6px;
+              padding:6px 10px;
+              background-color:#f8f9fa;
+              border-radius:5px;
+            ",
           div(
-            style = "text-align: center; flex: 1;",
-            div(style = "font-size: 12px; color: #7f8c8d;", "Total Rows"),
-            textOutput("aa_total_rows", inline = TRUE)
+            style = "text-align:center; flex:1; line-height:1.1;",
+            div(style = "font-size:11px; color:#7f8c8d; margin-bottom:2px;", "Total Rows"),
+            div(style = "font-size:14px; font-weight:600;", textOutput("aa_total_rows", inline = TRUE))
           ),
           div(
             style = "text-align: center; flex: 1; border-left: 1px solid #dee2e6; border-right: 1px solid #dee2e6;",
@@ -1059,17 +1051,26 @@ ui <- navbarPage(
           style = "margin-top: 15px; font-size: 12px; color: #7f8c8d; text-align: center;",
           "▲ = Increase from previous month | ▼ = Decrease from previous month | ◆ = No change",
           br(),
-          "Base Year: 2024 | Source: Singapore Department of Statistics & CEIC Database"
+          "Base Year: 2024 | Source: CEIC Database"
         )
       )
     )
   ),
-  
   tabPanel(
     "EDA",
     fluidPage(
-      br(),
       
+      tags$head(
+        tags$style(HTML("
+    .container-fluid {
+      padding-top: 0px !important;
+    }
+    .row {
+      margin-top: 4px !important;
+      margin-bottom: 4px !important;
+    }
+  "))
+      ),
       sidebarLayout(
         sidebarPanel(
           width = 3,
@@ -1113,8 +1114,8 @@ ui <- navbarPage(
               sliderTextInput(
                 "aa_date_range",
                 "Date Range",
-                choices = sort(unique(cpi_data$date)),
-                selected = range(cpi_data$date),
+                choices = sort(unique(aa_cpi_data$date)),
+                selected = range(aa_cpi_data$date),
                 grid = FALSE,
                 dragRange = TRUE
               ),
@@ -1123,12 +1124,12 @@ ui <- navbarPage(
               
               conditionalPanel(
                 condition = "input.aa_eda_tabs == 'Trend'",
-                checkboxInput("aa_smooth", "Smooth", TRUE),
+                checkboxInput("aa_smooth", "Smooth", FALSE),
                 selectInput(
                   "aa_colour_by_year",
                   "Colour by Year",
                   choices = c("None" = "none", "Year" = "year"),
-                  selected = "none"
+                  selected = "year"
                 ),
                 selectInput(
                   "aa_facet_cols",
@@ -1154,7 +1155,7 @@ ui <- navbarPage(
                     "Quarter" = "quarter",
                     "Year" = "year"
                   ),
-                  selected = "month.lbl"
+                  selected = c("month.lbl", "quarter")
                 )
               ),
               
@@ -1164,7 +1165,6 @@ ui <- navbarPage(
                 numericInput("aa_lags", "Lags", value = 24, min = 1, max = 60)
               ),
               
-              br(),
               actionButton("aa_reset", "Reset", class = "btn-primary")
             )
           )
@@ -1178,18 +1178,30 @@ ui <- navbarPage(
             
             tabPanel(
               "Trend",
+              div(
+                style = "font-size:13px; color:#6b7280; margin-top: 15px;",
+                "Visualises CPI trends over time to identify long term inflation patterns."
+              ),
               br(),
               plotlyOutput("aa_trend_plot", height = "550px")
             ),
             
             tabPanel(
               "Seasonality",
+              div(
+                style = "font-size:13px; color:#6b7280; margin-top: 15px;",
+                "Identify recurring seasonal patterns in CPI across months, quarters and years."
+              ),
               br(),
               uiOutput("aa_seasonality_cards_ui")
             ),
             
             tabPanel(
               "Autocorrelation",
+              div(
+                style = "font-size:13px; color:#6b7280; margin-top: 15px;",
+                "Shows how CPI values are correlated with past periods to identify persistence and lag effects."
+              ),
               br(),
               plotlyOutput("aa_acf_plot", height = "550px")
             )
@@ -1208,21 +1220,24 @@ server <- function(input, output, session) {
   # =========================
   # DASHBOARD
   # =========================
+
+  # =========================
+  # REACTABLE DATA PREP
+  # =========================
+  
+  aa_dashboard_table_data <- reactive({
+    aa_dashboard_table
+  })
   
   aa_latest_top_cpi <- reactive({
-    cpi_data %>%
+    aa_cpi_data %>%
       mutate(date = as.Date(date)) %>%
       filter(series == "Consumer Price Index (CPI)") %>%
       arrange(date)
   })
   
   aa_latest_lvl1_dash <- reactive({
-    aa_latest_date <- max(cpi_dashboard$date, na.rm = TRUE)
-    
-    cpi_dashboard %>%
-      mutate(date = as.Date(date)) %>%
-      filter(level == 1, date == aa_latest_date) %>%
-      arrange(desc(contribution_pp))
+    aa_latest_lvl1
   })
   
   # reusable KPI card
@@ -1316,65 +1331,43 @@ server <- function(input, output, session) {
     
     if (nrow(aa_df) < 2) return(NULL)
     
-    plotly::plot_ly(
-      aa_df,
-      x = ~date,
-      y = ~cpi,
-      type = "scatter",
-      mode = "lines",
-      line = list(color = "white", width = 2),
-      fill = "tozeroy",
-      fillcolor = "rgba(255,255,255,0.22)",
-      hovertemplate = "%{x|%b %Y}<br>CPI: %{y:.1f}<extra></extra>"
-    ) %>%
+    plotly::plot_ly(aa_df) %>%
+      plotly::add_lines(
+        x = ~date,
+        y = ~cpi,
+        color = I("white"),
+        fill = "tozeroy",
+        alpha = 0.2,
+        hovertemplate = "CPI: %{y:.2f}<extra></extra>"
+        ) %>%
       plotly::layout(
-        showlegend = FALSE,
+        xaxis = list(visible = FALSE, showgrid = FALSE, title = ""),
+        yaxis = list(visible = FALSE, showgrid = FALSE, title = ""),
         hovermode = "x unified",
         margin = list(t = 0, r = 0, l = 0, b = 0),
         font = list(color = "white"),
         paper_bgcolor = "transparent",
-        plot_bgcolor = "transparent",
-        xaxis = list(
-          visible = FALSE,
-          showgrid = FALSE,
-          zeroline = FALSE,
-          title = ""
-        ),
-        yaxis = list(
-          visible = FALSE,
-          showgrid = FALSE,
-          zeroline = FALSE,
-          title = ""
-        )
+        plot_bgcolor = "transparent"
       ) %>%
-      plotly::config(displayModeBar = FALSE, responsive = TRUE) %>%
-      htmlwidgets::onRender("
-      function(el) {
-        var box = el.closest('.bslib-value-box');
-        if (!box) return;
+      plotly::config(displayModeBar = FALSE) %>%
+      htmlwidgets::onRender(
+        "function(el) {
+        el.closest('.bslib-value-box')
+          .addEventListener('bslib.card', function(ev) {
 
-        box.addEventListener('bslib.card', function(ev) {
-          var fs = ev.detail.fullScreen;
+            Plotly.relayout(el, {
+              'xaxis.visible': ev.detail.fullScreen,
+              'yaxis.visible': ev.detail.fullScreen
+            });
 
-          Plotly.relayout(el, {
-            'xaxis.visible': fs,
-            'yaxis.visible': false,
-            'margin.t': fs ? 20 : 0,
-            'margin.r': fs ? 20 : 0,
-            'margin.l': fs ? 20 : 0,
-            'margin.b': fs ? 40 : 0
+            setTimeout(function() {
+              Plotly.Plots.resize(el);
+            }, 100);
+
           });
-
-          Plotly.Plots.resize(el);
-        });
-
-        setTimeout(function() {
-          Plotly.Plots.resize(el);
-        }, 100);
-      }
-    ")
+      }"
+      )
   }
-  
   
   aa_hero_narrative <- function(data) {
     aa_df <- data %>%
@@ -1410,32 +1403,19 @@ server <- function(input, output, session) {
     
     tagList(
       div(class = "aa-hero-main", sprintf("%.1f", aa_latest_val)),
+      div(class = "aa-hero-line", aa_direction),
       div(
         class = "aa-hero-line",
         sprintf(
-          "Latest YoY: %s",
-          ifelse(is.na(aa_latest_yoy), "NA", sprintf("%+.2f%%", aa_latest_yoy))
+          "Earliest: %s",
+          ifelse(is.na(aa_start_val), "NA", sprintf("%.1f", aa_start_val))
         )
       ),
-      div(class = "aa-hero-line", aa_direction),
-      div(class = "aa-hero-line", aa_direction_detail),
-      div(class = "aa-hero-line", sprintf("5Y peak: %.1f in %s", aa_peak_val, aa_peak_date))
+      div(class = "aa-hero-line", sprintf("5Y peak: %.1f in %s", aa_peak_val, aa_peak_date)),
+      div(class = "aa-hero-line", aa_direction_detail)
     )
   }
   
-  
-  aa_hero_value_box <- function(title, value_ui, showcase = NULL, bg = "#1f8f53", fg = "#ffffff") {
-    bslib::value_box(
-      title = title,
-      value = value_ui,
-      showcase = showcase,
-      theme = bslib::value_box_theme(
-        bg = bg,
-        fg = fg
-      ),
-      full_screen = TRUE
-    )
-  }
   
   
   # =========================
@@ -1445,12 +1425,23 @@ server <- function(input, output, session) {
     aa_df <- aa_latest_top_cpi()
     validate(need(nrow(aa_df) > 13, "Not enough CPI data available"))
     
-    aa_hero_value_box(
-      title = "Headline CPI Index",
-      showcase = aa_hero_sparkline(aa_df),
-      value_ui = aa_hero_narrative(aa_df),
-      bg = "#1f8f53",
-      fg = "#ffffff"
+    div(
+      class = "aa-hero-wrap",
+      
+      bslib::value_box(
+        title = "Headline CPI Index",
+        
+        value = aa_hero_narrative(aa_df),
+        
+        showcase = aa_hero_sparkline(aa_df),
+        
+        full_screen = TRUE,
+        
+        theme = bslib::value_box_theme(
+          bg = "#1f8f53",
+          fg = "#ffffff"
+        )
+      )
     )
   })
   
@@ -1709,7 +1700,7 @@ server <- function(input, output, session) {
     
     aa_division <- input$aa_clicked_division
     
-    aa_subcat_df <- cpi_dashboard %>%
+    aa_subcat_df <- aa_cpi_dashboard %>%
       dplyr::filter(
         division == aa_division,
         if (aa_division == "Food") level %in% c(2, 3) else level == 2
@@ -1915,7 +1906,7 @@ server <- function(input, output, session) {
   # =========================
   
   output$aa_cpi_table_subtitle <- renderUI({
-    h5(
+    h6(
       paste("Latest Data:", format(max(cpi_h_display$As_of, na.rm = TRUE), "%B %Y")),
       style = "color: #7f8c8d; font-weight: normal; margin-top: 0;"
     )
@@ -1959,7 +1950,7 @@ server <- function(input, output, session) {
       extensions = c("Buttons", "ColReorder", "Responsive"),
       width = "100%",
       options = list(
-        pageLength = 25,
+        pageLength = 10,
         lengthMenu = list(
           c(10, 25, 50, 100, -1),
           c("10", "25", "50", "100", "All")
@@ -2054,7 +2045,7 @@ server <- function(input, output, session) {
   filtered_data <- reactive({
     req(input$aa_date_range)
     
-    cpi_data %>%
+    aa_cpi_data %>%
       filter(
         date >= min(as.Date(input$aa_date_range)),
         date <= max(as.Date(input$aa_date_range))
@@ -2063,7 +2054,13 @@ server <- function(input, output, session) {
   
   aa_max_select <- reactive({
     req(input$aa_eda_tabs)
-    if (input$aa_eda_tabs %in% c("Seasonality", "Autocorrelation")) 4 else 6
+    
+    switch(input$aa_eda_tabs,
+           "Trend" = 6,
+           "Seasonality" = 2,
+           "Autocorrelation" = 3,
+           6
+    )
   })
   
   output$aa_division_ui <- renderUI({
@@ -2170,11 +2167,17 @@ server <- function(input, output, session) {
     
     max_select <- aa_max_select()
     
-    checkboxGroupInput(
+    selectizeInput(
       "aa_series_select",
       label = paste0("Series (max ", max_select, ")"),
       choices = choices,
-      selected = head(choices, min(max_select, length(choices)))
+      selected = head(choices, min(2, length(choices))),
+      multiple = TRUE,
+      options = list(
+        maxItems = max_select,
+        plugins = list("remove_button"),
+        placeholder = paste0("Select up to ", max_select, " series")
+      )
     )
   })
   
@@ -2222,8 +2225,11 @@ server <- function(input, output, session) {
           margin-bottom: 20px;
           box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         ",
-          h4(selected_series[i], style = "margin-top: 0;"),
-          plotlyOutput(outputId = paste0("aa_season_plot_", i), height = "520px")
+          div(
+            selected_series[i],
+            style = "margin-top:0; margin-bottom:8px; font-size:16px; font-weight:600;"
+          ),
+          plotlyOutput(outputId = paste0("aa_season_plot_", i), height = "550px")
         )
       )
     })
@@ -2260,7 +2266,7 @@ server <- function(input, output, session) {
     updateCheckboxInput(session, "aa_smooth", value = TRUE)
     updateCheckboxInput(session, "aa_acf_white_noise", value = TRUE)
     updateNumericInput(session, "aa_lags", value = 24)
-    updateSliderTextInput(session, "aa_date_range", selected = range(cpi_data$date))
+    updateSliderTextInput(session, "aa_date_range", selected = range(aa_cpi_data$date))
   })
   
   observeEvent(input$aa_series_select, {
@@ -2269,7 +2275,7 @@ server <- function(input, output, session) {
     max_select <- aa_max_select()
     
     if (!is.null(input$aa_series_select) && length(input$aa_series_select) > max_select) {
-      updateCheckboxGroupInput(
+      updateSelectizeInput(
         session,
         "aa_series_select",
         selected = input$aa_series_select[1:max_select]
