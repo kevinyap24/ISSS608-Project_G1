@@ -1553,7 +1553,7 @@ server <- function(input, output, session) {
               show_line = TRUE, 
               line_color = "black", 
               bandline = "innerquartiles", 
-              bandline_color = "royalblue", 
+              bandline_color = "grey", 
               decimals = 2, statline = "mean", 
               statline_color = "grey", 
               statline_label_size = "0.65em", 
