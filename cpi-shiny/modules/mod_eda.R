@@ -1,8 +1,8 @@
 pacman::p_load(
   shiny, dplyr, lubridate, plotly, timetk,
   ggplot2, shinyWidgets, readr, tidyr, DT,
-  htmltools, bslib, reactable, reactablefmtr,
-  bsicons, shinycssloaders
+  htmltools, bslib, reactable,
+  bsicons, shinycssloaders, sparkline
 )
 
 filter    <- dplyr::filter
@@ -449,6 +449,17 @@ eda_ui <- function(id) {
         font-weight: 600;
         color: #1a1612;
       }
+      
+      /* ── Hero box full height ── */
+      .eda-wrapper .bslib-layout-columns > div:first-child {
+        display: flex !important;
+        flex-direction: column !important;
+      }
+      .eda-wrapper .bslib-layout-columns > div:first-child .shiny-spinner-output-container,
+      .eda-wrapper .bslib-layout-columns > div:first-child .bslib-value-box {
+        flex: 1 !important;
+        height: 100% !important;
+      }
     "))),
     
     div(class = "eda-wrapper",
@@ -696,9 +707,21 @@ eda_server <- function(id, cpi_data, cpi_dashboard, dashboard_table, latest_lvl1
                           fill = "tozeroy", alpha = 0.2,
                           hovertemplate = "CPI: %{y:.2f}<extra></extra>") %>%
         plotly::layout(
-          xaxis = list(visible = FALSE), yaxis = list(visible = FALSE),
-          hovermode = "x unified", margin = list(t = 0, r = 0, l = 0, b = 0),
-          paper_bgcolor = "transparent", plot_bgcolor = "transparent"
+          xaxis = list(visible = FALSE, showgrid = FALSE, title = ""),
+          yaxis = list(visible = FALSE, showgrid = FALSE, title = ""),
+          hovermode = "x unified",
+          margin = list(t = 0, r = 0, l = 0, b = 0),
+          paper_bgcolor = "transparent",
+          plot_bgcolor  = "transparent",
+          hoverlabel = list(
+            bgcolor     = "#f5f0e8",
+            bordercolor = "#1a1612",
+            font        = list(
+              color  = "#1a1612",
+              size   = 12,
+              family = "IBM Plex Mono"
+            )
+          )
         ) %>%
         plotly::config(displayModeBar = FALSE)
     }
@@ -724,8 +747,7 @@ eda_server <- function(id, cpi_data, cpi_dashboard, dashboard_table, latest_lvl1
         div(style = "font-size:2.8rem; font-weight:700; line-height:1;",
             sprintf("%.1f", aa_latest$cpi[1])),
         div(style = "font-size:0.95rem; line-height:1.3; margin-top:8px;", aa_dir),
-        div(style = "font-size:0.95rem;",
-            sprintf("Earliest: %.1f", aa_first$cpi[1])),
+        div(style = "font-size:0.95rem;", sprintf("Earliest: %.1f", aa_first$cpi[1])),
         div(style = "font-size:0.95rem;",
             sprintf("5Y peak: %.1f in %s", aa_peak$cpi[1], format(aa_peak$date[1], "%b %Y"))),
         div(style = "font-size:0.95rem;",
@@ -748,6 +770,7 @@ eda_server <- function(id, cpi_data, cpi_dashboard, dashboard_table, latest_lvl1
         value = aa_hero_narrative(aa_df),
         showcase = aa_hero_sparkline(aa_df),
         full_screen = TRUE,
+        height = "100%",
         theme = bslib::value_box_theme(bg = "#1a1612", fg = "#f5f0e8")
       )
     })
@@ -816,8 +839,66 @@ eda_server <- function(id, cpi_data, cpi_dashboard, dashboard_table, latest_lvl1
     
     output$aa_dashboard_table <- reactable::renderReactable({
       req(nrow(dashboard_table) > 0)
+      
+      tbl <- as.data.frame(dashboard_table)
+      n   <- nrow(tbl)
+      
+      html_vals <- character(n)
+      for (i in seq_len(n)) {
+        vals <- tryCatch(as.numeric(unlist(tbl$trend_12m[[i]])), error = function(e) NULL)
+        if (is.null(vals) || length(vals) < 2) {
+          html_vals[i] <- "—"
+        } else {
+          vals <- vals[is.finite(vals)]
+          if (length(vals) < 2) {
+            html_vals[i] <- "—"
+          } else {
+            mean_val <- mean(vals, na.rm = TRUE)
+            val_min  <- min(vals, na.rm = TRUE)
+            val_max  <- max(vals, na.rm = TRUE)
+            mean_pct <- if (val_max == val_min) 50 else
+              round((1 - (mean_val - val_min) / (val_max - val_min)) * 30)
+            
+            spk <- sparkline::spk_chr(
+              vals,
+              type             = "line",
+              lineColor        = "#1a1612",
+              fillColor        = "transparent",
+              lineWidth        = 1.5,
+              spotColor        = "#c0392b",
+              minSpotColor     = "#c0392b",
+              maxSpotColor     = "#c0392b",
+              normalRangeMin   = quantile(vals, 0.25, na.rm = TRUE),
+              normalRangeMax   = quantile(vals, 0.75, na.rm = TRUE),
+              normalRangeColor = "rgba(192,57,43,0.15)",
+              drawNormalOnTop  = FALSE,
+              width            = 500, 
+              height           = 30
+            )
+            
+            html_vals[i] <- paste0(
+              '<div style="position:relative; display:inline-flex; align-items:center; gap:4px;">',
+              '<div style="position:relative; display:inline-block;">',
+              spk,
+              '<div style="position:absolute; top:', mean_pct,
+              'px; left:0; right:0; border-top:1.5px dotted #c0392b; pointer-events:none;"></div>',
+              '</div>',
+              '<span style="font-family:\'IBM Plex Mono\',monospace; font-size:10px; color:#7a6f68; white-space:nowrap;">',
+              sprintf("%.2f", mean_val),
+              '</span>',
+              '</div>'
+            )
+          }
+        }
+      }
+      
+      tbl$trend_12m_html <- html_vals
+      tbl$trend_12m      <- NULL
+      
+      tbl <- tbl[, c("series", "cpi", "trend_12m_html", "yoy_pct", "weight_pct", "contribution_pp")]
+      
       reactable::reactable(
-        dashboard_table,
+        tbl,
         defaultPageSize = 10, pagination = FALSE,
         compact = TRUE, highlight = TRUE, striped = FALSE,
         defaultSorted = "contribution_pp", defaultSortOrder = "desc",
@@ -841,14 +922,10 @@ eda_server <- function(id, cpi_data, cpi_dashboard, dashboard_table, latest_lvl1
             name = "Latest CPI",
             format = reactable::colFormat(digits = 2), minWidth = 70
           ),
-          trend_12m = reactable::colDef(
-            name = "12M Trend", minWidth = 150, sortable = FALSE,
-            cell = reactablefmtr::react_sparkline(dashboard_table,
-                                                  height = 30, show_line = TRUE, line_color = "#1a1612",
-                                                  bandline = "innerquartiles", bandline_color = "#c0392b",
-                                                  decimals = 2, statline = "mean", statline_color = "#7a6f68",
-                                                  highlight_points = reactablefmtr::highlight_points(
-                                                    min = "#c0392b", max = "#c0392b"))
+          trend_12m_html = reactable::colDef(
+            name = "12M Trend", minWidth = 180, sortable = FALSE,
+            html = TRUE,
+            cell = function(value) value
           ),
           yoy_pct = reactable::colDef(
             name = "YoY %", minWidth = 65,
