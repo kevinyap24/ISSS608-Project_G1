@@ -15,7 +15,8 @@ pacman::p_load(
   reactable,
   reactablefmtr,
   bsicons,
-  shinycssloaders
+  shinycssloaders,
+  dataui
 )
 
 
@@ -23,28 +24,11 @@ pacman::p_load(
 # LOAD DATA
 # =========================================================
 
-aa_cpi_data_raw <- read_rds("data/aa_cpi.rds")
-
-if (!"class" %in% names(aa_cpi_data_raw)) {
-  aa_cpi_data_raw$class <- NA_character_
-}
-
-aa_cpi_data <- aa_cpi_data_raw %>%
-  mutate(
-    date = as.Date(date),
-    division = trimws(as.character(division)),
-    group = trimws(as.character(group)),
-    series = trimws(as.character(series)),
-    class_name = trimws(as.character(class)),
-    division = na_if(division, ""),
-    group = na_if(group, ""),
-    series = na_if(series, ""),
-    class_name = na_if(class_name, "")
-  )
-
+aa_cpi_data <- read_rds("data/aa_cpi_data.rds")
+aa_cpi_h_display <- read_rds("data/aa_cpi_h_display.rds")
 
 aa_cpi_dashboard <- read_rds("data/aa_cpi_dashboard.rds")
-aa_dashboard_table <- read_rds("data/aa_dashboard_table.rds")
+aa_dashboard_table_rds <- read_rds("data/aa_dashboard_table.rds")
 aa_latest_lvl1 <- read_rds("data/aa_latest_lvl1.rds")
 
 
@@ -63,50 +47,7 @@ trend_js <- JS(
   "}"
 )
 
-# =========================================================
-# DISPLAY DATA
-# =========================================================
 
-cpi_h_display <- aa_cpi_data %>%
-  arrange(series, date) %>%
-  group_by(series) %>%
-  mutate(
-    As_of = date,
-    As_of_lab = format(date, "%b %Y"),
-    cpi_change = cpi - lag(cpi),
-    Trend = case_when(
-      is.na(cpi_change) ~ "◆",
-      cpi_change > 0 ~ "▲",
-      cpi_change < 0 ~ "▼",
-      TRUE ~ "◆"
-    ),
-    Trend_export = case_when(
-      is.na(cpi_change) ~ "No Change",
-      cpi_change > 0 ~ "Up",
-      cpi_change < 0 ~ "Down",
-      TRUE ~ "No Change"
-    ),
-    level_label = case_when(
-      level == 0 ~ "Top Level",
-      level == 1 ~ "Major Category",
-      level == 2 ~ "Sub-Category",
-      level == 3 ~ "Detailed",
-      TRUE ~ paste("Level", level)
-    ),
-    major_group = case_when(
-      level == 0 ~ NA_character_,
-      TRUE ~ division
-    ),
-    display_name = case_when(
-      level == 0 ~ series,
-      level == 1 ~ division,
-      level == 2 ~ group,
-      level == 3 ~ class_name,
-      TRUE ~ series
-    ),
-    cpi_rounded = round(cpi, 2)
-  ) %>%
-  ungroup()
 
 # =========================================================
 # TREND FUNCTION
@@ -428,14 +369,14 @@ plot_cpi_seasonal <- function(data,
               ticktext = c("Jan", "Feb", "Mar", "Apr", "May", "Jun",
                            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
               title = list(
-                text = "Date",
+                text = " ",
                 font = list(size = 10)
               ),
               tickfont = list(size = 9)
             ),
             yaxis = list(
               title = list(
-                text = "CPI Index",
+                text = " ",
                 font = list(size = 10)
               ),
               tickfont = list(size = 9)
@@ -633,7 +574,7 @@ plot_cpi_acf <- function(data,
         " | Predictors: ", paste(ccf_predictors, collapse = ", ")
       ),
       .x_lab = "Lag",
-      .y_lab = "Correlation",
+      .y_lab = "Autocorrelation",
       .interactive = interactive,
       .plotly_slider = plotly_slider
     )
@@ -1179,7 +1120,7 @@ ui <- navbarPage(
             tabPanel(
               "Trend",
               div(
-                style = "font-size:13px; color:#6b7280; margin-top: 15px;",
+                style = "font-size:13px; color:#6b7280; margin-top: 20px;",
                 "Visualises CPI trends over time to identify long term inflation patterns."
               ),
               br(),
@@ -1189,7 +1130,7 @@ ui <- navbarPage(
             tabPanel(
               "Seasonality",
               div(
-                style = "font-size:13px; color:#6b7280; margin-top: 15px;",
+                style = "font-size:13px; color:#6b7280; margin-top: 20px;",
                 "Identify recurring seasonal patterns in CPI across months, quarters and years."
               ),
               br(),
@@ -1199,8 +1140,8 @@ ui <- navbarPage(
             tabPanel(
               "Autocorrelation",
               div(
-                style = "font-size:13px; color:#6b7280; margin-top: 15px;",
-                "Shows how CPI values are correlated with past periods to identify persistence and lag effects."
+                style = "font-size:13px; color:#6b7280; margin-top: 20px;",
+                "Show how CPI values are correlated with past periods to identify persistence and lag effects."
               ),
               br(),
               plotlyOutput("aa_acf_plot", height = "550px")
@@ -1226,7 +1167,7 @@ server <- function(input, output, session) {
   # =========================
   
   aa_dashboard_table_data <- reactive({
-    aa_dashboard_table
+    aa_dashboard_table_rds
   })
   
   aa_latest_top_cpi <- reactive({
@@ -1556,13 +1497,15 @@ server <- function(input, output, session) {
   # =========================
   # REACTABLE OUTPUT
   # =========================
+  
+  
   output$aa_dashboard_table <- renderReactable({
     aa_latest <- aa_dashboard_table_data()
     req(nrow(aa_latest) > 0)
     
-    aa_latest %>%
+     
       reactable(
-        .,
+        aa_latest,
         defaultPageSize = 10,
         defaultSorted = "contribution_pp",
         defaultSortOrder = "desc",
@@ -1602,26 +1545,23 @@ server <- function(input, output, session) {
             minWidth = 70
           ),
           trend_12m = colDef(
-            name = "12M Trend",
-            minWidth = 150,
-            sortable = FALSE,
+            name = "12M Trend", 
+            minWidth = 150, 
+            sortable = FALSE, 
             cell = react_sparkline(
-              .,
-              height = 30,
-              show_line = TRUE,
-              line_color = "black",
-              bandline = "innerquartiles",
-              bandline_color = "royalblue",
-              decimals = 2,
-              statline = "mean",
-              statline_color = "grey",
-              statline_label_size = "0.65em",
-              highlight_points = highlight_points(
-                min = "black",
-                max = "black"
-              )
-            )
-          ),
+              aa_latest, height = 30, 
+              show_line = TRUE, 
+              line_color = "black", 
+              bandline = "innerquartiles", 
+              bandline_color = "royalblue", 
+              decimals = 2, statline = "mean", 
+              statline_color = "grey", 
+              statline_label_size = "0.65em", 
+              highlight_points = 
+                highlight_points(
+                  min = "black", max = "black"
+                  ))
+            ),
           yoy_pct = colDef(
             name = "YoY %",
             minWidth = 65,
@@ -1907,18 +1847,18 @@ server <- function(input, output, session) {
   
   output$aa_cpi_table_subtitle <- renderUI({
     h6(
-      paste("Latest Data:", format(max(cpi_h_display$As_of, na.rm = TRUE), "%B %Y")),
+      paste("Latest Data:", format(max(aa_cpi_h_display$As_of, na.rm = TRUE), "%B %Y")),
       style = "color: #7f8c8d; font-weight: normal; margin-top: 0;"
     )
   })
   
   output$aa_total_rows <- renderText({
-    as.character(nrow(cpi_h_display))
+    as.character(nrow(aa_cpi_h_display))
   })
   
   output$aa_total_divisions <- renderText({
     as.character(
-      cpi_h_display %>%
+      aa_cpi_h_display %>%
         filter(level_label == "Major Category") %>%
         summarise(n = n_distinct(division, na.rm = TRUE)) %>%
         pull(n)
@@ -1926,11 +1866,11 @@ server <- function(input, output, session) {
   })
   
   output$aa_last_updated <- renderText({
-    format(max(cpi_h_display$As_of, na.rm = TRUE), "%b %Y")
+    format(max(aa_cpi_h_display$As_of, na.rm = TRUE), "%b %Y")
   })
   
   output$aa_cpi_table <- renderDT({
-    dt_data <- cpi_h_display %>%
+    dt_data <- aa_cpi_h_display %>%
       select(
         Level = level_label,
         Division = major_group,
