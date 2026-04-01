@@ -1,7 +1,7 @@
 pacman::p_load(
   shiny, tidyverse, plotly, timetk, modeltime, tidymodels, lubridate,
   DT, htmltools, bslib, reactable, reactablefmtr, bsicons,
-  shinycssloaders, shinyWidgets, readr
+  shinycssloaders, shinyWidgets, readr, sparkline
 )
 
 source("modules/mod_eda.R")
