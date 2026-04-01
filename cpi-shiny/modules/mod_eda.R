@@ -449,6 +449,17 @@ eda_ui <- function(id) {
         font-weight: 600;
         color: #1a1612;
       }
+      
+      /* ── Hero box full height ── */
+      .eda-wrapper .bslib-layout-columns > div:first-child {
+        display: flex !important;
+        flex-direction: column !important;
+      }
+      .eda-wrapper .bslib-layout-columns > div:first-child .shiny-spinner-output-container,
+      .eda-wrapper .bslib-layout-columns > div:first-child .bslib-value-box {
+        flex: 1 !important;
+        height: 100% !important;
+      }
     "))),
     
     div(class = "eda-wrapper",
@@ -696,9 +707,21 @@ eda_server <- function(id, cpi_data, cpi_dashboard, dashboard_table, latest_lvl1
                           fill = "tozeroy", alpha = 0.2,
                           hovertemplate = "CPI: %{y:.2f}<extra></extra>") %>%
         plotly::layout(
-          xaxis = list(visible = FALSE), yaxis = list(visible = FALSE),
-          hovermode = "x unified", margin = list(t = 0, r = 0, l = 0, b = 0),
-          paper_bgcolor = "transparent", plot_bgcolor = "transparent"
+          xaxis = list(visible = FALSE, showgrid = FALSE, title = ""),
+          yaxis = list(visible = FALSE, showgrid = FALSE, title = ""),
+          hovermode = "x unified",
+          margin = list(t = 0, r = 0, l = 0, b = 0),
+          paper_bgcolor = "transparent",
+          plot_bgcolor  = "transparent",
+          hoverlabel = list(
+            bgcolor     = "#f5f0e8",
+            bordercolor = "#1a1612",
+            font        = list(
+              color  = "#1a1612",
+              size   = 12,
+              family = "IBM Plex Mono"
+            )
+          )
         ) %>%
         plotly::config(displayModeBar = FALSE)
     }
@@ -747,6 +770,7 @@ eda_server <- function(id, cpi_data, cpi_dashboard, dashboard_table, latest_lvl1
         value = aa_hero_narrative(aa_df),
         showcase = aa_hero_sparkline(aa_df),
         full_screen = TRUE,
+        height = "100%",
         theme = bslib::value_box_theme(bg = "#1a1612", fg = "#f5f0e8")
       )
     })
