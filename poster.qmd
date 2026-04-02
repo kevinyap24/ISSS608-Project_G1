@@ -1,0 +1,268 @@
+---
+title: ""
+format:
+  html:
+    page-layout: custom
+    include-in-header:
+      text: |
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,500;0,700;1,300&display=swap" rel="stylesheet"/>
+    theme: none
+    css: []
+    toc: false
+    sidebar: false
+    margin-left: "0"
+    margin-right: "0"
+---
+```{=html}
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --red:       #c0392b;
+  --red-light: #e74c3c;
+  --cream:     #f5f0e8;
+  --off-white: #ede8df;
+  --dark:      #1a1612;
+  --mid:       #3d3530;
+  --muted:     #7a6f68;
+  --accent:    #d4a853;
+  --sidebar-w: 220px;
+}
+
+#quarto-header, .quarto-title-banner, #title-block-header,
+.navbar, .sidebar, #quarto-sidebar, #quarto-margin-sidebar { display: none !important; }
+
+body, html {
+  font-family: 'IBM Plex Sans', sans-serif !important;
+  background: var(--cream);
+  color: var(--dark);
+  overflow-x: hidden;
+}
+main.content, div#quarto-content, .page-columns {
+  padding: 0 !important; margin: 0 !important;
+  max-width: 100% !important; width: 100% !important; gap: 0 !important;
+}
+
+/* ── TOP NAV ── */
+.sg-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 3rem; height: 60px;
+  background: var(--dark);
+  border-bottom: 2px solid var(--red);
+}
+.sg-nav-logo {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600; font-size: 0.85rem;
+  color: var(--cream); letter-spacing: 0.12em; text-transform: uppercase;
+  text-decoration: none;
+}
+.sg-nav-logo span { color: var(--red-light); }
+.sg-nav-links { display: flex; gap: 2.5rem; }
+.sg-nav-links a {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); text-decoration: none; transition: color 0.2s;
+}
+.sg-nav-links a:hover, .sg-nav-links a.active { color: var(--red-light); }
+
+/* ── PAGE LAYOUT ── */
+.poster-layout {
+  display: flex;
+  min-height: 100vh;
+  padding-top: 60px;
+}
+
+/* ── LEFT SIDEBAR ── */
+.proposal-sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--dark);
+  position: fixed;
+  top: 60px; left: 0; bottom: 0;
+  overflow-y: auto;
+  display: flex; flex-direction: column;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  z-index: 100;
+}
+.sidebar-logo {
+  padding: 2rem 1.5rem 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+}
+.sidebar-logo-icon {
+  width: 64px; height: 64px;
+  background: var(--red);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600; font-size: 0.7rem; letter-spacing: 0.08em;
+  color: var(--cream); text-align: center; line-height: 1.4;
+}
+.sidebar-logo-links { display: flex; gap: 1.25rem; }
+.sidebar-logo-links a {
+  color: var(--muted); font-size: 0.9rem; text-decoration: none; transition: color 0.2s;
+}
+.sidebar-logo-links a:hover { color: var(--cream); }
+.sidebar-nav { padding: 0.75rem 0; flex: 1; }
+.sidebar-nav a {
+  display: block;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.875rem; font-weight: 300;
+  color: var(--muted);
+  padding: 0.6rem 1.5rem;
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  line-height: 1.4;
+}
+.sidebar-nav a:hover { color: var(--cream); background: rgba(255,255,255,0.04); }
+.sidebar-nav a.active {
+  color: var(--cream);
+  border-left-color: var(--red);
+  background: rgba(192,57,43,0.1);
+}
+
+/* ── MAIN CONTENT ── */
+.poster-main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  padding: 4rem 5rem 6rem;
+  max-width: 900px;
+}
+.poster-page-title {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 700; color: var(--dark);
+  line-height: 1.1; margin-bottom: 0.5rem;
+}
+.poster-divider { border: none; border-top: 1px solid #d8d2c8; margin: 2.5rem 0; }
+.poster-section { scroll-margin-top: 70px; margin-bottom: 3.5rem; }
+.poster-section h2 {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 1.5rem; font-weight: 700; color: var(--dark);
+  border-left: 4px solid var(--red); padding-left: 1rem;
+  margin-bottom: 1.25rem; margin-top: 0;
+}
+.poster-section p {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.975rem; font-weight: 300; line-height: 1.9;
+  color: var(--mid); margin-bottom: 1.1rem;
+}
+.poster-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 0.2rem; margin-top: 1.5rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.poster-label::before { content:''; display:block; width:20px; height:1px; background:var(--red); }
+.download-btn {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 0.75rem 1.75rem;
+  background: var(--red); color: var(--cream);
+  border: 2px solid var(--red); text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+  margin-top: 1.5rem;
+}
+.download-btn:hover { background: transparent; color: var(--red-light); }
+
+@media (max-width: 860px) {
+  .proposal-sidebar { display: none; }
+  .poster-main { margin-left: 0; padding: 2rem 1.5rem 4rem; }
+  .sg-nav { padding: 0 1.5rem; }
+}
+</style>
+
+<!-- ── TOP NAV ── -->
+<nav class="sg-nav">
+  <a href="index.html" class="sg-nav-logo">SG <span>CPI</span> Forecast</a>
+  <div class="sg-nav-links">
+    <a href="index.html#home">Home</a>
+    <a href="index.html#about">About</a>
+    <a href="index.html#projects">RShiny App</a>
+    <a href="proposal.html">Proposal</a>
+    <a href="poster.html" class="active">Poster</a>
+  </div>
+</nav>
+
+<div class="poster-layout">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="proposal-sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">SG<br>CPI</div>
+      <div class="sidebar-logo-links">
+        <a href="index.html" title="Home">🏠</a>
+        <a href="https://github.com/kevinyap24/ISSS608-Project_G1" title="GitHub" target="_blank">⌥</a>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#poster" class="active">Poster</a>
+      <a href="#download">Download</a>
+    </nav>
+  </aside>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="poster-main">
+
+    <h1 class="poster-page-title">Poster</h1>
+    <div class="poster-label">ISS608 Project — Group 1 &nbsp;·&nbsp; 2026</div>
+
+    <hr class="poster-divider" />
+
+    <section class="poster-section" id="poster">
+      <h2>· Poster</h2>
+      <img src="images/Poster.jpg"
+           alt="SG CPI Forecast: Poster"
+           style="width:100%; border: 1px solid #d8d2c8; margin-top: 1rem;" />
+    </section>
+
+    <hr class="poster-divider" />
+
+    <section class="poster-section" id="download">
+      <h2>· Download</h2>
+      <p>
+        Right-click the poster above and choose <strong>Save image as…</strong>,
+        or use the button below to download a copy directly.
+      </p>
+      <a href="images/Poster.jpg" download="SG_CPI_Forecast_Poster.jpg" class="download-btn">
+        ⬇ Download Poster
+      </a>
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function() {
+  var sections  = ['poster', 'download'];
+  var sideLinks = document.querySelectorAll('.sidebar-nav a');
+
+  function updateActive() {
+    var scrollY = window.scrollY + 100;
+    var current = sections[0];
+    sections.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el && el.offsetTop <= scrollY) current = id;
+    });
+    sideLinks.forEach(function(a) {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  }
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
+
+  sideLinks.forEach(function(a) {
+    a.addEventListener('click', function(e) {
+      var id = a.getAttribute('href').replace('#','');
+      var el = document.getElementById(id);
+      if (el) {
+        e.preventDefault();
+        window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' });
+      }
+    });
+  });
+})();
+</script>
+```
