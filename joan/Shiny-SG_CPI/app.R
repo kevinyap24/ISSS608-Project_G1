@@ -1,21 +1,5 @@
-pacman::p_load(
-  shiny,
-  shinythemes,
-  dplyr,
-  lubridate,
-  plotly,
-  timetk,
-  ggplot2,
-  shinyWidgets,
-  readr,
-  tidyr,
-  DT,
-  htmltools,
-  bslib,
-  reactable,
-  reactablefmtr,
-  bsicons,
-  shinycssloaders,
+pacman::p_load(shiny,shinythemes,dplyr,lubridate,plotly,timetk,ggplot2,shinyWidgets,readr,
+  tidyr,DT,htmltools,bslib,reactable,reactablefmtr,bsicons,shinycssloaders,
   dataui
 )
 
@@ -23,7 +7,7 @@ pacman::p_load(
 # =========================================================
 # LOAD DATA
 # =========================================================
-
+# joan
 aa_cpi_data <- read_rds("data/aa_cpi_data.rds")
 aa_cpi_h_display <- read_rds("data/aa_cpi_h_display.rds")
 
@@ -31,7 +15,14 @@ aa_cpi_dashboard <- read_rds("data/aa_cpi_dashboard.rds")
 aa_dashboard_table_rds <- read_rds("data/aa_dashboard_table.rds")
 aa_latest_lvl1 <- read_rds("data/aa_latest_lvl1.rds")
 
-
+# kelvin
+cc_cpi_data <- read_rds("data/cpi_h.rds")
+cc_parent_lookup <- read_rds("data/parent_lookup.rds")
+cc_reconciled_forecasts <- read_rds("data/reconciled_forecasts.rds")
+cc_ets <- read_rds("data/fc_ets.rds")
+cc_arima <- read_rds("data/fc_arima.rds")
+cc_boost <- read_rds("data/fc_boost.rds")
+cc_prophet<- read_rds("data/fc_prophet.rds")
 
 # =========================================================
 # DT STYLES
@@ -146,6 +137,11 @@ plot_cpi_time_series <- function(data,
   
   if (is.null(title)) {
     title <- " "
+  }
+  if (smooth && !use_year_colour) {
+    line_color <- "rgba(120,120,120,0.8)"
+  } else {
+    line_color <- "#2c3e50"
   }
   
   if (use_year_colour && facet_by) {
@@ -263,7 +259,7 @@ plot_cpi_time_series <- function(data,
         )
     }
   }
-  
+ 
   if (return_plot) return(p) else print(p)
 }
 
@@ -609,12 +605,93 @@ plot_cpi_acf <- function(data,
 # =========================================================
 # UI
 # =========================================================
+aa_theme <- bs_theme(
+  version = 5,
+  bootswatch = "flatly",
+  primary = "#d4af37",
+  bg = "#f7f5f0",
+  fg = "#1f2937",
+  base_font = font_google("Inter"),
+  heading_font = font_google("Inter")
+)
+aa_nav_css <- "
+.navbar {
+  background-color: #0f172a !important;
+  min-height: 64px;
+}
+
+.navbar-brand {
+  color: #ffffff !important;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.navbar-nav .nav-link {
+  color: #e5e7eb !important;
+  font-weight: 500;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #d4af37 !important;
+}
+
+.navbar-nav .nav-link.active {
+  color: #d4af37 !important;
+  border-bottom: 2px solid #d4af37;
+}
+
+/* inner tabs: Trend / Seasonality / Autocorrelation */
+.nav-tabs .nav-link {
+  color: #1f2937 !important;
+}
+
+.nav-tabs .nav-link:hover {
+  color: #d4af37 !important;
+}
+
+.nav-tabs .nav-link.active {
+  color: #d4af37 !important;
+  background-color: transparent !important;
+  border-bottom: 3px solid #d4af37 !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+}
+
+/* selected range */
+.irs-bar {
+  background: #0f172a !important;
+  border-top: 1px solid #0f172a !important;
+  border-bottom: 1px solid #0f172a !important;
+}
+
+/* handle */
+.irs-handle {
+  background: #0f172a !important;
+  border: 2px solid #ffffff !important;
+}
+
+/* full track */
+.irs-line {
+  background: #e5e7eb !important;
+}
+
+/* labels */
+.irs-from, .irs-to, .irs-single {
+  background: #0f172a !important;
+  color: #ffffff !important;
+}
+"
+
 
 ui <- navbarPage(
-  title = "Singapore Comsumer Price Index",
-  theme = bslib::bs_theme(
-    bootswatch = "flatly",
-    base_font = bslib::font_google("Inter")
+  title = "SG CPI",
+  theme = aa_theme,
+  
+  header = tags$head(
+    tags$style(HTML(aa_nav_css))
   ),
 
   tabPanel(
@@ -847,7 +924,7 @@ ui <- navbarPage(
                 withSpinner(
                   uiOutput("aa_hero_cpi"),
                   type = 4,
-                  color = "#1f8f53"
+                  color = "#1a1612"
                 )
               ),
               
@@ -876,7 +953,7 @@ ui <- navbarPage(
             
             # title + tooltip inline
             div(
-              style = "display:flex; align-items:center; gap:6px; font-size:16px; font-weight:700; color:#1f2d3d;",
+              style = "display:flex; align-items:center; gap:6px; font-size:18px; font-weight:700; color:#201a15;",
               
               "Major Category Contribution Dashboard",
               
@@ -887,9 +964,10 @@ ui <- navbarPage(
             ),
             
             # subtitle
+          
             div(
-              style = "font-size:10px; color:#6b7280; margin-top:2px;",
-              "Latest CPI, 12-month trend (2024-2025), YoY% (inflation rate), weight in percentage, and contribution percent points by major category"
+              "Click a division to view subcategories.",
+              style = "font-size:12px; color#faf7f2;"
             )
           )
         ),
@@ -900,7 +978,7 @@ ui <- navbarPage(
           div(
             style = "
               font-size:12px;
-              color:#6b7280;
+              color#faf7f2;
               margin-top:6px;
               text-align:right;
             ",
@@ -913,102 +991,17 @@ ui <- navbarPage(
   
   
   tabPanel(
-    "Data Explorer",
-    fluidPage(
-      tags$style(HTML("
-  
-  .dataTables_wrapper .dataTables_filter input,
-  .dataTables_wrapper select {
-    height: 26px !important;
-    font-size: 12px !important;
-  }
-
-  table.dataTable thead input {
-    height: 24px !important;
-    font-size: 12px !important;
-    padding: 2px 4px !important;
-  }
-  
-  table.dataTable {
-    border-spacing: 0px !important;
-  }
-
-  table.dataTable td,
-  table.dataTable th {
-    white-space: nowrap;
-  }
-
-
-")),
-      
-      div(
-        style = "
-        width: 100%;
-        max-width: 1200px;
-        margin: 10px auto;
-        overflow-x: hidden;
-        font-family: 'Segoe UI', Arial, sans-serif;
-      ",
-        
-        div(
-          style = "text-align: center; margin-bottom: 8px;",
-          h5(
-            "CPI Data Explorer",
-            style = "color: #2c3e50; margin-bottom: 5px;"
-          )
-          
-        ),
-        
-        div(
-          style = "
-              display:flex;
-              justify-content:space-between;
-              align-items:center;
-              margin-bottom:6px;
-              padding:6px 10px;
-              background-color:#f8f9fa;
-              border-radius:5px;
-            ",
-          div(
-            style = "text-align:center; flex:1; line-height:1.1;",
-            div(style = "font-size:11px; color:#7f8c8d; margin-bottom:2px;", "Total Rows"),
-            div(style = "font-size:14px; font-weight:600;", textOutput("aa_total_rows", inline = TRUE))
-          ),
-          div(
-            style = "text-align: center; flex: 1; border-left: 1px solid #dee2e6; border-right: 1px solid #dee2e6;",
-            div(style = "font-size: 12px; color: #7f8c8d;", "Divisions"),
-            textOutput("aa_total_divisions", inline = TRUE)
-          ),
-          div(
-            style = "text-align: center; flex: 1;",
-            div(style = "font-size: 12px; color: #7f8c8d;", "Last Updated"),
-            textOutput("aa_last_updated", inline = TRUE)
-          )
-        ),
-        
-        DTOutput("aa_cpi_table"),
-        
-        div(
-          style = "margin-top: 15px; font-size: 12px; color: #7f8c8d; text-align: center;",
-          "▲ = Increase from previous month | ▼ = Decrease from previous month | ◆ = No change",
-          br(),
-          "Base Year: 2024 | Source: CEIC Database"
-        )
-      )
-    )
-  ),
-  tabPanel(
     "EDA",
     fluidPage(
-      
+      h4("CPI EDA", style = "margin-top:10px;"),
       tags$head(
         tags$style(HTML("
     .container-fluid {
       padding-top: 0px !important;
     }
     .row {
-      margin-top: 4px !important;
-      margin-bottom: 4px !important;
+      margin-top: 2px !important;
+      margin-bottom: 2px !important;
     }
   "))
       ),
@@ -1021,19 +1014,19 @@ ui <- navbarPage(
             tags$summary(
               style = "
         font-size: 18px;
-        font-weight: 600;
+        font-weight: 580;
         cursor: pointer;
-        margin-bottom: 12px;
+        margin-bottom: 5px;
       ",
               "Control Panel"
             ),
             
             tags$div(
               style = "
-        background:#ecf0f1;
-        padding:15px;
-        border-radius:6px;
-        margin-top:10px;
+        background:#faf7f2;
+        padding:2px;
+        border-radius:2px;
+        margin-top:5px;
       ",
               
               radioButtons(
@@ -1055,8 +1048,8 @@ ui <- navbarPage(
               sliderTextInput(
                 "aa_date_range",
                 "Date Range",
-                choices = sort(unique(aa_cpi_data$date)),
-                selected = range(aa_cpi_data$date),
+                choices = sort(unique(cc_cpi_data$date)),
+                selected = range(cc_cpi_data$date),
                 grid = FALSE,
                 dragRange = TRUE
               ),
@@ -1065,12 +1058,12 @@ ui <- navbarPage(
               
               conditionalPanel(
                 condition = "input.aa_eda_tabs == 'Trend'",
-                checkboxInput("aa_smooth", "Smooth", FALSE),
+                checkboxInput("aa_smooth", "Smoothed Trend", TRUE),
                 selectInput(
                   "aa_colour_by_year",
                   "Colour by Year",
                   choices = c("None" = "none", "Year" = "year"),
-                  selected = "year"
+                  selected = "none"
                 ),
                 selectInput(
                   "aa_facet_cols",
@@ -1120,8 +1113,8 @@ ui <- navbarPage(
             tabPanel(
               "Trend",
               div(
-                style = "font-size:13px; color:#6b7280; margin-top: 20px;",
-                "Visualises CPI trends over time to identify long term inflation patterns."
+                style = "font-size:13px; color#faf7f2; margin-top: 20px;",
+                "Visualising CPI trends over time to identify long term inflation patterns."
               ),
               br(),
               plotlyOutput("aa_trend_plot", height = "550px")
@@ -1130,8 +1123,8 @@ ui <- navbarPage(
             tabPanel(
               "Seasonality",
               div(
-                style = "font-size:13px; color:#6b7280; margin-top: 20px;",
-                "Identify recurring seasonal patterns in CPI across months, quarters and years."
+                style = "font-size:13px; color#faf7f2; margin-top: 20px;",
+                "Identifying recurring seasonal patterns in CPI across months, quarters and years."
               ),
               br(),
               uiOutput("aa_seasonality_cards_ui")
@@ -1140,18 +1133,218 @@ ui <- navbarPage(
             tabPanel(
               "Autocorrelation",
               div(
-                style = "font-size:13px; color:#6b7280; margin-top: 20px;",
-                "Show how CPI values are correlated with past periods to identify persistence and lag effects."
+                style = "font-size:13px; color#faf7f2; margin-top: 20px;",
+                "Showing how CPI values are correlated with past periods to identify persistence and lag effects."
               ),
               br(),
               plotlyOutput("aa_acf_plot", height = "550px")
             )
           )
+      )))
+    ),
+  
+  
+  tabPanel(
+    "Forecast",
+    fluidPage(
+      
+      h4("Forecasting CPI", style = "margin-top:10px;"),
+      
+      p(
+        "Hierarchical CPI forecasts using bottom-up aggregation (training: 2020–2024, validation: 2025, forecast: 2026).",
+        style = "font-size:13px; color#faf7f2; margin-bottom:2px;"
+      ),
+      
+      p(
+        "The chart shows actual CPI in black, projected values in purple, and confidence intervals as shaded areas.",
+        style = "font-size:13px; color#faf7f2; margin-bottom:20px;"
+      ),
+      tags$head(
+        tags$style(HTML("
+        .cc-forecast-note {
+          font-size: 13px;
+          color: #6b7280;
+          margin-top: 20px;
+          margin-bottom: 12px;
+        }
+      "))
+      ),
+      
+      sidebarLayout(
+        sidebarPanel(
+          width = 3,
+          
+          tags$details(
+            open = "open",
+            tags$summary(
+              style = "
+              font-size: 18px;
+              font-weight: 580;
+              cursor: pointer;
+              margin-bottom: 12px;
+            ",
+              "Control Panel"
+            ),
+            
+            tags$div(
+              style = "
+              background:#faf7f2;
+              padding:15px;
+              border-radius:6px;
+              margin-top:10px;
+            ",
+              
+              selectInput(
+                "cc_forecast_mode",
+                "Forecast Mode",
+                choices = c(
+                  "Auto (Best Model by RMSE)" = "auto",
+                  "Manual (Select Model)" = "manual"
+                ),
+                selected = "auto"
+              ),
+              
+              conditionalPanel(
+                condition = "input.cc_forecast_mode == 'manual'",
+                selectInput(
+                  "cc_model_select",
+                  "Model",
+                  choices = c(
+                    "ETS" = "ets",
+                    "Auto-ARIMA" = "arima",
+                    "ARIMA + XGBoost" = "boost",
+                    "Prophet" = "prophet"
+                  ),
+                  selected = "ets"
+                )
+              ),
+              
+              selectInput(
+                "cc_level_select",
+                "Hierarchy Level",
+                choices = NULL
+              ),
+              
+              selectInput(
+                "cc_category_select",
+                "Category",
+                choices = NULL
+              ),
+              radioButtons(
+                "cc_date_window",
+                "Date Window",
+                choices = c(
+                  "6 Months" = "6",
+                  "12 Months" = "12",
+                  "24 Months" = "24",
+                  "All" = "all"
+                ),
+                selected = "24",
+                inline = FALSE
+              )
+            )
+          )
+        ),
+        
+        mainPanel(
+          width = 8,
+          
+          wellPanel(
+            uiOutput("cc_chart_header"),
+            plotlyOutput("cc_cpi_plot", height = "500px")
+        )
+      )
+  ))
+  ),
+  tabPanel(
+    "Decomposition"),  ## add decomposition here
+  
+  tabPanel(
+    "Data Explorer",
+    fluidPage(
+      tags$style(HTML("
+  
+  .dataTables_wrapper .dataTables_filter input,
+  .dataTables_wrapper select {
+    height: 26px !important;
+    font-size: 12px !important;
+  }
+
+  table.dataTable thead input {
+    height: 24px !important;
+    font-size: 12px !important;
+    padding: 2px 4px !important;
+  }
+  
+  table.dataTable {
+    border-spacing: 0px !important;
+  }
+
+  table.dataTable td,
+  table.dataTable th {
+    white-space: nowrap;
+  }
+
+
+")),
+      
+      div(
+        style = "
+        width: 100%;
+        max-width: 1200px;
+        margin: 10px auto;
+        overflow-x: hidden;
+        font-family: 'Segoe UI', Arial, sans-serif;
+      ",
+        
+        div(
+          style = "text-align: center; margin-bottom: 8px;",
+          h4(
+            "CPI Data Explorer",
+            style = "color: #2c3e50; margin-bottom: 5px;"
+          )
+          
+        ),
+        
+        div(
+          style = "
+              display:flex;
+              justify-content:space-between;
+              align-items:center;
+              margin-bottom:6px;
+              padding:6px 10px;
+              background-color:#f8f9fa;
+              border-radius:5px;
+            ",
+          div(
+            style = "text-align:center; flex:1; line-height:1.1;",
+            div(style = "font-size:11px; color:#7f8c8d; margin-bottom:2px;", "Total Rows"),
+            div(style = "font-size:14px; font-weight:600;", textOutput("aa_total_rows", inline = TRUE))
+          ),
+          div(
+            style = "text-align: center; flex: 1; border-left: 1px solid #dee2e6; border-right: 1px solid #dee2e6;",
+            div(style = "font-size: 12px; color: #7f8c8d;", "Divisions"),
+            textOutput("aa_total_divisions", inline = TRUE)
+          ),
+          div(
+            style = "text-align: center; flex: 1;",
+            div(style = "font-size: 12px; color: #7f8c8d;", "Last Updated"),
+            textOutput("aa_last_updated", inline = TRUE)
+          )
+        ),
+        
+        DTOutput("aa_cpi_table"),
+        
+        div(
+          style = "margin-top: 15px; font-size: 12px; color: #7f8c8d; text-align: center;",
+          "▲ = Increase from previous month | ▼ = Decrease from previous month | ◆ = No change",
+          br(),
+          "Base Year: 2024 | Source: CEIC Database"
         )
       )
     )
-  )
-)
+  ))
+  
 
 # =========================================================
 # SERVER
@@ -1249,13 +1442,12 @@ server <- function(input, output, session) {
     }
   }
   
-  aa_kpi_value_box <- function(title, value_ui, subtitle = NULL, showcase = NULL, bg = "#f8fafc", fg = "#1f2937") {
+  aa_kpi_value_box <- function(title, value_ui, subtitle = NULL, showcase = NULL, fg = "#1f2937") {
     value_box(
       title = title,
       value = value_ui,
       showcase = showcase,
       theme = bslib::value_box_theme(
-        bg = bg,
         fg = fg
       ),
       if (!is.null(subtitle)) {
@@ -1276,7 +1468,7 @@ server <- function(input, output, session) {
       plotly::add_lines(
         x = ~date,
         y = ~cpi,
-        color = I("white"),
+        color = I("#f5f0e8"),
         fill = "tozeroy",
         alpha = 0.2,
         hovertemplate = "CPI: %{y:.2f}<extra></extra>"
@@ -1286,7 +1478,7 @@ server <- function(input, output, session) {
         yaxis = list(visible = FALSE, showgrid = FALSE, title = ""),
         hovermode = "x unified",
         margin = list(t = 0, r = 0, l = 0, b = 0),
-        font = list(color = "white"),
+        font = list(color = "#f5f0e8"),
         paper_bgcolor = "transparent",
         plot_bgcolor = "transparent"
       ) %>%
@@ -1379,8 +1571,8 @@ server <- function(input, output, session) {
         full_screen = TRUE,
         
         theme = bslib::value_box_theme(
-          bg = "#1f8f53",
-          fg = "#ffffff"
+          bg =  "#201a15",
+          fg = "#f5f0e8"
         )
       )
     )
@@ -1407,7 +1599,6 @@ server <- function(input, output, session) {
       ),
       subtitle = "vs Nov 2025",
       showcase = bsicons::bs_icon("arrow-left-right", size = "24px"),
-      bg = if (aa_mom >= 0) "#fff5f5" else "#f0f9ff",
       fg = if (aa_mom >= 0) "#c62828" else "#1565c0"
     )
   })
@@ -1433,7 +1624,6 @@ server <- function(input, output, session) {
       ),
       subtitle = "vs Dec 2024",
       showcase = bsicons::bs_icon("activity", size = "24px"),
-      bg = if (aa_yoy >= 0) "#fff5f5" else "#f0f9ff",
       fg = if (aa_yoy >= 0) "#c62828" else "#1565c0"
     )
   })
@@ -1459,7 +1649,6 @@ server <- function(input, output, session) {
       subtitle = sprintf("%+.2f pp", aa_top_row$contribution_pp),
       
       showcase = aa_series_icon(aa_top_row$series, "up"),
-      bg = "#fff7f7",
       fg = "#c62828"
     )
   })
@@ -1488,7 +1677,6 @@ server <- function(input, output, session) {
       subtitle = sprintf("%+.2f pp", aa_drag_row$contribution_pp),
       
       showcase = aa_series_icon(aa_drag_row$series, "down"),
-      bg = "#f4f9ff",
       fg = "#1e5eff"
     )
   })
@@ -1520,11 +1708,12 @@ server <- function(input, output, session) {
         fullWidth = TRUE,
         defaultColDef = colDef(
           align = "center",
-          headerStyle = list(fontWeight = "600")
+          headerStyle = list(fontWeight = "600"),
+          style = list(fontSize = "14px")
         ),
         columns = list(
           series = colDef(
-            name = "Division",
+            name = "Category",
             align = "left",
             width =280,
             cell = function(value, index) {
@@ -1622,17 +1811,25 @@ server <- function(input, output, session) {
           )
         ),
         theme = reactableTheme(
-          borderColor = "#dfe6e9",
-          stripedColor = "#f8f9fa",
-          highlightColor = "#f1f3f5",
+          backgroundColor = "#f7f3ef",   # light beige table
+          borderColor = "#e6ddd5",
+          stripedColor = "#f2ece6",
+          highlightColor = "#efe7df",
           cellPadding = "8px 10px",
+          
+          style = list(
+            color = "#2c2c2c",
+            backgroundColor = "#f7f3ef"
+          ),
+          
           headerStyle = list(
-            backgroundColor = "#f8f9fa",
-            color = "#2c3e50",
-            borderColor = "#dfe6e9"
+            backgroundColor = "#1e1813",  # dark header only
+            color = "#f3eee8",            # light text
+            borderColor = "#1e1813",
+            fontWeight = "580",
+            fontSize = "13px"
           )
-        )
-      )
+        ))
   })
   
   observeEvent(input$aa_clicked_division, {
@@ -1650,7 +1847,10 @@ server <- function(input, output, session) {
     if (nrow(aa_subcat_df) == 0) {
       showModal(
         modalDialog(
-          title = paste("Sub-categories under", aa_division),
+          title = div(
+            style = "font-size:14px; font-weight:700;",
+            paste("Sub-categories under", aa_division)
+          ),
           easyClose = TRUE,
           footer = modalButton("Close"),
           "No sub-category data found for this division."
@@ -1664,9 +1864,11 @@ server <- function(input, output, session) {
     showModal(
       modalDialog(
         title = if (aa_division == "Food") {
-          "Food sub-categories and detailed items"
+          div(style = "font-size:16px; font-weight:700;",
+          "Food sub-categories and detailed items")
         } else {
-          paste("Sub-categories under", aa_division)
+          div(style = "font-size:16px; font-weight:700;",
+          paste("Sub-categories under", aa_division))
         },
         size = "l",
         easyClose = TRUE,
@@ -1689,7 +1891,10 @@ server <- function(input, output, session) {
         }
         
         htmltools::div(
-          style = paste0("color:", aa_color, "; font-weight:600;"),
+          style = paste0(
+            "color:", aa_color,
+            "; font-weight:600; font-size:14px;"
+          ),
           ifelse(is.na(value), "NA", sprintf("%.2f", value))
         )
       }
@@ -1706,26 +1911,50 @@ server <- function(input, output, session) {
         }
         
         htmltools::div(
-          style = paste0("color:", aa_color, "; font-weight:600;"),
+          style = paste0(
+            "color:", aa_color,
+            "; font-weight:600; font-size:14px;"
+          ),
           ifelse(is.na(value), "NA", sprintf("%.2f", value))
         )
       }
       
       aa_share_cell <- function(value) {
         aa_value <- ifelse(is.na(value), 0, value)
-        aa_bar_width <- min(aa_value, 100)
+        aa_bar_width <- aa_value / 100 * 120
         
         htmltools::div(
-          style = "display:flex; align-items:center; gap:6px; justify-content:space-between;",
+          style = "display:flex; align-items:center; gap:10px; justify-content:space-between; font-size:14px;",
           htmltools::div(
             style = paste0(
-              "height:8px; width:", aa_bar_width, "px; ",
-              "background:#6baed6; border-radius:4px;"
+              "height:10px; width:", aa_bar_width, "px; ",
+              "background:#6baed6; border-radius:5px;"
             )
           ),
           ifelse(is.na(value), "NA", sprintf("%.2f", value))
         )
       }
+      
+      
+      aa_theme <- reactable::reactableTheme(
+        backgroundColor = "#f7f3ef",
+        borderColor = "#e6ddd5",
+        stripedColor = "#f2ece6",
+        highlightColor = "#efe7df",
+        cellPadding = "8px 10px",
+        style = list(
+          color = "#2c2c2c",
+          backgroundColor = "#f7f3ef",
+          fontSize = "14px"
+        ),
+        headerStyle = list(
+          backgroundColor = "#1e1813",
+          color = "#f3eee8",
+          borderColor = "#1e1813",
+          fontWeight = "600",
+          fontSize = "13px"
+        )
+      )
       
       if (aa_division == "Food") {
         
@@ -1758,7 +1987,11 @@ server <- function(input, output, session) {
           striped = TRUE,
           highlight = TRUE,
           defaultPageSize = 10,
-          defaultColDef = reactable::colDef(align = "center"),
+          theme = aa_theme,
+          defaultColDef = reactable::colDef(
+            align = "center",
+            style = list(fontSize = "14px", background = "#f7f3ef")
+          ),
           details = function(index) {
             aa_parent <- aa_lvl2_df$Subcategory[index]
             
@@ -1773,15 +2006,6 @@ server <- function(input, output, session) {
               ) %>%
               dplyr::arrange(dplyr::desc(`Contribution (pp)`))
             
-            if (nrow(aa_child_df) == 0) {
-              return(
-                htmltools::div(
-                  style = "padding:10px 16px; color:#666;",
-                  "No level 3 data available."
-                )
-              )
-            }
-            
             reactable::reactable(
               aa_child_df,
               compact = TRUE,
@@ -1789,22 +2013,26 @@ server <- function(input, output, session) {
               striped = FALSE,
               highlight = TRUE,
               pagination = FALSE,
-              defaultColDef = reactable::colDef(align = "center"),
+              theme = aa_theme,
+              defaultColDef = reactable::colDef(
+                align = "center",
+                style = list(fontSize = "14px", background = "#f7f3ef")
+              ),
               columns = list(
-                Detail = reactable::colDef(minWidth = 260, align = "left"),
+                Detail = reactable::colDef(minWidth = 200,align = "left"),
                 CPI = reactable::colDef(format = reactable::colFormat(digits = 2)),
                 `YoY %` = reactable::colDef(cell = aa_yoy_cell),
-                `Subgroup share (%)` = reactable::colDef(cell = aa_share_cell),
-                `Contribution (pp)` = reactable::colDef(cell = aa_contrib_cell)
+                `Subgroup share (%)` = reactable::colDef(minWidth = 150,cell = aa_share_cell),
+                `Contribution (pp)` = reactable::colDef(minWidth = 150,cell = aa_contrib_cell)
               )
             )
           },
           columns = list(
-            Subcategory = reactable::colDef(minWidth = 260, align = "left"),
+            Subcategory = reactable::colDef(minWidth = 200, align = "left"),
             CPI = reactable::colDef(format = reactable::colFormat(digits = 2)),
             `YoY %` = reactable::colDef(cell = aa_yoy_cell),
-            `Division share (%)` = reactable::colDef(cell = aa_share_cell),
-            `Contribution (pp)` = reactable::colDef(cell = aa_contrib_cell)
+            `Division share (%)` = reactable::colDef(minWidth = 150,cell = aa_share_cell),
+            `Contribution (pp)` = reactable::colDef(minWidth = 150,cell = aa_contrib_cell)
           )
         )
         
@@ -1828,13 +2056,17 @@ server <- function(input, output, session) {
           striped = TRUE,
           highlight = TRUE,
           defaultPageSize = 10,
-          defaultColDef = reactable::colDef(align = "center"),
+          theme = aa_theme,
+          defaultColDef = reactable::colDef(
+            align = "center",
+            style = list(fontSize = "14px", background = "#f7f3ef")
+          ),
           columns = list(
-            Subcategory = reactable::colDef(minWidth = 220, align = "left"),
+            Subcategory = reactable::colDef(minWidth = 200, align = "left"),
             CPI = reactable::colDef(format = reactable::colFormat(digits = 2)),
             `YoY %` = reactable::colDef(cell = aa_yoy_cell),
-            `Division share (%)` = reactable::colDef(cell = aa_share_cell),
-            `Contribution (pp)` = reactable::colDef(cell = aa_contrib_cell)
+            `Division share (%)` = reactable::colDef(minWidth = 150,cell = aa_share_cell),
+            `Contribution (pp)` = reactable::colDef(minWidth = 150,cell = aa_contrib_cell)
           )
         )
       }
@@ -2258,6 +2490,275 @@ server <- function(input, output, session) {
       })
     }
   })
+  
+  # =========================
+  # FORECAST
+  # =========================
+  
+  cc_all_series <- dplyr::pull(cc_parent_lookup, series) %>% unique()
+  cc_all_levels <- dplyr::pull(cc_parent_lookup, Level) %>% unique() %>% sort()
+  
+  cc_actuals_all <- cc_cpi_data %>%
+    dplyr::filter(series %in% cc_all_series) %>%
+    dplyr::select(series, date, cpi) %>%
+    dplyr::mutate(.key = "actual")
+  
+  cc_selected_forecast <- reactive({
+    if (input$cc_forecast_mode == "auto") {
+      cc_reconciled_forecasts
+    } else {
+      switch(
+        input$cc_model_select,
+        "ets" = cc_ets,
+        "arima" = cc_arima,
+        "boost" = cc_boost,
+        "prophet" = cc_prophet
+      )
+    }
+  })
+  
+  cc_plot_data <- reactive({
+    cc_forecast_all <- cc_selected_forecast() %>%
+      dplyr::filter(series %in% cc_all_series) %>%
+      dplyr::select(
+        series, date, cpi = .value,
+        lo90, hi90, lo95, hi95, lo99, hi99
+      ) %>%
+      dplyr::mutate(.key = "prediction")
+    
+    dplyr::bind_rows(cc_actuals_all, cc_forecast_all)
+  })
+  
+  observe({
+    updateSelectInput(
+      session,
+      "cc_level_select",
+      choices = setNames(cc_all_levels, paste("Level", cc_all_levels)),
+      selected = 0
+    )
+  })
+  
+  observeEvent(input$cc_level_select, {
+    req(input$cc_level_select)
+    
+    cc_lvl <- as.integer(input$cc_level_select)
+    
+    cc_cats <- cc_parent_lookup %>%
+      dplyr::filter(Level == cc_lvl) %>%
+      dplyr::pull(series) %>%
+      unique() %>%
+      sort()
+    
+    cc_cats <- cc_cats[!cc_cats %in% c(
+      "All Items Less Accommodation",
+      "All Items Less Imputed Rentals For Housing"
+    )]
+    
+    default_cat <- if ("Consumer Price Index (CPI)" %in% cc_cats) {
+      "Consumer Price Index (CPI)"
+    } else {
+      cc_cats[1]
+    }
+    
+    updateSelectInput(
+      session,
+      "cc_category_select",
+      choices = cc_cats,
+      selected = default_cat
+    )
+  })
+  
+  output$cc_chart_header <- renderUI({
+    req(input$cc_category_select, input$cc_level_select)
+    
+    cc_model_label <- if (input$cc_forecast_mode == "auto") {
+      "Auto — Best Model by RMSE"
+    } else {
+      switch(
+        input$cc_model_select,
+        "ets" = "ETS",
+        "arima" = "Auto-ARIMA",
+        "boost" = "ARIMA + XGBoost",
+        "prophet" = "Prophet"
+      )
+    }
+    
+    tagList(
+      h5(input$cc_category_select,style = "font-weight:600;"
+      ),
+      tags$p(
+        paste0(
+          "Level ", input$cc_level_select,
+          " | CPI Index (Base: 2024 = 100)",
+          " | ", cc_model_label
+        ),
+        style = "color:#666; margin-bottom:15px;"
+      )
+    )
+  })
+  
+  output$cc_cpi_plot <- plotly::renderPlotly({
+    req(input$cc_category_select)
+    
+    cc_s <- input$cc_category_select
+    
+    cc_actual_data <- cc_plot_data() %>%
+      dplyr::filter(series == cc_s, .key == "actual") %>%
+      dplyr::arrange(date)
+    
+    cc_fc_data <- cc_plot_data() %>%
+      dplyr::filter(series == cc_s, .key == "prediction") %>%
+      dplyr::arrange(date)
+    
+    req(nrow(cc_actual_data) > 0, nrow(cc_fc_data) > 0)
+    
+    cc_fc_start <- min(cc_fc_data$date, na.rm = TRUE)
+    cc_fc_end   <- max(cc_fc_data$date, na.rm = TRUE)
+    
+    cc_x_range <- NULL
+    
+    if (!is.null(input$cc_date_window)) {
+      if (input$cc_date_window == "6") {
+        cc_x_range <- c(cc_fc_start, cc_fc_start %m+% months(5))
+      } else if (input$cc_date_window == "12") {
+        cc_x_range <- c(cc_fc_start, cc_fc_end)
+      } else if (input$cc_date_window == "24") {
+        cc_x_range <- c(cc_fc_start %m-% months(12), cc_fc_end)
+      } else if (input$cc_date_window == "all") {
+        cc_x_range <- NULL
+      }
+    }
+    
+    if (!is.null(cc_x_range)) {
+      cc_actual_visible <- cc_actual_data %>%
+        dplyr::filter(date >= cc_x_range[1], date <= cc_x_range[2])
+      
+      cc_fc_visible <- cc_fc_data %>%
+        dplyr::filter(date >= cc_x_range[1], date <= cc_x_range[2])
+    } else {
+      cc_actual_visible <- cc_actual_data
+      cc_fc_visible <- cc_fc_data
+    }
+    
+    cc_y_values <- c(
+      cc_actual_visible$cpi,
+      cc_fc_visible$cpi,
+      cc_fc_visible$lo90, cc_fc_visible$hi90,
+      cc_fc_visible$lo95, cc_fc_visible$hi95,
+      cc_fc_visible$lo99, cc_fc_visible$hi99
+    )
+    cc_y_values <- cc_y_values[is.finite(cc_y_values)]
+    
+    cc_y_range <- NULL
+    if (length(cc_y_values) > 0) {
+      cc_y_min <- min(cc_y_values)
+      cc_y_max <- max(cc_y_values)
+      cc_y_pad <- (cc_y_max - cc_y_min) * 0.08
+      
+      if (cc_y_pad == 0) {
+        cc_y_pad <- max(abs(cc_y_min) * 0.05, 0.5)
+      }
+      
+      cc_y_range <- c(cc_y_min - cc_y_pad, cc_y_max + cc_y_pad)
+    }
+    
+    cc_last_actual <- cc_actual_data %>%
+      dplyr::slice_tail(n = 1)
+    
+    cc_first_fc <- cc_fc_data %>%
+      dplyr::slice_head(n = 1)
+    
+    p <- plotly::plot_ly()
+    
+    p <- p %>%
+      plotly::add_ribbons(
+        x = cc_fc_data$date,
+        ymin = cc_fc_data$lo99,
+        ymax = cc_fc_data$hi99,
+        name = "99% CI",
+        showlegend = TRUE,
+        line = list(color = "transparent"),
+        fillcolor = "rgba(100, 116, 139, 0.10)",
+        hoverinfo = "skip"
+      ) %>%
+      plotly::add_ribbons(
+        x = cc_fc_data$date,
+        ymin = cc_fc_data$lo95,
+        ymax = cc_fc_data$hi95,
+        name = "95% CI",
+        showlegend = TRUE,
+        line = list(color = "transparent"),
+        fillcolor = "rgba(100, 116, 139, 0.18)",
+        hoverinfo = "skip"
+      ) %>%
+      plotly::add_ribbons(
+        x = cc_fc_data$date,
+        ymin = cc_fc_data$lo90,
+        ymax = cc_fc_data$hi90,
+        name = "90% CI",
+        showlegend = TRUE,
+        line = list(color = "transparent"),
+        fillcolor = "rgba(100, 116, 139, 0.28)",
+        hoverinfo = "skip"
+      ) %>%
+      plotly::add_trace(
+        x = cc_actual_data$date,
+        y = cc_actual_data$cpi,
+        type = "scatter",
+        mode = "lines",
+        name = "Actual",
+        showlegend = TRUE,
+        line = list(color = "#2c3e50", width = 2),
+        hovertemplate = "<b>%{x|%b %Y}</b><br>CPI: %{y:.2f}<extra>Actual</extra>"
+      ) %>%
+      plotly::add_trace(
+        x = c(cc_last_actual$date, cc_first_fc$date),
+        y = c(cc_last_actual$cpi, cc_first_fc$cpi),
+        type = "scatter",
+        mode = "lines",
+        name = "Transition",
+        line = list(color = "#7c3aed", width = 2, dash = "dot"),
+        hoverinfo = "skip",
+        showlegend = FALSE
+      ) %>%
+      plotly::add_trace(
+        x = cc_fc_data$date,
+        y = cc_fc_data$cpi,
+        type = "scatter",
+        mode = "lines",
+        name = "Forecast",
+        showlegend = TRUE,
+        line = list(color = "#7c3aed" , width = 2, dash = "dot"),
+        hovertemplate = "<b>%{x|%b %Y}</b><br>CPI: %{y:.2f}<extra>Forecast</extra>"
+      ) %>%
+      plotly::layout(
+        xaxis = list(
+          title = "",
+          rangeslider = list(visible = TRUE),
+          range = cc_x_range
+        ),
+        yaxis = list(
+          title = "CPI Value",
+          range = cc_y_range
+        ),
+        legend = list(
+          orientation = "h",
+          x = 0,
+          y = 1.05,
+          xanchor = "left",
+          yanchor = "bottom",
+          traceorder = "normal",
+          font = list(size = 12)
+        ),
+        margin = list(t = 10, r = 20, b = 50, l = 60)
+      )
+    
+    p
+  })
+
 }
+
+
+
 
 shinyApp(ui, server)

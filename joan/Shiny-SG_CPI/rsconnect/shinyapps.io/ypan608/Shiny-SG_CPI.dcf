@@ -5,7 +5,7 @@ account: ypan608
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 17034645
-bundleId: 11790751
+bundleId: 11795242
 url: https://ypan608.shinyapps.io/Shiny-SG_CPI/
 version: 1
 asMultiple: FALSE
