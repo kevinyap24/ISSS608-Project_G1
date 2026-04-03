@@ -15,6 +15,7 @@ aa_cpi_dashboard <- read_rds("data/aa_cpi_dashboard.rds")
 aa_dashboard_table_rds <- read_rds("data/aa_dashboard_table.rds")
 aa_latest_lvl1 <- read_rds("data/aa_latest_lvl1.rds")
 
+
 # kelvin
 cc_cpi_data <- read_rds("data/cpi_h.rds")
 cc_parent_lookup <- read_rds("data/parent_lookup.rds")
@@ -44,6 +45,7 @@ trend_js <- JS(
 # TREND FUNCTION
 # =========================================================
 
+
 plot_cpi_time_series <- function(data,
                                  plot_level,
                                  category = NULL,
@@ -60,7 +62,7 @@ plot_cpi_time_series <- function(data,
                                  smooth_degree = 2,
                                  plotly_slider = FALSE,
                                  interactive = TRUE,
-                                 add_caption = TRUE,
+                                 add_caption = FALSE,
                                  caption_text = "Source: CEIC Database | Index, 2024 = 100",
                                  title = NULL,
                                  x_lab = "",
@@ -250,7 +252,14 @@ plot_cpi_time_series <- function(data,
             )
           ),
           margin = list(b = 90)
-        )
+        ) %>%
+            plotly::style(
+              hovertemplate = paste(
+                "Date: %{x|%b %Y}<br>",
+                if (smooth) "Value: %{y:.2f}" else "Value: %{y:.2f}",
+                "<extra></extra>"
+              )
+            )
     } else {
       p <- p +
         labs(caption = caption_text) +
@@ -259,14 +268,14 @@ plot_cpi_time_series <- function(data,
         )
     }
   }
- 
+  
   if (return_plot) return(p) else print(p)
 }
+
 
 # =========================================================
 # SEASONALITY FUNCTION
 # =========================================================
-
 plot_cpi_seasonal <- function(data,
                               plot_level,
                               category = NULL,
@@ -275,38 +284,67 @@ plot_cpi_seasonal <- function(data,
                               interactive = TRUE,
                               geom = "boxplot",
                               geom_color = "#2c3e50",
-                              feature_set = c("month.lbl"),
+                              feature_set = c("month.lbl", "quarter", "year"),
                               return_plots = FALSE,
                               add_caption = TRUE,
-                              caption_text = "Source: CEIC Database | Index: 2024 = 100") {
+                              caption_text = "Source: CEIC Database | Index: 2024 = 100",
+                              show_mean = FALSE,
+                              mean_color = "#d62728",
+                              mean_size = 1.5) {
   
-  data <- data %>% filter(!is.na(series))
+  data <- data %>% dplyr::filter(!is.na(series))
+  
+  data <- data %>%
+    dplyr::mutate(
+      month.lbl = factor(
+        lubridate::month(date, label = TRUE, abbr = TRUE),
+        levels = month.abb
+      )
+    )
   
   if (length(feature_set) == 0) {
     stop("Please select at least one seasonality feature.")
   }
   
+  allowed_features <- c("month.lbl", "quarter", "year")
+  invalid_features <- setdiff(feature_set, allowed_features)
+  
+  if (length(invalid_features) > 0) {
+    stop(
+      paste(
+        "Invalid feature(s):",
+        paste(invalid_features, collapse = ", ")
+      )
+    )
+  }
+  
+  feature_label_map <- c(
+    "month.lbl" = "Month",
+    "quarter"   = "Quarter",
+    "year"      = "Year"
+  )
+  
   if (plot_level == 0) {
-    filtered <- data %>% filter(level == 0)
+    filtered <- data %>% dplyr::filter(level == 0)
     
   } else if (plot_level == 1) {
-    filtered <- data %>% filter(level == 1)
+    filtered <- data %>% dplyr::filter(level == 1)
     
   } else if (plot_level == 2) {
-    filtered <- data %>% filter(level == 2)
+    filtered <- data %>% dplyr::filter(level == 2)
     if (!is.null(category)) {
-      filtered <- filtered %>% filter(division == category)
+      filtered <- filtered %>% dplyr::filter(division == category)
     }
     
   } else if (plot_level == 3) {
-    filtered <- data %>% filter(level == 3)
+    filtered <- data %>% dplyr::filter(level == 3)
     
     if (!is.null(category)) {
-      filtered <- filtered %>% filter(division == category)
+      filtered <- filtered %>% dplyr::filter(division == category)
     }
     
     if (!is.null(group_name)) {
-      filtered <- filtered %>% filter(group == group_name)
+      filtered <- filtered %>% dplyr::filter(group == group_name)
     }
     
   } else {
@@ -314,8 +352,8 @@ plot_cpi_seasonal <- function(data,
   }
   
   available_series <- filtered %>%
-    distinct(series) %>%
-    pull(series)
+    dplyr::distinct(series) %>%
+    dplyr::pull(series)
   
   if (!is.null(series_select) && length(series_select) > 0) {
     missing_series <- setdiff(series_select, available_series)
@@ -328,6 +366,7 @@ plot_cpi_seasonal <- function(data,
         )
       )
     }
+    
     series_list <- series_select
   } else {
     series_list <- available_series
@@ -340,67 +379,146 @@ plot_cpi_seasonal <- function(data,
   plots <- list()
   
   for (s in series_list) {
-    plot_data <- filtered %>% filter(series == s)
+    plot_data <- filtered %>% dplyr::filter(series == s)
     
-    p <- timetk::plot_seasonal_diagnostics(
-      .data = plot_data,
-      .date_var = date,
-      .value = cpi,
-      .feature_set = feature_set,
-      .geom = geom,
-      .geom_color = geom_color,
-      .title = "",
-      .x_lab = "Date",
-      .y_lab = "CPI Index",
-      .interactive = interactive
-    )
+    feature_plots <- list()
     
-    if (add_caption) {
-      if (interactive) {
-        p <- p %>%
-          plotly::layout(
-            xaxis = list(
-              tickmode = "array",
-              tickvals = 1:12,
-              ticktext = c("Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
-              title = list(
-                text = " ",
-                font = list(size = 10)
-              ),
-              tickfont = list(size = 9)
-            ),
-            yaxis = list(
-              title = list(
-                text = " ",
-                font = list(size = 10)
-              ),
-              tickfont = list(size = 9)
-            ),
-            annotations = list(
-              list(
-                text = caption_text,
-                x = 1,
-                y = -0.15,
-                xref = "paper",
-                yref = "paper",
-                showarrow = FALSE,
-                xanchor = "right",
-                font = list(size = 10, color = "gray50")
-              )
-            ),
-            margin = list(b = 80)
+    for (feat in feature_set) {
+      
+      feat_label <- unname(feature_label_map[feat])
+      
+      p <- timetk::plot_seasonal_diagnostics(
+        .data = plot_data,
+        .date_var = date,
+        .value = cpi,
+        .feature_set = feat,
+        .geom = geom,
+        .geom_color = geom_color,
+        .title = "",
+        .x_lab = " ",
+        .y_lab = " ",
+        .interactive = FALSE
+      )
+      
+      if (show_mean) {
+        
+        mean_df <- plot_data %>%
+          dplyr::mutate(
+            group_value = dplyr::case_when(
+              feat == "month.lbl" ~ as.character(lubridate::month(date, label = TRUE, abbr = FALSE)),
+              feat == "quarter"   ~ as.character(lubridate::quarter(date)),
+              feat == "year"      ~ as.character(lubridate::year(date))
+            )
+          ) %>%
+          dplyr::group_by(group_value) %>%
+          dplyr::summarise(mean_value = mean(cpi, na.rm = TRUE), .groups = "drop")
+        
+        if (feat == "month.lbl") {
+          mean_df$group_value <- factor(mean_df$group_value, levels = month.name)
+        } else if (feat == "quarter") {
+          mean_df$group_value <- factor(mean_df$group_value, levels = sort(unique(mean_df$group_value)))
+        } else if (feat == "year") {
+          mean_df$group_value <- factor(mean_df$group_value, levels = sort(unique(mean_df$group_value)))
+        }
+        
+        mean_df <- mean_df %>%
+          dplyr::mutate(
+            tooltip_text = paste0(
+              feat_label, ": ", group_value,
+              "<br>Mean CPI: ", sprintf("%.2f", mean_value)
+            )
           )
-      } else {
-        p <- p + labs(caption = caption_text)
+        
+        p <- p +
+          ggplot2::geom_point(
+            data = mean_df,
+            ggplot2::aes(
+              x = group_value,
+              y = mean_value,
+              text = tooltip_text
+            ),
+            inherit.aes = FALSE,
+            colour = mean_color,
+            size = mean_size
+          )
       }
+      
+      if (add_caption) {
+        p <- p + ggplot2::labs(caption = caption_text)
+      }
+      
+
+            if (interactive) {
+              p <- plotly::ggplotly(p, tooltip = "text") %>%
+                plotly::layout(
+                  xaxis = if (feat == "month.lbl") {
+                    list(
+                      title = list(text = ""),
+                      categoryorder = "array",
+                      tickvals = 1:12,
+                      ticktext = c("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
+                      tickfont = list(size = 8)
+                    )
+                  } else if (feat == "quarter") {
+                    list(
+                      title = list(text = ""),
+                      tickmode = "array",
+                      tickvals = c(1, 2, 3, 4),
+                      ticktext = c("Q1", "Q2", "Q3", "Q4"),
+                      tickfont = list(size = 9)
+                    )
+                  } else {
+                    list(
+                      title = list(text = ""),
+                      tickfont = list(size = 9)
+                    )
+                  },
+              yaxis = list(
+                title = list(
+                  text = "CPI Index",
+                  font = list(size = 10)
+                ),
+                tickfont = list(size = 9)
+              ),
+              annotations = if (add_caption) {
+                list(
+                  list(
+                    text = caption_text,
+                    x = 1,
+                    y = -0.12,
+                    xref = "paper",
+                    yref = "paper",
+                    showarrow = FALSE,
+                    xanchor = "right",
+                    font = list(size = 10, color = "gray50")
+                  )
+                )
+              } else {
+                list()
+              },
+              margin = list(t = 10, r = 10, b = 15, l = 45)
+            )
+        
+        if (!is.null(p$x$layout$annotations)) {
+          for (k in seq_along(p$x$layout$annotations)) {
+            old_text <- p$x$layout$annotations[[k]]$text
+            if (!is.null(old_text) && old_text %in% names(feature_label_map)) {
+              p$x$layout$annotations[[k]]$text <- unname(feature_label_map[old_text])
+            }
+          }
+        }
+      }
+      
+      feature_plots[[feat]] <- p
     }
     
-    plots[[s]] <- p
+    plots[[s]] <- feature_plots
   }
   
   if (return_plots) return(plots)
-  print(plots[[1]])
+  
+  print(plots[[1]][[1]])
 }
 
 # =========================================================
@@ -422,7 +540,7 @@ plot_cpi_acf <- function(data,
                          point_alpha = 1,
                          x_intercept = NULL,
                          x_intercept_color = "#E31A1C",
-                         hline_color = "#2c3e50",
+                         hline_color = "grey",
                          white_noise_line_type = 2,
                          white_noise_line_color = "#A6CEE3",
                          show_ccf_vars_only = FALSE,
@@ -578,6 +696,13 @@ plot_cpi_acf <- function(data,
   
   if (add_caption) {
     if (interactive) {
+      for (i in seq_along(p$x$data)) {
+        this_trace <- p$x$data[[i]]
+        
+        if (!is.null(this_trace$x) && !is.null(this_trace$y)) {
+          p$x$data[[i]]$hovertemplate <- "Lag: %{x}<br>Value: %{y:.3f}<extra></extra>"
+        }
+      }
       p <- p %>%
         plotly::layout(
           annotations = list(
@@ -617,20 +742,30 @@ aa_theme <- bs_theme(
 aa_nav_css <- "
 .navbar {
   background-color: #0f172a !important;
-  min-height: 64px;
+    min-height: 55px !important;  
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .navbar-brand {
   color: #ffffff !important;
   font-weight: 600;
   letter-spacing: 0.3px;
+  
+  display: flex;
+  align-items: center;
+  height: 55px;
 }
 
 .navbar-nav .nav-link {
   color: #e5e7eb !important;
   font-weight: 500;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+
+  display: flex;
+  align-items: center;
+  height: 55px;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .navbar-nav .nav-link:hover {
@@ -638,8 +773,8 @@ aa_nav_css <- "
 }
 
 .navbar-nav .nav-link.active {
-  color: #d4af37 !important;
-  border-bottom: 2px solid #d4af37;
+  color: #e0b84f !important;
+  border-bottom: 2px solid #e0b84f;
 }
 
 /* inner tabs: Trend / Seasonality / Autocorrelation */
@@ -687,7 +822,10 @@ aa_nav_css <- "
 
 
 ui <- navbarPage(
-  title = "SG CPI",
+  title = div(
+    style = "font-weight: 580",
+    "Why Are We Paying More than before in Singapore?"
+  ),
   theme = aa_theme,
   
   header = tags$head(
@@ -719,228 +857,57 @@ ui <- navbarPage(
               width: 100%;
             }
             
+              /* kpi card sizes */
     
-    .aa-hero-wrap {
-      margin-bottom: 0;
-      height: 100%;
-    }
-    
-    .aa-hero-wrap .bslib-value-box,
-    .aa-hero-wrap .value-box {
-      min-height: 100px !important;
-      height: 100% !important;
-      border-radius: 14px !important;
-      overflow: hidden !important;
-    }
-    
-          .aa-hero-wrap .value-box-grid {
-        display: grid !important;
-        grid-template-columns: 1fr 200px;
-        column-gap: 16px !important;
-        align-items: center !important;
-        padding: 14px 18px !important;
-      }
-    
-    .aa-hero-wrap .value-box-showcase {
-      min-width: 150px !important;
-      min-height: 130px !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      overflow: hidden !important;
-    }
-    
-    .aa-hero-wrap .value-box-body {
-      min-width: 0 !important;
-      display: flex !important;
-      flex-direction: column !important;
-      justify-content: center !important;
-    }
-    
-    .aa-hero-wrap .value-box-title {
-      font-size: 1.05rem !important;
-      font-weight: 600 !important;
-      line-height: 1.2 !important;
-      margin-bottom: 8px !important;
-    }
-    
-    .aa-hero-main {
-      font-size: 2.8rem;
-      font-weight: 700;
-      line-height: 1;
-      margin-bottom: 12px;
-    }
-    
-    .aa-hero-line {
-      font-size: 0.95rem;
-      line-height: 1.3;
-      margin-bottom: 4px;
-      opacity: 0.98;
-    }
-    
-    .aa-hero-spark {
-      width: 185px;
-      height: 120px;
-    }
-    
-    .aa-right-container {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .aa-kpi-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
-      gap: 4px;
-      height: 100%;
-      flex: 1;
-    }
-    
-    .aa-kpi-wrap {
-      min-width: 0;
-      min-height: 82px;
-      height: 100%;
-    }
-    
-    .aa-kpi-wrap .bslib-value-box,
-    .aa-kpi-wrap .value-box {
-      min-height: 82px !important;
-      height: 100% !important;
-      border-radius: 10px !important;
-      margin-bottom: 0 !important;
-      overflow: hidden !important;
-    }
-    
-    .aa-kpi-wrap .value-box-grid {
-      height: 100% !important;
-      display: grid !important;
-      grid-template-columns: 42px minmax(0, 1fr) !important;
-      column-gap: 8px !important;
-      align-items: center !important;
-      padding: 8px 10px !important;
-    }
-    
-    .aa-kpi-wrap .value-box-showcase {
-      width: 42px !important;
-      height: 30px !important;
-      min-width: 42px !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      overflow: hidden !important;
-    }
-    
-    .aa-kpi-wrap .value-box-body {
-      min-width: 0 !important;
-      display: flex !important;
-      flex-direction: column !important;
-      justify-content: center !important;
-      gap: 2px !important;
-    }
-    
-    .aa-kpi-wrap .value-box-title {
-      margin: 0 !important;
-      font-size: 0.8rem !important;
-      line-height: 1.08 !important;
-      font-weight: 600 !important;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    .aa-kpi-wrap .value-box-value {
-      margin: 0 !important;
-      line-height: 1.02 !important;
-      font-size: 1.02rem !important;
-      font-weight: 700 !important;
-    }
-    
-    .aa-kpi-wrap .value-box-value > div,
-    .aa-kpi-wrap .value-box-value > span,
-    .aa-kpi-wrap .value-box-value p {
-      margin: 0 !important;
-      font-size: inherit !important;
-      line-height: inherit !important;
-      font-weight: inherit !important;
-    }
-    
-    .aa-kpi-subtitle {
-      margin: 1px 0 0 0 !important;
-      font-size: 0.75rem !important;
-      line-height: 1.08 !important;
-      font-weight: 500 !important;
-      opacity: 0.95;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    .aa-kpi-text {
-      display: inline-block;
-      max-width: 100%;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      vertical-align: bottom;
-    }
-    
+.aa-hero-wrap .bslib-value-box { min-height: 160px !important; }
+.aa-kpi-wrap .bslib-value-box { max-height: 80px !important;height: 100% !important;}
+
+   /* kpi font sizes */
+
+.aa-hero-wrap .value-box-title { font-size: 1rem !important; font-weight: 700}}
+.aa-hero-main { font-size: 1.2rem !important; font-weight: 700}
+.aa-hero-line { font-size: 0.8rem !important; }
+
+.aa-kpi-wrap .value-box-title { font-size: 0.7rem !important; }
+.aa-kpi-wrap .value-box-value { font-size: 1rem !important; }
+.aa-kpi-subtitle { font-size: 0.7rem !important; }    
+
     .aa-box {
       width: 100%;
       overflow-x: hidden;
       padding: 0;
       margin-bottom: 0;
     }
-    
-    .bslib-layout-columns {
-      align-items: stretch !important;
-    }
-    
-    .bslib-layout-columns > div:first-child,
-    .bslib-layout-columns > div:last-child {
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .bslib-layout-columns > div:first-child .aa-hero-wrap,
-    .bslib-layout-columns > div:last-child .aa-right-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .bslib-layout-columns > div:first-child .aa-hero-wrap .bslib-value-box,
-    .bslib-layout-columns > div:first-child .aa-hero-wrap .value-box {
-      flex: 1;
-    }
+
       "))
       ),
-            bslib::layout_columns(
-              col_widths = c(6, 6),
-              
-              div(
-                class = "aa-hero-wrap aa-fadein",
-                withSpinner(
-                  uiOutput("aa_hero_cpi"),
-                  type = 4,
-                  color = "#1a1612"
-                )
-              ),
-              
-              div(
-                class = "aa-right-container",
-                div(
-                  class = "aa-kpi-grid",
-                  div(class = "aa-kpi-wrap", uiOutput("aa_kpi_mom")),
-                  div(class = "aa-kpi-wrap", uiOutput("aa_kpi_yoy")),
-                  div(class = "aa-kpi-wrap", uiOutput("aa_kpi_top")),
-                  div(class = "aa-kpi-wrap", uiOutput("aa_kpi_drag"))
-                )
-     
+      
+      
+      
+      bslib::page_fillable(
+        
+        bslib::layout_columns(
+          col_widths = c(6, 6),
+          fill = TRUE,
+          div(
+            class = "aa-hero-wrap aa-fadein",
+            withSpinner(
+              uiOutput("aa_hero_cpi", fill = TRUE),
+              type = 4,
+              color = "#1a1612"
+            )
+          ),
+          layout_column_wrap(
+            width = 1/2,
+            height = "100%",
+            div(class = "aa-kpi-wrap ",uiOutput("aa_kpi_mom", fill = TRUE)),
+            div(class = "aa-kpi-wrap ",uiOutput("aa_kpi_yoy", fill = TRUE)),
+            div(class = "aa-kpi-wrap ",uiOutput("aa_kpi_top", fill = TRUE)),
+            div(class = "aa-kpi-wrap ",uiOutput("aa_kpi_drag", fill = TRUE))
 
           )
-        ),
+        )
+      ),
       
       div(
         class = "aa-box",
@@ -1014,7 +981,7 @@ ui <- navbarPage(
             tags$summary(
               style = "
         font-size: 18px;
-        font-weight: 580;
+        font-weight: 600;
         cursor: pointer;
         margin-bottom: 5px;
       ",
@@ -1023,9 +990,10 @@ ui <- navbarPage(
             
             tags$div(
               style = "
+        font-size = 14px;
         background:#faf7f2;
-        padding:2px;
-        border-radius:2px;
+        padding:4px;
+        border-radius:4px;
         margin-top:5px;
       ",
               
@@ -1075,12 +1043,7 @@ ui <- navbarPage(
               
               conditionalPanel(
                 condition = "input.aa_eda_tabs == 'Seasonality'",
-                selectInput(
-                  "aa_season_geom",
-                  "Seasonality Plot",
-                  choices = c("Boxplot" = "boxplot", "Violin" = "violin"),
-                  selected = "boxplot"
-                ),
+                checkboxInput("aa_season_mean", "Show mean", value = FALSE),
                 checkboxGroupInput(
                   "aa_season_feature",
                   "Seasonality Features",
@@ -1594,11 +1557,11 @@ server <- function(input, output, session) {
     aa_kpi_value_box(
       title = "CPI MoM",
       value_ui = div(
-        style = "font-size:28px; font-weight:700; line-height:1.1;",
+        style = "font-weight:700; font-size: 14px;line-height:1.1;",
         sprintf("%+.2f%%", aa_mom)
       ),
       subtitle = "vs Nov 2025",
-      showcase = bsicons::bs_icon("arrow-left-right", size = "24px"),
+      showcase = bsicons::bs_icon("arrow-left-right", size = "20px"),
       fg = if (aa_mom >= 0) "#c62828" else "#1565c0"
     )
   })
@@ -1619,11 +1582,11 @@ server <- function(input, output, session) {
     aa_kpi_value_box(
       title = "CPI YoY",
       value_ui = div(
-        style = "font-size:28px; font-weight:700; line-height:1.1;",
+        style = "font-weight:700;font-size: 14px; line-height:1.1;",
         sprintf("%+.2f%%", aa_yoy)
       ),
       subtitle = "vs Dec 2024",
-      showcase = bsicons::bs_icon("activity", size = "24px"),
+      showcase = bsicons::bs_icon("activity", size = "20px"),
       fg = if (aa_yoy >= 0) "#c62828" else "#1565c0"
     )
   })
@@ -1640,7 +1603,7 @@ server <- function(input, output, session) {
       
       # MAIN VALUE category name
       value_ui = div(
-        style = "font-size:20px; font-weight:700; line-height:1.2;",
+        style = "font-weight:700; font-size: 14px; line-height:1.1",
         title = aa_top_row$series,
         aa_name
       ),
@@ -1668,7 +1631,7 @@ server <- function(input, output, session) {
       
       # MAIN VALUE → category
       value_ui = div(
-        style = "font-size:20px; font-weight:700; line-height:1.2;",
+        style = "font-weight:700;font-size: 14px; line-height:1.1;",
         title = aa_drag_row$series,
         aa_name
       ),
@@ -1838,19 +1801,21 @@ server <- function(input, output, session) {
     aa_division <- input$aa_clicked_division
     
     aa_subcat_df <- aa_cpi_dashboard %>%
-      dplyr::filter(
+      filter(
         division == aa_division,
         if (aa_division == "Food") level %in% c(2, 3) else level == 2
       ) %>%
-      dplyr::arrange(level, series, date)
-    
+      arrange(level, series, date)
+   
     if (nrow(aa_subcat_df) == 0) {
       showModal(
         modalDialog(
           title = div(
-            style = "font-size:14px; font-weight:700;",
-            paste("Sub-categories under", aa_division)
-          ),
+            paste("Sub-categories under", aa_division)),
+            div(
+              style = "font-size:12px; color:#6b7280; margin-bottom:8px;",
+              "Weight (%) is recalculated relative to headline CPI and normalised within the selected division."
+        ),
           easyClose = TRUE,
           footer = modalButton("Close"),
           "No sub-category data found for this division."
@@ -1865,10 +1830,24 @@ server <- function(input, output, session) {
       modalDialog(
         title = if (aa_division == "Food") {
           div(style = "font-size:16px; font-weight:700;",
-          "Food sub-categories and detailed items")
+          span("Food sub-categories and detailed items"),
+          span(
+            bslib::tooltip(
+              bsicons::bs_icon("info-circle"),
+              "Weight (%) is recalculated based on series weight relative to headline CPI, normalised to 100% within the selected division or subgroup."
+            )
+          )
+          )
         } else {
           div(style = "font-size:16px; font-weight:700;",
-          paste("Sub-categories under", aa_division))
+          span(paste("Sub-categories under", aa_division)),
+          span(
+            bslib::tooltip(
+              bsicons::bs_icon("info-circle"),
+              "Weight (%) is recalculated based on series weight relative to headline CPI, normalised to 100% within the selected division or subgroup."
+            )
+          )
+          ) 
         },
         size = "l",
         easyClose = TRUE,
@@ -1898,39 +1877,31 @@ server <- function(input, output, session) {
           ifelse(is.na(value), "NA", sprintf("%.2f", value))
         )
       }
+    
       
       aa_contrib_cell <- function(value) {
-        aa_color <- if (is.na(value)) {
-          "#666"
+        aa_bar_width <- if (is.na(value)) 0 else min(abs(value) * 120, 120)
+        
+        aa_bar_color <- if (is.na(value)) {
+          "#bdbdbd"
         } else if (value > 0) {
-          "#c62828"
+          "#d73027"
         } else if (value < 0) {
-          "#1565c0"
+          "#4575b4"
         } else {
-          "#444"
+          "#bdbdbd"
         }
         
         htmltools::div(
-          style = paste0(
-            "color:", aa_color,
-            "; font-weight:600; font-size:14px;"
-          ),
-          ifelse(is.na(value), "NA", sprintf("%.2f", value))
-        )
-      }
-      
-      aa_share_cell <- function(value) {
-        aa_value <- ifelse(is.na(value), 0, value)
-        aa_bar_width <- aa_value / 100 * 120
-        
-        htmltools::div(
-          style = "display:flex; align-items:center; gap:10px; justify-content:space-between; font-size:14px;",
+          style = "display:flex; align-items:center; gap:10px; justify-content:flex-end;",
+          
           htmltools::div(
             style = paste0(
               "height:10px; width:", aa_bar_width, "px; ",
-              "background:#6baed6; border-radius:5px;"
+              "background:", aa_bar_color, "; border-radius:5px;"
             )
           ),
+          
           ifelse(is.na(value), "NA", sprintf("%.2f", value))
         )
       }
@@ -1962,9 +1933,9 @@ server <- function(input, output, session) {
           dplyr::filter(date == aa_latest_date, level == 2) %>%
           dplyr::transmute(
             Subcategory = series,
-            CPI = round(cpi, 2),
+            `Latest CPI` = round(cpi, 2),
             `YoY %` = round(yoy_pct, 2),
-            `Division share (%)` = round(division_share_pct, 2),
+            `Division Weight (%)` = round(division_share_pct, 2),
             `Contribution (pp)` = round(contribution_pp, 2)
           ) %>%
           dplyr::arrange(dplyr::desc(`Contribution (pp)`))
@@ -1974,9 +1945,9 @@ server <- function(input, output, session) {
           dplyr::transmute(
             Parent = parent_series,
             Detail = series,
-            CPI = round(cpi, 2),
+           `Latest CPI` = round(cpi, 2),
             `YoY %` = round(yoy_pct, 2),
-            `Subgroup share (%)` = round(subgroup_share_pct, 2),
+            `Subgroup Weight (%)` = round(subgroup_share_pct, 2),
             `Contribution (pp)` = round(contribution_pp, 2)
           )
         
@@ -1999,9 +1970,9 @@ server <- function(input, output, session) {
               dplyr::filter(Parent == aa_parent) %>%
               dplyr::select(
                 Detail,
-                CPI,
+                `Latest CPI`,
                 `YoY %`,
-                `Subgroup share (%)`,
+                `Subgroup Weight (%)`,
                 `Contribution (pp)`
               ) %>%
               dplyr::arrange(dplyr::desc(`Contribution (pp)`))
@@ -2020,18 +1991,18 @@ server <- function(input, output, session) {
               ),
               columns = list(
                 Detail = reactable::colDef(minWidth = 200,align = "left"),
-                CPI = reactable::colDef(format = reactable::colFormat(digits = 2)),
+                `Latest CPI` = reactable::colDef(format = reactable::colFormat(digits = 2)),
                 `YoY %` = reactable::colDef(cell = aa_yoy_cell),
-                `Subgroup share (%)` = reactable::colDef(minWidth = 150,cell = aa_share_cell),
+                `Subgroup Weight (%)` = reactable::colDef(minWidth = 80),
                 `Contribution (pp)` = reactable::colDef(minWidth = 150,cell = aa_contrib_cell)
               )
             )
           },
           columns = list(
             Subcategory = reactable::colDef(minWidth = 200, align = "left"),
-            CPI = reactable::colDef(format = reactable::colFormat(digits = 2)),
+            `Latest CPI` = reactable::colDef(format = reactable::colFormat(digits = 2)),
             `YoY %` = reactable::colDef(cell = aa_yoy_cell),
-            `Division share (%)` = reactable::colDef(minWidth = 150,cell = aa_share_cell),
+            `Division Weight (%)` = reactable::colDef(minWidth =80),
             `Contribution (pp)` = reactable::colDef(minWidth = 150,cell = aa_contrib_cell)
           )
         )
@@ -2042,9 +2013,9 @@ server <- function(input, output, session) {
           dplyr::filter(date == aa_latest_date, level == 2) %>%
           dplyr::transmute(
             Subcategory = series,
-            CPI = round(cpi, 2),
+            `Latest CPI` = round(cpi, 2),
             `YoY %` = round(yoy_pct, 2),
-            `Division share (%)` = round(division_share_pct, 2),
+            `Division Weight (%)` = round(division_share_pct, 2),
             `Contribution (pp)` = round(contribution_pp, 2)
           ) %>%
           dplyr::arrange(dplyr::desc(`Contribution (pp)`))
@@ -2063,9 +2034,9 @@ server <- function(input, output, session) {
           ),
           columns = list(
             Subcategory = reactable::colDef(minWidth = 200, align = "left"),
-            CPI = reactable::colDef(format = reactable::colFormat(digits = 2)),
+            `Latest CPI` = reactable::colDef(format = reactable::colFormat(digits = 2)),
             `YoY %` = reactable::colDef(cell = aa_yoy_cell),
-            `Division share (%)` = reactable::colDef(minWidth = 150,cell = aa_share_cell),
+            `Division Weight (%)` = reactable::colDef(minWidth = 80),
             `Contribution (pp)` = reactable::colDef(minWidth = 150,cell = aa_contrib_cell)
           )
         )
@@ -2343,7 +2314,7 @@ server <- function(input, output, session) {
       "aa_series_select",
       label = paste0("Series (max ", max_select, ")"),
       choices = choices,
-      selected = head(choices, min(2, length(choices))),
+      selected = head(choices, min(1, length(choices))),
       multiple = TRUE,
       options = list(
         maxItems = max_select,
@@ -2376,38 +2347,85 @@ server <- function(input, output, session) {
   
   output$aa_seasonality_cards_ui <- renderUI({
     selected_series <- input$aa_series_select
-    n <- length(selected_series)
+    selected_features <- input$aa_season_feature
     
     validate(
       need(!is.null(selected_series) && length(selected_series) > 0,
-           "Please select at least one series.")
+           "Please select at least one series."),
+      need(!is.null(selected_features) && length(selected_features) > 0,
+           "Please select at least one seasonality feature.")
     )
     
-    col_width <- if (n == 1) 12 else 6
+    n_series <- length(selected_series)
+    n_features <- length(selected_features)
     
-    plot_output_list <- lapply(seq_along(selected_series), function(i) {
+    col_width <- if (n_series == 1) 12 else 6
+    
+    card_height <- dplyr::case_when(
+      n_features == 1 ~ "260px",
+      n_features == 2 ~ "520px",
+      n_features == 3 ~ "600px",
+      TRUE ~ "720px"
+    )
+    
+    cards <- lapply(seq_along(selected_series), function(i) {
+      series_name <- selected_series[i]
+      
+      feature_outputs <- lapply(seq_along(selected_features), function(j) {
+        div(
+          style = "
+          flex: 1;
+          min-height: 0;
+          margin-bottom: 2px;
+        ",
+          plotlyOutput(
+            outputId = paste0("aa_season_plot_", i, "_", j),
+            height = "100%"
+          )
+        )
+      })
+      
       column(
         width = col_width,
         div(
-          style = "
+          style = paste0(
+            "
           background: white;
           border: 1px solid #ddd;
           border-radius: 8px;
-          padding: 12px;
+          padding: 10px 12px 8px 12px;
           margin-bottom: 20px;
           box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        ",
-          div(
-            selected_series[i],
-            style = "margin-top:0; margin-bottom:8px; font-size:16px; font-weight:600;"
+          height: ", card_height, ";
+          display: flex;
+          flex-direction: column;
+        "
           ),
-          plotlyOutput(outputId = paste0("aa_season_plot_", i), height = "550px")
+          div(
+            series_name,
+            style = "margin-top:0; margin-bottom:6px; font-size:16px; font-weight:600; flex-shrink:0;"
+          ),
+          div(
+            style = "
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+          ",
+            do.call(tagList, feature_outputs)
+          ),
+          div(
+            "Source: CEIC Database | Index: 2024 = 100",
+            style = "font-size:11px; color:#6b7280; text-align:right; margin-top:4px; flex-shrink:0;"
+          )
         )
       )
     })
     
-    do.call(fluidRow, plot_output_list)
+    do.call(fluidRow, cards)
   })
+  
   
   output$aa_acf_plot <- renderPlotly({
     req(input$aa_lags)
@@ -2433,7 +2451,7 @@ server <- function(input, output, session) {
     updateRadioButtons(session, "aa_plot_level", selected = 1)
     updateSelectInput(session, "aa_colour_by_year", selected = "none")
     updateSelectInput(session, "aa_facet_cols", selected = "1")
-    updateSelectInput(session, "aa_season_geom", selected = "boxplot")
+    updateCheckboxInput(session, "aa_season_mean", value = FALSE)
     updateCheckboxGroupInput(session, "aa_season_feature", selected = "month.lbl")
     updateCheckboxInput(session, "aa_smooth", value = TRUE)
     updateCheckboxInput(session, "aa_acf_white_noise", value = TRUE)
@@ -2462,32 +2480,37 @@ server <- function(input, output, session) {
   
   observe({
     req(input$aa_series_select)
-    req(input$aa_season_geom)
     req(input$aa_season_feature)
     
     selected_series <- input$aa_series_select
+    selected_features <- input$aa_season_feature
     
     for (i in seq_along(selected_series)) {
-      local({
-        idx <- i
-        series_name <- selected_series[idx]
-        
-        output[[paste0("aa_season_plot_", idx)]] <- renderPlotly({
-          plots <- plot_cpi_seasonal(
-            data = filtered_data(),
-            plot_level = as.numeric(input$aa_plot_level),
-            category = safe_division(),
-            group_name = safe_group(),
-            series_select = series_name,
-            geom = input$aa_season_geom,
-            feature_set = input$aa_season_feature,
-            interactive = TRUE,
-            return_plots = TRUE
-          )
+      for (j in seq_along(selected_features)) {
+        local({
+          idx_series <- i
+          idx_feature <- j
+          series_name <- selected_series[idx_series]
+          feat <- selected_features[idx_feature]
           
-          plots[[1]]
+          output[[paste0("aa_season_plot_", idx_series, "_", idx_feature)]] <- renderPlotly({
+            plots <- plot_cpi_seasonal(
+              data = filtered_data(),
+              plot_level = as.numeric(input$aa_plot_level),
+              category = safe_division(),
+              group_name = safe_group(),
+              series_select = series_name,
+              show_mean = isTRUE(input$aa_season_mean),
+              feature_set = feat,
+              interactive = TRUE,
+              return_plots = TRUE,
+              add_caption = FALSE
+            )
+            
+            plots[[series_name]][[feat]]
+          })
         })
-      })
+      }
     }
   })
   
