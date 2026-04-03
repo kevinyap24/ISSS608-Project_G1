@@ -1257,7 +1257,85 @@ ui <- navbarPage(
   ))
   ),
   tabPanel(
-    "Decomposition"),  ## add decomposition here
+    "Decomposition",
+    fluidPage(
+      tags$style(HTML("
+        .container-fluid { padding-top: 0px !important; }
+        .row { margin-top: 2px !important; margin-bottom: 2px !important; }
+      ")),
+      h4("CPI Decomposition Explorer", style = "margin-top:10px;"),
+      p("Singapore CPI : 2020\u20132025",
+        style = "color:#7f8c8d; font-size:13px; margin-top:-6px;"),
+
+      sidebarLayout(
+        sidebarPanel(
+          width = 3,
+          tags$details(
+            open = "open",
+            tags$summary(
+              style = "font-size:18px; font-weight:580; cursor:pointer; margin-bottom:5px;",
+              "Control Panel"
+            ),
+            tags$div(
+              style = "background:#faf7f2; padding:2px; border-radius:2px; margin-top:5px;",
+
+              selectInput("bb_level_select",    "Hierarchy Level", choices = NULL),
+              selectInput("bb_category_select", "Category",        choices = NULL),
+              selectInput(
+                "bb_decomp_type",
+                "Decomposition Type",
+                choices = c("STL (Seasonal-Trend)" = "stl"),
+                selected = "stl"
+              ),
+              tags$div(
+                style = paste0(
+                  "margin-top:10px; font-size:11px; color:#7f8c8d;",
+                  " background:#fff8e1; padding:8px; border-radius:4px;"
+                ),
+                tags$b("STL"), " uses robust LOESS smoothing, suitable for Singapore",
+                " CPI due to COVID-era disruptions and the post-2022 inflation cycle."
+              ),
+              hr(),
+              actionButton(
+                "bb_run", "Run Decomposition",
+                class = "btn-primary",
+                style = "width:100%;"
+              )
+            )
+          )
+        ),
+
+        mainPanel(
+          width = 9,
+
+          wellPanel(
+            uiOutput("bb_plot_header"),
+            withSpinner(
+              plotlyOutput("bb_decomp_plot", height = "560px"),
+              color = "#d4af37"
+            )
+          ),
+
+          fluidRow(
+            column(6,
+              wellPanel(
+                h5("Observed Series Summary",
+                   style = "color:#2c3e50; margin-bottom:10px;"),
+                reactableOutput("bb_obs_table")
+              )
+            ),
+            column(6,
+              wellPanel(
+                h5("Component Summary",
+                   style = "color:#2c3e50; margin-bottom:10px;"),
+                reactableOutput("bb_comp_table")
+              )
+            )
+          )
+        )
+      )
+    )
+  ),
   
   tabPanel(
     "Data Explorer",
@@ -2754,6 +2832,246 @@ server <- function(input, output, session) {
       )
     
     p
+  })
+
+  # =========================
+  # DECOMPOSITION (bb_)
+  # =========================
+
+  # Populate hierarchy level dropdown on startup
+  observe({
+    bb_levels <- aa_cpi_data %>%
+      filter(!is.na(level)) %>%
+      pull(level) %>%
+      unique() %>%
+      sort()
+    updateSelectInput(
+      session, "bb_level_select",
+      choices  = setNames(bb_levels, paste("Level", bb_levels)),
+      selected = 1
+    )
+  })
+
+  # Update category list when level changes
+  observeEvent(input$bb_level_select, {
+    req(input$bb_level_select)
+    bb_lvl <- as.integer(input$bb_level_select)
+
+    bb_cats <- aa_cpi_data %>%
+      filter(level == bb_lvl, !is.na(series)) %>%
+      pull(series) %>%
+      unique() %>%
+      sort()
+
+    updateSelectInput(
+      session, "bb_category_select",
+      choices  = bb_cats,
+      selected = bb_cats[1]
+    )
+  })
+
+  # Filtered data — runs on button click AND on initial load (ignoreNULL = FALSE)
+  bb_selected_data <- eventReactive(
+    input$bb_run,
+    {
+      req(input$bb_level_select, input$bb_category_select)
+      aa_cpi_data %>%
+        filter(
+          level  == as.integer(input$bb_level_select),
+          series == input$bb_category_select
+        ) %>%
+        arrange(date)
+    },
+    ignoreNULL = FALSE
+  )
+
+  # Plot header
+  output$bb_plot_header <- renderUI({
+    req(bb_selected_data())
+    series_name  <- unique(bb_selected_data()$series)[1]
+    decomp_label <- "STL"
+    div(
+      style = "margin-bottom:8px;",
+      tags$span(
+        style = "font-size:14px; font-weight:600; color:#2c3e50;",
+        paste0(series_name, " \u2014 ", decomp_label, " Decomposition")
+      )
+    )
+  })
+
+  # Main decomposition plot (4-panel STL)
+  output$bb_decomp_plot <- renderPlotly({
+    req(bb_selected_data())
+    data <- bb_selected_data()
+    req(nrow(data) >= 24)
+
+    cpi_ts <- ts(
+      data$cpi,
+      start     = c(lubridate::year(min(data$date)),
+                    lubridate::month(min(data$date))),
+      frequency = 12
+    )
+
+    stl_fit <- stl(cpi_ts, s.window = "periodic", robust = TRUE)
+    stl_mat <- stl_fit$time.series
+
+    df <- data.frame(
+      date      = data$date,
+      observed  = data$cpi,
+      trend     = as.numeric(stl_mat[, "trend"]),
+      seasonal  = as.numeric(stl_mat[, "seasonal"]),
+      remainder = as.numeric(stl_mat[, "remainder"])
+    )
+
+    make_panel <- function(y, label, color, zeroline = FALSE) {
+      plot_ly(
+        x    = df$date,
+        y    = y,
+        type = "scatter",
+        mode = "lines",
+        name = label,
+        line = list(color = color, width = 1.8),
+        hovertemplate = paste0(
+          "<b>%{x|%b %Y}</b><br>", label, ": %{y:.3f}<extra></extra>"
+        ),
+        showlegend = FALSE
+      ) %>%
+        layout(yaxis = list(
+          title         = label,
+          zeroline      = zeroline,
+          zerolinecolor = "#dddddd",
+          zerolinewidth = 1.5
+        ))
+    }
+
+    p1 <- make_panel(df$observed,  "Observed",  "#2c3e50")
+    p2 <- make_panel(df$trend,     "Trend",     "#d4af37")
+    p3 <- make_panel(df$seasonal,  "Seasonal",  "#7c3aed", zeroline = TRUE)
+    p4 <- make_panel(df$remainder, "Remainder", "#e74c3c", zeroline = TRUE)
+
+    subplot(p1, p2, p3, p4,
+            nrows   = 4,
+            shareX  = TRUE,
+            titleY  = TRUE,
+            heights = c(0.30, 0.30, 0.20, 0.20)) %>%
+      layout(
+        margin        = list(t = 20, r = 20, b = 50, l = 70),
+        showlegend    = FALSE,
+        paper_bgcolor = "#ffffff",
+        plot_bgcolor  = "#ffffff"
+      )
+  })
+
+  # Observed Series Summary table
+  output$bb_obs_table <- renderReactable({
+    req(bb_selected_data())
+    data <- bb_selected_data()
+    req(nrow(data) >= 2)
+
+    start_cpi <- data$cpi[which.min(data$date)]
+    end_cpi   <- data$cpi[which.max(data$date)]
+    total_inc <- end_cpi - start_cpi
+    inc_rate  <- (total_inc / start_cpi) * 100
+
+    summary_df <- data.frame(
+      Metric = c(
+        paste0("Start CPI (", format(min(data$date), "%Y-%m"), ")"),
+        paste0("End CPI (",   format(max(data$date), "%Y-%m"), ")"),
+        "Total Increase",
+        "Increase Rate (%)"
+      ),
+      Value = c(
+        formatC(start_cpi, format = "f", digits = 2),
+        formatC(end_cpi,   format = "f", digits = 2),
+        formatC(total_inc, format = "f", digits = 2),
+        paste0(formatC(inc_rate, format = "f", digits = 2), "%")
+      )
+    )
+
+    reactable(
+      summary_df,
+      columns = list(
+        Metric = colDef(name = "Metric", minWidth = 160),
+        Value  = colDef(name = "Value",  align = "right")
+      ),
+      striped   = TRUE,
+      highlight = TRUE,
+      bordered  = FALSE,
+      compact   = TRUE,
+      theme = reactableTheme(
+        headerStyle  = list(background = "#f7f5f0", color = "#2c3e50",
+                            fontWeight = "600", fontSize = "12px"),
+        cellStyle    = list(fontSize = "12px"),
+        stripedColor = "#faf7f2"
+      )
+    )
+  })
+
+  # Component Summary table
+  output$bb_comp_table <- renderReactable({
+    req(bb_selected_data())
+    data <- bb_selected_data()
+    req(nrow(data) >= 24)
+
+    cpi_ts <- ts(
+      data$cpi,
+      start     = c(lubridate::year(min(data$date)),
+                    lubridate::month(min(data$date))),
+      frequency = 12
+    )
+    stl_fit  <- stl(cpi_ts, s.window = "periodic", robust = TRUE)
+    stl_mat  <- stl_fit$time.series
+
+    trend_range  <- max(stl_mat[, "trend"])    - min(stl_mat[, "trend"])
+    season_range <- max(stl_mat[, "seasonal"]) - min(stl_mat[, "seasonal"])
+    resid_sd     <- sd(stl_mat[, "remainder"])
+
+    trend_interp <- dplyr::case_when(
+      trend_range > 10 ~ "Strong upward trend over the sample period",
+      trend_range > 3  ~ "Moderate trend over the sample period",
+      TRUE             ~ "Relatively flat trend over the sample period"
+    )
+    season_interp <- dplyr::case_when(
+      season_range > 2   ~ "Strong seasonality detected",
+      season_range > 0.5 ~ "Moderate seasonality detected",
+      TRUE               ~ "Weak seasonality detected"
+    )
+    resid_interp <- dplyr::case_when(
+      resid_sd > 1.5 ~ "High irregular variation",
+      resid_sd > 0.5 ~ "Moderate irregular variation",
+      TRUE           ~ "Low irregular variation"
+    )
+
+    comp_df <- data.frame(
+      Component      = c("Trend",              "Seasonal",          "Remainder"),
+      Magnitude      = c(
+        formatC(trend_range,  format = "f", digits = 3),
+        formatC(season_range, format = "f", digits = 3),
+        formatC(resid_sd,     format = "f", digits = 3)
+      ),
+      Metric         = c("Range (max-min)", "Range (max-min)", "Std. Dev."),
+      Interpretation = c(trend_interp, season_interp, resid_interp)
+    )
+
+    reactable(
+      comp_df,
+      columns = list(
+        Component      = colDef(name = "Component",      minWidth = 80),
+        Magnitude      = colDef(name = "Magnitude",      align = "right", minWidth = 80),
+        Metric         = colDef(name = "Metric",         minWidth = 120),
+        Interpretation = colDef(name = "Interpretation", minWidth = 160)
+      ),
+      striped   = TRUE,
+      highlight = TRUE,
+      bordered  = FALSE,
+      compact   = TRUE,
+      theme = reactableTheme(
+        headerStyle  = list(background = "#f7f5f0", color = "#2c3e50",
+                            fontWeight = "600", fontSize = "12px"),
+        cellStyle    = list(fontSize = "12px"),
+        stripedColor = "#faf7f2"
+      )
+    )
   })
 
 }
