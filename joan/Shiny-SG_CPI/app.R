@@ -234,6 +234,26 @@ plot_cpi_time_series <- function(data,
       .plotly_slider = plotly_slider
     )
   }
+  if (interactive) {
+    for (i in seq_along(p$x$data)) {
+      trace_name <- p$x$data[[i]]$name
+      if (is.null(trace_name)) trace_name <- ""
+      
+      if (smooth && grepl("smooth", trace_name, ignore.case = TRUE)) {
+        p$x$data[[i]]$hovertemplate <- paste(
+          "Date: %{x|%b %Y}<br>",
+          "Smoothed Trend: %{y:.2f}",
+          "<extra></extra>"
+        )
+      } else {
+        p$x$data[[i]]$hovertemplate <- paste(
+          "Date: %{x|%b %Y}<br>",
+          "CPI Index: %{y:.2f}",
+          "<extra></extra>"
+        )
+      }
+    }
+  }
   
   if (add_caption) {
     if (interactive) {
@@ -252,14 +272,7 @@ plot_cpi_time_series <- function(data,
             )
           ),
           margin = list(b = 90)
-        ) %>%
-            plotly::style(
-              hovertemplate = paste(
-                "Date: %{x|%b %Y}<br>",
-                if (smooth) "Value: %{y:.2f}" else "Value: %{y:.2f}",
-                "<extra></extra>"
-              )
-            )
+        )
     } else {
       p <- p +
         labs(caption = caption_text) +
@@ -739,6 +752,7 @@ aa_theme <- bs_theme(
   base_font = font_google("Inter"),
   heading_font = font_google("Inter")
 )
+
 aa_nav_css <- "
 .navbar {
   background-color: #0f172a !important;
