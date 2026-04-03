@@ -2,7 +2,7 @@ pacman::p_load(
   shiny, shinythemes, dplyr, lubridate, plotly, timetk, ggplot2,
   shinyWidgets, readr, tidyr, DT, htmltools, bslib, reactable,
   reactablefmtr, bsicons, shinycssloaders, dataui,
-  modeltime, tidymodels, parsnip, rsample, yardstick, purrr, tibble
+  purrr, tibble
 )
 
 # =========================================================
@@ -960,23 +960,42 @@ server <- function(input, output, session) {
     updateSliderTextInput(session,"aa_date_range",selected=range(aa_cpi_data$date))
   })
   observeEvent(input$aa_series_select, {
-    req(input$aa_eda_tabs); max_select <- aa_max_select()
+    max_select <- aa_max_select()
     if(!is.null(input$aa_series_select)&&length(input$aa_series_select)>max_select) {
       updateSelectizeInput(session,"aa_series_select",selected=input$aa_series_select[1:max_select])
       showNotification(paste("Please select up to",max_select,"series only."),type="warning")
     }
   }, ignoreInit=TRUE)
   observe({
-    req(input$aa_series_select,input$aa_season_geom,input$aa_season_feature)
-    selected_series <- input$aa_series_select
+    req(input$aa_eda_tabs)
+    
+    selected_series <- isolate(input$aa_series_select)
+    season_geom     <- isolate(input$aa_season_geom)
+    season_feature  <- isolate(input$aa_season_feature)
+    
+    req(!is.null(selected_series) && length(selected_series) > 0)
+    req(!is.null(season_geom))
+    req(!is.null(season_feature) && length(season_feature) > 0)
+    
     for (i in seq_along(selected_series)) {
       local({
-        idx <- i; series_name <- selected_series[idx]
-        output[[paste0("aa_season_plot_",idx)]] <- renderPlotly({
-          plots <- plot_cpi_seasonal(data=filtered_data(), plot_level=as.numeric(input$aa_plot_level),
-                                     category=safe_division(), group_name=safe_group(), series_select=series_name,
-                                     geom=input$aa_season_geom, feature_set=input$aa_season_feature,
-                                     interactive=TRUE, return_plots=TRUE)
+        idx         <- i
+        series_name <- selected_series[idx]
+        s_geom      <- season_geom
+        s_feature   <- season_feature
+        
+        output[[paste0("aa_season_plot_", idx)]] <- renderPlotly({
+          plots <- plot_cpi_seasonal(
+            data          = filtered_data(),
+            plot_level    = as.numeric(input$aa_plot_level),
+            category      = safe_division(),
+            group_name    = safe_group(),
+            series_select = series_name,
+            geom          = s_geom,
+            feature_set   = s_feature,
+            interactive   = TRUE,
+            return_plots  = TRUE
+          )
           plots[[1]]
         })
       })
@@ -1016,6 +1035,10 @@ server <- function(input, output, session) {
   
   # ── Manual on-the-fly forecast ──
   cc_manual_forecast <- eventReactive(input$cc_generate, {
+    library(modeltime)
+    library(tidymodels)
+    library(parsnip)
+    
     req(input$cc_category_select, input$cc_model_select)
     cc_s <- input$cc_category_select
     
