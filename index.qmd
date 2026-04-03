@@ -342,9 +342,9 @@ main.content, div#quarto-content, .page-columns {
   <div class="sg-hero-left">
     <div class="sg-hero-tag">ISS608 Project · Group 1</div>
     <h1 class="sg-hero-title">
-      Forecasting<br>
-      <em>Singapore</em><br>
-      Customer Price Index (CPI)
+      Why are we<br>
+      <em>paying more</em><br>
+      than before in Singapore?
     </h1>
     <div class="sg-hero-cta">
       <a href="https://vaag1ay2526.shinyapps.io/cpi-shiny/" target="_blank" class="sg-btn-primary">RShiny App</a>
