@@ -2647,14 +2647,6 @@ server <- function(input, output, session) {
     
     # Holdout connector + line
     if(nrow(cc_holdout_pred)>0) {
-      if(!is.null(cc_first_holdout)) {
-        p <- p %>% plotly::add_trace(
-          x=c(cc_last_actual$date, cc_first_holdout$date),
-          y=c(cc_last_actual$cpi,  cc_first_holdout$cpi),
-          type="scatter", mode="lines",
-          line=list(color="#e67e22",width=1.5,dash="dot"),
-          showlegend=FALSE, hoverinfo="skip")
-      }
       p <- p %>% plotly::add_trace(
         x=cc_holdout_pred$date, y=cc_holdout_pred$cpi,
         type="scatter", mode="lines", name="Holdout Predicted (2025)",
