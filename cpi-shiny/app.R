@@ -756,7 +756,7 @@ plot_cpi_acf <- function(data,
 # =========================================================
 aa_theme <- bs_theme(
   version=5, bootswatch="flatly", primary="#d4af37",
-  bg="#f7f5f0", fg="#1f2937",
+  bg="#f7f5f0", fg="#1a1612",
   base_font=font_google("Inter"), heading_font=font_google("Inter")
 )
 
@@ -1199,7 +1199,7 @@ ui <- navbarPage(
              p("Hierarchical CPI forecasts using bottom-up aggregation. Training: 2020–2024 | Holdout: 2025 | Forecast: 2026.",
                style="font-size:13px; color:#6b7280; margin-bottom:20px;"),
              tags$head(tags$style(HTML("
-        .cc-param-box { background:#f0ebe3; border-left:3px solid #c0392b; border-radius:4px; padding:10px 12px; margin-top:8px; margin-bottom:8px; }
+        .cc-param-box { background:#f0ebe3; border-left:3px solid ##1a1612; border-radius:4px; padding:10px 12px; margin-top:8px; margin-bottom:8px; }
         .cc-metric-card { background:#fff; border:1px solid #e2d9cf; border-radius:6px; padding:12px 16px; text-align:center; flex:1; }
         .cc-metric-label { font-size:11px; color:#7a6f68; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:4px; }
         .cc-metric-value { font-size:20px; font-weight:700; color:#1a1612; }
