@@ -653,7 +653,7 @@ plot_cpi_acf <- function(data,
       .white_noise_line_color = white_noise_line_color,
       .title = "",
       .x_lab = paste0("Lag (selected = ", lags, ")"),
-      .y_lab = "Correlation",
+      .y_lab = "Autocorrelation",
       .interactive = interactive,
       .plotly_slider = plotly_slider
     )
@@ -722,7 +722,7 @@ plot_cpi_acf <- function(data,
         this_trace <- p$x$data[[i]]
         
         if (!is.null(this_trace$x) && !is.null(this_trace$y)) {
-          p$x$data[[i]]$hovertemplate <- "Lag: %{x}<br>Value: %{y:.3f}<extra></extra>"
+          p$x$data[[i]]$hovertemplate <- "Value: %{y:.3f}<extra></extra>"
         }
       }
       p <- p %>%
@@ -1049,7 +1049,11 @@ ui <- navbarPage(
               
               conditionalPanel(
                 condition = "input.aa_eda_tabs == 'Trend'",
-                checkboxInput("aa_smooth", "Smoothed Trend", TRUE),
+                checkboxInput("aa_smooth", 
+                              bslib::tooltip(
+                                span("Show Smoothed Trend", bsicons::bs_icon("info-circle")),
+                                "Trend line uses quadratic smoothing to capture gentle curves."),
+                              TRUE),
                 selectInput(
                   "aa_colour_by_year",
                   "Colour by Year",
@@ -1066,7 +1070,10 @@ ui <- navbarPage(
               
               conditionalPanel(
                 condition = "input.aa_eda_tabs == 'Seasonality'",
-                checkboxInput("aa_season_mean", "Show mean", value = FALSE),
+                checkboxInput("aa_season_mean", 
+                              bslib::tooltip(span("Show Mean",bsicons::bs_icon("info-circle")),
+                                           "Shows the average value for each seasonal period."),
+                                      value = FALSE),
                 checkboxGroupInput(
                   "aa_season_feature",
                   "Seasonality Features",
@@ -1081,7 +1088,13 @@ ui <- navbarPage(
               
               conditionalPanel(
                 condition = "input.aa_eda_tabs == 'Autocorrelation'",
-                checkboxInput("aa_acf_white_noise", "Show White Noise Bars", TRUE),
+                checkboxInput(
+                  "aa_acf_white_noise",
+                  bslib::tooltip(
+                   span("Show White Noise Bars",bsicons::bs_icon("info-circle")),
+                    "Dashed lines represent the 95% confidence interval under the white noise assumption. Autocorrelations outside these bounds are statistically significant."
+                  ),
+                  value = TRUE),
                 numericInput("aa_lags", "Lags", value = 24, min = 1, max = 60)
               ),
               
@@ -1128,6 +1141,56 @@ ui <- navbarPage(
           )
         )))
   ),
+  # ── Decomposition tab ───────────────────────────────────────
+  tabPanel(
+    "Decomposition",
+    fluidPage(
+      tags$style(HTML("
+        .container-fluid { padding-top: 0px !important; }
+        .row { margin-top: 2px !important; margin-bottom: 2px !important; }
+      ")),
+      h4("CPI Decomposition Explorer", style = "margin-top:10px;"),
+      p("Singapore CPI : 2020–2025",
+        style = "color:#7f8c8d; font-size:13px; margin-top:-6px;"),
+      sidebarLayout(
+        sidebarPanel(
+          width = 3,
+          tags$details(
+            open = "open",
+            tags$summary(style = "font-size:18px; font-weight:600; cursor:pointer; margin-bottom:5px;", "Control Panel"),
+            tags$div(
+              style = "background:#faf7f2; font-size: 16px; padding:2px; border-radius:2px; margin-top:5px;",
+              selectInput("bb_level_select",    "Hierarchy Level", choices = NULL),
+              selectInput("bb_category_select", "Category",        choices = NULL),
+              selectInput("bb_decomp_type", "Decomposition Type",
+                          choices = c("STL (Seasonal-Trend)" = "stl"), selected = "stl"),
+              tags$div(style = "margin-top:10px; font-size:11px; color:#7f8c8d; background:#fff8e1; padding:8px; border-radius:4px;",
+                       tags$b("STL"), " uses robust LOESS smoothing, suitable for Singapore CPI due to COVID-era disruptions and the post-2022 inflation cycle."),
+              hr(),
+              actionButton("bb_run", "Run Decomposition", class = "btn-primary", style = "width:100%;")
+            )
+          )
+        ),
+        mainPanel(
+          width = 9,
+          wellPanel(
+            uiOutput("bb_plot_header"),
+            shinycssloaders::withSpinner(plotlyOutput("bb_decomp_plot", height = "560px"), color = "#d4af37")
+          ),
+          fluidRow(
+            column(6, wellPanel(
+              h5("Observed Series Summary", style = "color:#2c3e50; margin-bottom:10px;"),
+              reactable::reactableOutput("bb_obs_table")
+            )),
+            column(6, wellPanel(
+              h5("Component Summary", style = "color:#2c3e50; margin-bottom:10px;"),
+              reactable::reactableOutput("bb_comp_table")
+            ))
+          )
+        )
+      )
+    )
+  ),
   
   # ── Forecast tab ───────────────────────────────────────
   tabPanel("Forecast",
@@ -1145,8 +1208,8 @@ ui <- navbarPage(
              sidebarLayout(
                sidebarPanel(width=3,
                             tags$details(open="open",
-                                         tags$summary(style="font-size:18px; font-weight:580; cursor:pointer; margin-bottom:12px;", "Control Panel"),
-                                         tags$div(style="background:#faf7f2; padding:15px; border-radius:6px; margin-top:10px;",
+                                         tags$summary(style="font-size:18px; font-weight:600; cursor:pointer; margin-bottom:12px;", "Control Panel"),
+                                         tags$div(style="background:#faf7f2;font-size:16px; padding:15px; border-radius:6px; margin-top:10px;",
                                                   
                                                   # Mode
                                                   selectInput("cc_forecast_mode", "Forecast Mode",
@@ -1258,55 +1321,7 @@ ui <- navbarPage(
            )
   ),
   
-  tabPanel(
-    "Decomposition",
-    fluidPage(
-      tags$style(HTML("
-        .container-fluid { padding-top: 0px !important; }
-        .row { margin-top: 2px !important; margin-bottom: 2px !important; }
-      ")),
-      h4("CPI Decomposition Explorer", style = "margin-top:10px;"),
-      p("Singapore CPI : 2020–2025",
-        style = "color:#7f8c8d; font-size:13px; margin-top:-6px;"),
-      sidebarLayout(
-        sidebarPanel(
-          width = 3,
-          tags$details(
-            open = "open",
-            tags$summary(style = "font-size:18px; font-weight:580; cursor:pointer; margin-bottom:5px;", "Control Panel"),
-            tags$div(
-              style = "background:#faf7f2; padding:2px; border-radius:2px; margin-top:5px;",
-              selectInput("bb_level_select",    "Hierarchy Level", choices = NULL),
-              selectInput("bb_category_select", "Category",        choices = NULL),
-              selectInput("bb_decomp_type", "Decomposition Type",
-                          choices = c("STL (Seasonal-Trend)" = "stl"), selected = "stl"),
-              tags$div(style = "margin-top:10px; font-size:11px; color:#7f8c8d; background:#fff8e1; padding:8px; border-radius:4px;",
-                       tags$b("STL"), " uses robust LOESS smoothing, suitable for Singapore CPI due to COVID-era disruptions and the post-2022 inflation cycle."),
-              hr(),
-              actionButton("bb_run", "Run Decomposition", class = "btn-primary", style = "width:100%;")
-            )
-          )
-        ),
-        mainPanel(
-          width = 9,
-          wellPanel(
-            uiOutput("bb_plot_header"),
-            shinycssloaders::withSpinner(plotlyOutput("bb_decomp_plot", height = "560px"), color = "#d4af37")
-          ),
-          fluidRow(
-            column(6, wellPanel(
-              h5("Observed Series Summary", style = "color:#2c3e50; margin-bottom:10px;"),
-              reactable::reactableOutput("bb_obs_table")
-            )),
-            column(6, wellPanel(
-              h5("Component Summary", style = "color:#2c3e50; margin-bottom:10px;"),
-              reactable::reactableOutput("bb_comp_table")
-            ))
-          )
-        )
-      )
-    )
-  ),
+ 
   
   # ── Data Explorer tab ──────────────────────────────────
   tabPanel("Data Explorer",
